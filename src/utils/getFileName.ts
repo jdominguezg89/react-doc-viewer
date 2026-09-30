@@ -1,4 +1,12 @@
-import type { IDocument } from "..";
+import type { IDocument } from "../models";
+
+const safeDecode = (value: string): string => {
+  try {
+    return decodeURI(value);
+  } catch {
+    return value;
+  }
+};
 
 export const getFileName = (
   document: IDocument | undefined,
@@ -8,23 +16,16 @@ export const getFileName = (
     return "";
   }
 
-  let fileName = "";
-
   if (document.fileName) {
-    fileName = document.fileName;
-  } else {
-    fileName = document.uri || "";
-    fileName = decodeURI(fileName);
-
-    if (!retainURLParams) {
-      fileName = fileName?.split("?")?.[0];
-    }
-
-    const splitURL = fileName?.split("/");
-    if (splitURL.length) {
-      fileName = splitURL[splitURL.length - 1];
-    }
+    return document.fileName;
   }
 
-  return fileName;
+  let fileName = safeDecode(document.uri || "");
+
+  if (!retainURLParams) {
+    fileName = fileName.split("?")[0];
+  }
+
+  const splitURL = fileName.split("/");
+  return splitURL[splitURL.length - 1] ?? "";
 };

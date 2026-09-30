@@ -1,44 +1,63 @@
-import { useEffect } from "react";
-import type { DocRenderer } from "../..";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "../../hooks/useTranslation";
+import type { DocRenderer } from "../../models";
 import { dataURLFileLoader } from "../../utils/fileLoaders";
 
+const DATA_URL_PREFIX = /^data:text\/html?(?:;charset=([^;,]*))?(;base64)?,/i;
+
+/** Decodes the HTML renderer's data URL into a string. */
+export const decodeHtmlDataUrl = (dataUrl: string): string => {
+  let charset = "utf-8";
+  let base64 = false;
+  const payload = dataUrl.replace(DATA_URL_PREFIX, (_, cs, b64) => {
+    if (cs) charset = cs;
+    base64 = Boolean(b64);
+    return "";
+  });
+  if (!base64) return decodeURIComponent(payload);
+  const binary = window.atob(payload);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder(charset).decode(bytes);
+};
+
 const HTMLRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const [failed, setFailed] = useState(false);
+  const { t } = useTranslation();
+
   useEffect(() => {
-    const b64String = currentDocument?.fileData as string;
+    const frame = frameRef.current;
+    const data = currentDocument?.fileData;
+    if (!frame || typeof data !== "string") return;
 
-    let encoding = "";
-    const bodyBase64 = b64String?.replace(
-      /^data:text\/html;(?:charset=([^;]*);)?base64,/,
-      (_, charset) => {
-        encoding = charset || "utf-8";
-        return "";
-      },
-    );
-    let body: string = window.atob(bodyBase64);
-
-    // decode charset
-    const buffer = Uint8Array.from(body, (c) => c.charCodeAt(0));
-    body = new TextDecoder(encoding).decode(buffer);
-
-    const iframeCont = document.getElementById(
-      "html-body",
-    ) as HTMLIFrameElement | null;
-
-    const iframe = iframeCont?.contentWindow && iframeCont.contentWindow;
-    if (!iframe) return;
-
-    const iframeDoc = iframe.document;
-    iframeDoc.open();
-    iframeDoc.write(`${body}`);
-    iframeDoc.close();
+    try {
+      const body = decodeHtmlDataUrl(data);
+      const frameDocument = frame.contentWindow?.document;
+      if (!frameDocument) return;
+      frameDocument.open();
+      frameDocument.write(body);
+      frameDocument.close();
+      setFailed(false);
+    } catch {
+      setFailed(true);
+    }
   }, [currentDocument]);
+
+  if (failed) {
+    return (
+      <div id="html-renderer" className="rdv-html-renderer">
+        <div role="alert">{t("brokenFile")}</div>
+      </div>
+    );
+  }
 
   return (
     <div id="html-renderer" className="rdv-html-renderer">
       <iframe
+        ref={frameRef}
         id="html-body"
         className="rdv-html-renderer__frame"
-        title="html-renderer"
+        title={currentDocument?.fileName || "html-renderer"}
         sandbox="allow-same-origin"
       />
     </div>

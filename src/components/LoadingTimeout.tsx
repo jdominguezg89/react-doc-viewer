@@ -11,21 +11,19 @@ import { DocViewerContext } from "../store/DocViewerProvider";
 
 export const LoadingTimeout: FC<PropsWithChildren> = ({ children }) => {
   const { state } = useContext(DocViewerContext);
-  const { config } = state;
+  const timeout = state.config?.loadingRenderer?.showLoadingTimeout;
   const [shouldLoadingRender, setShouldLoadingRender] = useState(
-    config?.loadingRenderer?.showLoadingTimeout === false,
+    timeout === false,
   );
 
   useEffect(() => {
-    setTimeout(
-      () => {
-        setShouldLoadingRender(true);
-      },
-      typeof config?.loadingRenderer?.showLoadingTimeout === "number"
-        ? config.loadingRenderer.showLoadingTimeout
-        : 500,
+    if (timeout === false) return;
+    const handle = setTimeout(
+      () => setShouldLoadingRender(true),
+      typeof timeout === "number" ? timeout : 500,
     );
-  }, [config?.loadingRenderer?.showLoadingTimeout]);
+    return () => clearTimeout(handle);
+  }, [timeout]);
 
   if (!shouldLoadingRender) {
     return null;

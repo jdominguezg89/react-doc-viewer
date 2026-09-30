@@ -1,40 +1,42 @@
-import type { DocRenderer, IConfig, IDocument } from "..";
 import { type AvailableLanguages, defaultLanguage } from "../i18n";
+import type { DocRenderer, IConfig, IDocument } from "../models";
 import {
   type MainStateActions,
   NEXT_DOCUMENT,
   PREVIOUS_DOCUMENT,
   SET_ALL_DOCUMENTS,
+  SET_DOCUMENT_ERROR,
   SET_DOCUMENT_LOADING,
   SET_MAIN_CONFIG,
   SET_RENDERER_RECT,
-  type SetAllDocuments,
-  type SetDocumentLoading,
-  type SetMainConfig,
-  type SetRendererRect,
+  SYNC_PROPS,
   UPDATE_CURRENT_DOCUMENT,
-  type UpdateCurrentDocument,
 } from "./actions";
 
 export type IMainState = {
   currentFileNo: number;
   documents: IDocument[];
   documentLoading?: boolean;
+  /** Set when the current document failed to load; cleared on navigation. */
+  documentError?: Error;
   currentDocument?: IDocument;
   rendererRect?: DOMRect;
   config?: IConfig;
   pluginRenderers?: DocRenderer[];
   prefetchMethod?: string;
   requestHeaders?: Record<string, string>;
+  requestInit?: Omit<RequestInit, "signal" | "headers" | "method" | "body">;
   language: AvailableLanguages;
   activeDocument?: IDocument;
   onDocumentChange?: (document: IDocument) => void;
+  onError?: (error: Error, document?: IDocument) => void;
 };
 
 export const initialState: IMainState = {
   currentFileNo: 0,
   documents: [],
   documentLoading: true,
+  documentError: undefined,
   currentDocument: undefined,
   rendererRect: undefined,
   config: {},
@@ -47,46 +49,61 @@ export type MainStateReducer = (
   action: MainStateActions,
 ) => IMainState;
 
+/** Finds a document by reference first, then by URI. */
+export const findDocumentIndex = (
+  documents: IDocument[],
+  document: IDocument | undefined,
+): number => {
+  if (!document) return -1;
+  const byReference = documents.indexOf(document);
+  if (byReference >= 0) return byReference;
+  return documents.findIndex((doc) => doc.uri === document.uri);
+};
+
 export const mainStateReducer: MainStateReducer = (
   state = initialState,
   action: MainStateActions,
 ): IMainState => {
   switch (action.type) {
     case SET_ALL_DOCUMENTS: {
-      const { documents, initialActiveDocument } = action as SetAllDocuments;
+      const { documents, initialActiveDocument } = action;
+      const index = Math.max(
+        findDocumentIndex(documents, initialActiveDocument),
+        0,
+      );
 
       return {
         ...state,
         documents,
-        currentDocument: initialActiveDocument
-          ? initialActiveDocument
-          : documents[0] || null,
-        currentFileNo:
-          initialActiveDocument && documents.includes(initialActiveDocument)
-            ? documents.indexOf(initialActiveDocument)
-            : initialState.currentFileNo,
+        currentDocument: documents[index],
+        currentFileNo: index,
+        documentLoading: documents.length > 0,
+        documentError: undefined,
       };
     }
 
     case SET_DOCUMENT_LOADING: {
-      const { value } = action as SetDocumentLoading;
+      return { ...state, documentLoading: action.value };
+    }
 
-      return { ...state, documentLoading: value };
+    case SET_DOCUMENT_ERROR: {
+      return {
+        ...state,
+        documentError: action.error,
+        documentLoading: action.error ? false : state.documentLoading,
+      };
     }
 
     case NEXT_DOCUMENT: {
       if (state.currentFileNo >= state.documents.length - 1) return state;
       const nextDocumentNo = state.currentFileNo + 1;
 
-      if (state.onDocumentChange) {
-        state.onDocumentChange(state.documents[nextDocumentNo]);
-      }
-
       return {
         ...state,
         currentFileNo: nextDocumentNo,
         currentDocument: state.documents[nextDocumentNo],
         documentLoading: true,
+        documentError: undefined,
       };
     }
 
@@ -94,46 +111,39 @@ export const mainStateReducer: MainStateReducer = (
       if (state.currentFileNo <= 0) return state;
       const prevDocumentNo = state.currentFileNo - 1;
 
-      if (state.onDocumentChange) {
-        state.onDocumentChange(state.documents[prevDocumentNo]);
-      }
-
       return {
         ...state,
-        currentFileNo: state.currentFileNo - 1,
+        currentFileNo: prevDocumentNo,
         currentDocument: state.documents[prevDocumentNo],
         documentLoading: true,
+        documentError: undefined,
       };
     }
 
     case UPDATE_CURRENT_DOCUMENT: {
-      const { document } = action as UpdateCurrentDocument;
+      const { document } = action;
+      const index = findDocumentIndex(state.documents, document);
+      const changed = document.uri !== state.currentDocument?.uri;
 
       return {
         ...state,
         currentDocument: document,
-        currentFileNo: state.documents.findIndex(
-          (doc) => doc.uri === document.uri,
-        ),
+        currentFileNo: index >= 0 ? index : state.currentFileNo,
+        documentLoading: changed ? true : state.documentLoading,
+        documentError: changed ? undefined : state.documentError,
       };
     }
 
     case SET_RENDERER_RECT: {
-      const { rect } = action as SetRendererRect;
-
-      return {
-        ...state,
-        rendererRect: rect,
-      };
+      return { ...state, rendererRect: action.rect };
     }
 
     case SET_MAIN_CONFIG: {
-      const { config } = action as SetMainConfig;
+      return { ...state, config: action.config };
+    }
 
-      return {
-        ...state,
-        config,
-      };
+    case SYNC_PROPS: {
+      return { ...state, ...action.props };
     }
 
     default:

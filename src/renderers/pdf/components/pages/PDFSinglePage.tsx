@@ -18,6 +18,11 @@ const PDFSinglePage: FC<Props> = ({ pageNum }) => {
 
   const _pageNum = pageNum ?? currentPage;
 
+  // Fit the page to the container width (minus padding); fall back to
+  // react-pdf's natural size when the container has not been measured yet.
+  const measuredWidth = (rendererRect?.width ?? 0) - 100;
+  const pageWidth = measuredWidth > 0 ? measuredWidth : undefined;
+
   return (
     <div
       id="pdf-page-wrapper"
@@ -37,8 +42,7 @@ const PDFSinglePage: FC<Props> = ({ pageNum }) => {
       <Page
         pageNumber={_pageNum || currentPage}
         scale={zoomLevel}
-        height={(rendererRect?.height ?? 100) - 100}
-        width={(rendererRect?.width ?? 100) - 100}
+        width={pageWidth}
         loading={t("pdfPluginLoading")}
       />
     </div>

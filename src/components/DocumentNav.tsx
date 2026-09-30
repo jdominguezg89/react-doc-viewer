@@ -2,7 +2,6 @@
 
 import { type FC, useContext } from "react";
 import { useTranslation } from "../hooks/useTranslation";
-import { nextDocument, previousDocument } from "../store/actions";
 import { DocViewerContext } from "../store/DocViewerProvider";
 import { Button } from "./common/Button";
 import { NextDocIcon, PrevDocIcon } from "./icons";
@@ -10,7 +9,8 @@ import { NextDocIcon, PrevDocIcon } from "./icons";
 export const DocumentNav: FC = () => {
   const {
     state: { currentDocument, currentFileNo, documents },
-    dispatch,
+    previous,
+    next,
   } = useContext(DocViewerContext);
   const { t } = useTranslation();
 
@@ -29,7 +29,7 @@ export const DocumentNav: FC = () => {
         variant="secondary"
         id="doc-nav-prev"
         className="rdv-doc-nav__prev"
-        onClick={() => dispatch(previousDocument())}
+        onClick={previous}
         disabled={currentFileNo === 0}
       >
         <PrevDocIcon color="#fff" size="60%" />
@@ -39,7 +39,7 @@ export const DocumentNav: FC = () => {
         variant="secondary"
         id="doc-nav-next"
         className="rdv-doc-nav__next"
-        onClick={() => dispatch(nextDocument())}
+        onClick={next}
         disabled={currentFileNo >= documents.length - 1}
       >
         <NextDocIcon color="#fff" size="60%" />

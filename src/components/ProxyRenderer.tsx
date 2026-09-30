@@ -10,33 +10,24 @@ import type { IMainState } from "../store/mainStateReducer";
 import { getFileName } from "../utils/getFileName";
 import { LinkButton } from "./common";
 import { LoadingIcon } from "./icons";
-import { LoadingTimeout } from "./LoadingTimout";
+import { LoadingTimeout } from "./LoadingTimeout";
 
 type ContentsProps = {
   documents: IDocument[];
   documentLoading: boolean | undefined;
+  documentError: Error | undefined;
   config: IConfig | undefined;
   currentDocument: IDocument | undefined;
   fileName: string;
   CurrentRenderer: DocRenderer | null | undefined;
   state: IMainState;
-  t: (
-    key:
-      | "noRendererMessage"
-      | "documentNavInfo"
-      | "downloadButtonLabel"
-      | "brokenFile"
-      | "msgPluginRecipients"
-      | "msgPluginSender"
-      | "pdfPluginLoading"
-      | "pdfPluginPageNumber",
-    variables?: Record<string, string | number>,
-  ) => string;
+  t: ReturnType<typeof useTranslation>["t"];
 };
 
-const Contents: React.FC<ContentsProps> = ({
+const Contents: FC<ContentsProps> = ({
   documents,
   documentLoading,
+  documentError,
   config,
   currentDocument,
   fileName,
@@ -45,8 +36,29 @@ const Contents: React.FC<ContentsProps> = ({
   t,
 }) => {
   if (!documents.length) {
-    return <div id="no-documents"></div>;
-  } else if (documentLoading) {
+    return <div id="no-documents" />;
+  }
+
+  if (documentError) {
+    if (config?.errorRenderer?.overrideComponent) {
+      const OverrideComponent = config.errorRenderer.overrideComponent;
+      return (
+        <OverrideComponent
+          document={currentDocument}
+          fileName={fileName}
+          error={documentError}
+        />
+      );
+    }
+
+    return (
+      <div id="load-error" data-testid="load-error" role="alert">
+        {t("loadErrorMessage")}
+      </div>
+    );
+  }
+
+  if (documentLoading) {
     if (config?.loadingRenderer?.overrideComponent) {
       const OverrideComponent = config.loadingRenderer.overrideComponent;
       return (
@@ -62,6 +74,9 @@ const Contents: React.FC<ContentsProps> = ({
           id="loading-renderer"
           data-testid="loading-renderer"
           className="rdv-loading"
+          role="status"
+          aria-live="polite"
+          aria-label={t("pdfPluginLoading")}
         >
           <div className="rdv-loading__icon">
             <LoadingIcon color="#444" size={40} />
@@ -69,48 +84,50 @@ const Contents: React.FC<ContentsProps> = ({
         </div>
       </LoadingTimeout>
     );
-  } else {
-    if (CurrentRenderer) {
-      return <CurrentRenderer mainState={state} />;
-    } else if (CurrentRenderer === undefined) {
-      return null;
-    } else {
-      if (config?.noRenderer?.overrideComponent) {
-        const OverrideComponent = config.noRenderer.overrideComponent;
-        return (
-          <OverrideComponent document={currentDocument} fileName={fileName} />
-        );
-      }
-
-      return (
-        <div id="no-renderer" data-testid="no-renderer">
-          {t("noRendererMessage", {
-            fileType: currentDocument?.fileType ?? "",
-          })}
-          <LinkButton
-            id="no-renderer-download"
-            className="rdv-no-renderer__download"
-            href={currentDocument?.uri}
-            download={currentDocument?.uri}
-          >
-            {t("downloadButtonLabel")}
-          </LinkButton>
-        </div>
-      );
-    }
   }
+
+  if (CurrentRenderer) {
+    return <CurrentRenderer mainState={state} />;
+  }
+
+  if (CurrentRenderer === undefined) {
+    return null;
+  }
+
+  if (config?.noRenderer?.overrideComponent) {
+    const OverrideComponent = config.noRenderer.overrideComponent;
+    return <OverrideComponent document={currentDocument} fileName={fileName} />;
+  }
+
+  return (
+    <div id="no-renderer" data-testid="no-renderer">
+      {t("noRendererMessage", {
+        fileType: currentDocument?.fileType ?? "",
+      })}
+      <LinkButton
+        id="no-renderer-download"
+        className="rdv-no-renderer__download"
+        href={currentDocument?.uri}
+        download={fileName || true}
+        rel="noopener noreferrer"
+      >
+        {t("downloadButtonLabel")}
+      </LinkButton>
+    </div>
+  );
 };
 
 export const ProxyRenderer: FC = () => {
   const { state, dispatch, CurrentRenderer } = useDocumentLoader();
-  const { documents, documentLoading, currentDocument, config } = state;
+  const { documents, documentLoading, documentError, currentDocument, config } =
+    state;
   const size = useWindowSize();
   const { t } = useTranslation();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `size` is intentionally a dependency so the rect is re-measured on window resize
   const containerRef = useCallback(
-    (node: HTMLDivElement) => {
-      node && dispatch(setRendererRect(node?.getBoundingClientRect()));
+    (node: HTMLDivElement | null) => {
+      if (node) dispatch(setRendererRect(node.getBoundingClientRect()));
     },
     [size, dispatch],
   );
@@ -127,6 +144,7 @@ export const ProxyRenderer: FC = () => {
           state,
           documents,
           documentLoading,
+          documentError,
           config,
           currentDocument,
           fileName,

@@ -6,5 +6,6 @@
   "msgPluginRecipients": "المستلمين",
   "msgPluginSender": "المرسل",
   "pdfPluginLoading": "تحميل ...",
-  "pdfPluginPageNumber": " {{ allPagesCount }} \\ {{ currentPage }} صفحة "
+  "pdfPluginPageNumber": " {{ allPagesCount }} \\ {{ currentPage }} صفحة ",
+  "loadErrorMessage": "تعذّر تحميل المستند."
 }

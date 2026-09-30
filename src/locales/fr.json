@@ -6,5 +6,6 @@
   "msgPluginRecipients": "Destinataires",
   "msgPluginSender": "Expéditeur",
   "pdfPluginLoading": "Chargement...",
-  "pdfPluginPageNumber": "Page {{ currentPage }}/{{ allPagesCount }}"
+  "pdfPluginPageNumber": "Page {{ currentPage }}/{{ allPagesCount }}",
+  "loadErrorMessage": "Le document n'a pas pu être chargé."
 }

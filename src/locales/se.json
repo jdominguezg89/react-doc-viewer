@@ -6,5 +6,6 @@
   "msgPluginRecipients": "Mottagare",
   "msgPluginSender": "Avsändare",
   "pdfPluginLoading": "Laddar...",
-  "pdfPluginPageNumber": "Sida {{ currentPage }}/{{ allPagesCount }}"
+  "pdfPluginPageNumber": "Sida {{ currentPage }}/{{ allPagesCount }}",
+  "loadErrorMessage": "Dokumentet kunde inte laddas."
 }

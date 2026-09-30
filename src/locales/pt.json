@@ -6,5 +6,6 @@
   "msgPluginRecipients": "Destinatários",
   "msgPluginSender": "Remetente",
   "pdfPluginLoading": "Carregando...",
-  "pdfPluginPageNumber": "Página {{ currentPage }}/{{ allPagesCount }}"
+  "pdfPluginPageNumber": "Página {{ currentPage }}/{{ allPagesCount }}",
+  "loadErrorMessage": "Não foi possível carregar o documento."
 }

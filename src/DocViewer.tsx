@@ -25,10 +25,14 @@ export interface DocViewerProps {
   pluginRenderers?: DocRenderer[];
   prefetchMethod?: string;
   requestHeaders?: Record<string, string>;
+  /** Extra `fetch` options used for every document request (credentials, mode, cache, ...). */
+  requestInit?: Omit<RequestInit, "signal" | "headers" | "method" | "body">;
   initialActiveDocument?: IDocument;
   language?: AvailableLanguages;
   activeDocument?: IDocument;
   onDocumentChange?: (document: IDocument) => void;
+  /** Called when a document fails to load. The viewer also shows an error state. */
+  onError?: (error: Error, document?: IDocument) => void;
 }
 
 const themeVariables: Array<[keyof ITheme, string]> = [

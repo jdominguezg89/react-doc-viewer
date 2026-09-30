@@ -64,7 +64,7 @@ const PDFControls: FC = () => {
         id="pdf-zoom-reset"
         className="rdv-pdf-controls__button"
         onMouseDown={() => dispatch(setZoomLevel(defaultZoomLevel))}
-        disabled={zoomLevel === defaultZoomLevel}
+        disabled={Math.abs(zoomLevel - defaultZoomLevel) < 0.001}
       >
         <ResetZoomPDFIcon color="#000" size="70%" />
       </Button>

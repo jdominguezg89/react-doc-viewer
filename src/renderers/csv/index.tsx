@@ -10,13 +10,16 @@ const CSVRenderer: DocRenderer = ({
 
   useEffect(() => {
     if (currentDocument?.fileData) {
-      const parseResult = papaparse.parse(currentDocument.fileData as string, {
-        delimiter: config?.csvDelimiter ?? ",",
-      });
+      const parseResult = papaparse.parse<string[]>(
+        currentDocument.fileData as string,
+        {
+          delimiter: config?.csvDelimiter ?? ",",
+          skipEmptyLines: true,
+        },
+      );
 
-      if (!parseResult.errors?.length && parseResult.data) {
-        setRows(parseResult.data as string[][]);
-      }
+      // Show whatever parsed; papaparse reports recoverable issues as errors.
+      setRows(parseResult.data ?? []);
     }
   }, [currentDocument, config?.csvDelimiter]);
 
@@ -29,16 +32,21 @@ const CSVRenderer: DocRenderer = ({
       <table className="rdv-csv-renderer__table">
         <thead>
           <tr>
-            {rows[0].map((column) => (
-              <th key={column}>{column}</th>
+            {rows[0].map((column, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: columns have no identity beyond their position
+              <th key={index} scope="col">
+                {column}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {rows.slice(1, rows.length).map((row) => (
-            <tr key={row.join("")}>
-              {row.map((column) => (
-                <td key={column}>{column}</td>
+          {rows.slice(1).map((row, rowIndex) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: rows have no identity beyond their position
+            <tr key={rowIndex}>
+              {row.map((column, columnIndex) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: cells have no identity beyond their position
+                <td key={columnIndex}>{column}</td>
               ))}
             </tr>
           ))}

@@ -6,5 +6,6 @@
   "msgPluginRecipients": "Primaoci",
   "msgPluginSender": "Pošiljalac",
   "pdfPluginLoading": "Učitavanje...",
-  "pdfPluginPageNumber": "Strana {{ currentPage }}/{{ allPagesCount }}"
+  "pdfPluginPageNumber": "Strana {{ currentPage }}/{{ allPagesCount }}",
+  "loadErrorMessage": "Dokument nije moguće učitati."
 }

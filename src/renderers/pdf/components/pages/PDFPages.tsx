@@ -2,7 +2,7 @@ import { type FC, useContext, useEffect, useMemo } from "react";
 import { Document, type DocumentProps } from "react-pdf";
 import { useTranslation } from "../../../../hooks/useTranslation";
 import { PDFContext } from "../../state";
-import { setNumPages } from "../../state/actions";
+import { setCurrentPage, setNumPages } from "../../state/actions";
 import { initialPDFState } from "../../state/reducer";
 import { PDFAllPages } from "./PDFAllPages";
 import PDFSinglePage from "./PDFSinglePage";
@@ -31,6 +31,7 @@ const PDFPages: FC = () => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: page count must reset whenever the document changes
   useEffect(() => {
     dispatch(setNumPages(initialPDFState.numPages));
+    dispatch(setCurrentPage(initialPDFState.currentPage));
   }, [currentDocument, dispatch]);
 
   if (!currentDocument || currentDocument.fileData === undefined) return null;

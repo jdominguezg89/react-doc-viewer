@@ -7,6 +7,7 @@ export interface IConfig {
   header?: IHeaderConfig;
   loadingRenderer?: ILoadingRendererConfig;
   noRenderer?: INoRendererConfig;
+  errorRenderer?: IErrorRendererConfig;
   csvDelimiter?: string;
   pdfZoom?: IPdfZoomConfig;
   pdfVerticalScrollByDefault?: boolean;
@@ -40,6 +41,14 @@ export interface ILoadingRendererConfig {
     fileName: string;
   }>;
   showLoadingTimeout?: false | number;
+}
+
+export interface IErrorRendererConfig {
+  overrideComponent?: ComponentType<{
+    document: IDocument | undefined;
+    fileName: string;
+    error: Error;
+  }>;
 }
 
 export interface INoRendererConfig {

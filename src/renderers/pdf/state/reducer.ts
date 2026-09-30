@@ -23,6 +23,13 @@ export type IPDFState = {
   mainState?: IMainState;
 };
 
+export const MIN_ZOOM = 0.25;
+export const MAX_ZOOM = 5;
+
+/** Clamps and rounds a zoom level to avoid float drift. */
+export const clampZoom = (value: number): number =>
+  Math.round(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value)) * 100) / 100;
+
 export const initialPDFState: IPDFState = {
   defaultZoomLevel: 1,
   zoomLevel: 1,
@@ -45,7 +52,7 @@ export const reducer: PDFStateReducer = (
     case SET_ZOOM_LEVEL: {
       const { value } = action as SetZoomLevel;
 
-      return { ...state, zoomLevel: value };
+      return { ...state, zoomLevel: clampZoom(value) };
     }
 
     case SET_PDF_PAGINATED: {
