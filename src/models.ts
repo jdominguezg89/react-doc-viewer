@@ -1,4 +1,5 @@
 import type { ComponentType, FC, PropsWithChildren, ReactElement } from "react";
+import type { DocumentProps } from "react-pdf";
 import type { IMainState } from "./store/mainStateReducer";
 import type { FileLoaderFunction } from "./utils/fileLoaders";
 
@@ -9,6 +10,28 @@ export interface IConfig {
   csvDelimiter?: string;
   pdfZoom?: IPdfZoomConfig;
   pdfVerticalScrollByDefault?: boolean;
+  pdf?: IPdfConfig;
+}
+
+export type PdfDocumentOptions = NonNullable<DocumentProps["options"]>;
+
+export interface IPdfConfig {
+  /**
+   * Where to load the pdf.js worker from. Defaults to the worker bundled with
+   * the `pdfjs-dist` package. Accepts a URL string or `URL`; use
+   * `configurePdfWorker()` to set it globally instead.
+   */
+  workerSrc?: string | URL;
+  /**
+   * Extra options passed to pdf.js `getDocument` (for example `cMapUrl`,
+   * `standardFontDataUrl`, `wasmUrl`, `httpHeaders`, `withCredentials`).
+   * Keep the object reference stable to avoid reloading the document.
+   */
+  documentOptions?: PdfDocumentOptions;
+  /** Target for links inside the PDF. Defaults to `_blank`. */
+  externalLinkTarget?: "_self" | "_blank" | "_parent" | "_top";
+  /** Called when pdf.js fails to load the document. */
+  onLoadError?: (error: Error) => void;
 }
 
 export interface ILoadingRendererConfig {

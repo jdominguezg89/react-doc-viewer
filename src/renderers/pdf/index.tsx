@@ -1,27 +1,26 @@
-import { pdfjs } from "react-pdf";
-import type { DocRenderer } from "../..";
-import PDFControls from "./components/PDFControls";
-import PDFPages from "./components/pages/PDFPages";
-import { PDFProvider } from "./state";
+import { lazy, Suspense } from "react";
+import { LoadingIcon } from "../../components/icons";
+import type { DocRenderer } from "../../models";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`,
-).toString();
+/**
+ * The PDF renderer body (and with it react-pdf + pdfjs-dist) is loaded on
+ * demand, so consumers that never show a PDF never download pdf.js.
+ */
+const PDFRendererBody = lazy(() => import("./PDFRendererBody"));
 
-const PDFRenderer: DocRenderer = ({ mainState }) => {
-  return (
-    <PDFProvider mainState={mainState}>
-      <div
-        id="pdf-renderer"
-        data-testid="pdf-renderer"
-        className="rdv-pdf-renderer"
-      >
-        <PDFControls />
-        <PDFPages />
+const PDFRenderer: DocRenderer = (props) => (
+  <Suspense
+    fallback={
+      <div className="rdv-loading" data-testid="pdf-renderer-loading">
+        <div className="rdv-loading__icon">
+          <LoadingIcon color="#444" size={40} />
+        </div>
       </div>
-    </PDFProvider>
-  );
-};
+    }
+  >
+    <PDFRendererBody {...props} />
+  </Suspense>
+);
 
 export default PDFRenderer;
 

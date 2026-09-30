@@ -42,6 +42,31 @@ for (const file of jsFiles) {
   );
 }
 
+const allJs = jsFiles.map((file) => readFileSync(file, "utf8")).join("\n");
+assert(
+  allJs.includes(
+    'new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url)',
+  ),
+  "the pdf.js worker URL literal is missing from dist (the consumer bundler could not resolve the worker)",
+);
+assert(
+  !allJs.includes("data:application/javascript") &&
+    !allJs.includes("data:text/javascript"),
+  "a worker was inlined as a data: URL",
+);
+
+// react-pdf pins an exact pdfjs-dist version; ours must match it.
+const ourPdfjs = JSON.parse(readFileSync("package.json", "utf8")).dependencies[
+  "pdfjs-dist"
+];
+const reactPdfPdfjs = JSON.parse(
+  readFileSync("node_modules/react-pdf/package.json", "utf8"),
+).dependencies["pdfjs-dist"];
+assert(
+  ourPdfjs === reactPdfPdfjs,
+  `pdfjs-dist ${ourPdfjs} in package.json does not match react-pdf's pin ${reactPdfPdfjs}`,
+);
+
 const totalJsBytes = jsFiles.reduce(
   (sum, file) => sum + statSync(file).size,
   0,
