@@ -43,7 +43,8 @@
     "prerelease": "pnpm run check && pnpm run test && pnpm run build",
     "release": "release-it && pnpm run deploy",
     "build-readme-toc": "npx doctoc README.md --title \"## Table of Contents\"",
-    "verify:dist": "node scripts/verify-dist.mjs"
+    "verify:dist": "node scripts/verify-dist.mjs",
+    "example:nextjs:build": "pnpm build && pnpm --filter react-doc-viewer-nextjs-example build"
   },
   "dependencies": {
     "mustache": "^4.2.0",

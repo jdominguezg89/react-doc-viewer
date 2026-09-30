@@ -1,15 +1,20 @@
-"use client";
-import DocViewer, { IDocument } from "../../../../";
+// This is a Server Component. The package declares its own client boundary,
+// so DocViewer can be used here directly. Callbacks (onError, ...) must be
+// passed from a client component instead; see ./ClientViewer.tsx.
+import DocViewer from "@cyntler/react-doc-viewer";
+import { ClientViewer } from "./ClientViewer";
 
-import gifFile from "../../../../src/exampleFiles/gif-image.gif";
-import pngFile from "../../../../src/exampleFiles/png-image.png";
-
-const documents: IDocument[] = [{ uri: gifFile.src }, { uri: pngFile.src }];
+const documents = [{ uri: "/sample.pdf" }, { uri: "/sample.png" }];
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <DocViewer documents={documents} />
+    <main style={{ display: "grid", gridTemplateRows: "1fr 1fr", height: "100vh" }}>
+      <section style={{ minHeight: 0 }}>
+        <DocViewer documents={documents} />
+      </section>
+      <section style={{ minHeight: 0 }}>
+        <ClientViewer />
+      </section>
     </main>
   );
 }
