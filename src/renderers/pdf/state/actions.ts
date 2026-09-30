@@ -1,4 +1,4 @@
-import { IMainState } from "../../../store/mainStateReducer";
+import type { IMainState } from "../../../store/mainStateReducer";
 
 export const SET_ZOOM_LEVEL: string = "SET_ZOOM_LEVEL";
 

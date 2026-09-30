@@ -1,11 +1,11 @@
 import "core-js/proposals/promise-with-resolvers";
-import React, { CSSProperties, forwardRef, memo } from "react";
+import { type CSSProperties, forwardRef, memo } from "react";
 import styled, { ThemeProvider } from "styled-components";
 import { HeaderBar } from "./components/HeaderBar";
 import { ProxyRenderer } from "./components/ProxyRenderer";
 import { defaultTheme } from "./defaultTheme";
-import { AvailableLanguages } from "./i18n";
-import {
+import type { AvailableLanguages } from "./i18n";
+import type {
   DocRenderer,
   DocViewerRef,
   IConfig,

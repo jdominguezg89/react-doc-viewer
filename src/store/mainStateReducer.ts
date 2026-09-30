@@ -1,20 +1,20 @@
-import { DocRenderer, IConfig, IDocument } from "..";
+import type { DocRenderer, IConfig, IDocument } from "..";
+import { type AvailableLanguages, defaultLanguage } from "../i18n";
 import {
-  MainStateActions,
+  type MainStateActions,
   NEXT_DOCUMENT,
   PREVIOUS_DOCUMENT,
-  SetAllDocuments,
-  SetDocumentLoading,
-  SetMainConfig,
-  SetRendererRect,
   SET_ALL_DOCUMENTS,
   SET_DOCUMENT_LOADING,
   SET_MAIN_CONFIG,
   SET_RENDERER_RECT,
-  UpdateCurrentDocument,
+  type SetAllDocuments,
+  type SetDocumentLoading,
+  type SetMainConfig,
+  type SetRendererRect,
   UPDATE_CURRENT_DOCUMENT,
+  type UpdateCurrentDocument,
 } from "./actions";
-import { AvailableLanguages, defaultLanguage } from "../i18n";
 
 export type IMainState = {
   currentFileNo: number;

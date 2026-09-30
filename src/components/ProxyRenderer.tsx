@@ -1,17 +1,17 @@
 "use client";
 
-import { FC, useCallback } from "react";
+import { type FC, useCallback } from "react";
 import styled, { keyframes } from "styled-components";
-import { setRendererRect } from "../store/actions";
-import { DocRenderer, IConfig, IDocument, IStyledProps } from "../models";
-import { getFileName } from "../utils/getFileName";
 import { useDocumentLoader } from "../hooks/useDocumentLoader";
+import { useTranslation } from "../hooks/useTranslation";
 import { useWindowSize } from "../hooks/useWindowSize";
+import type { DocRenderer, IConfig, IDocument, IStyledProps } from "../models";
+import { setRendererRect } from "../store/actions";
+import type { IMainState } from "../store/mainStateReducer";
+import { getFileName } from "../utils/getFileName";
 import { LinkButton } from "./common";
 import { LoadingIcon } from "./icons";
 import { LoadingTimeout } from "./LoadingTimout";
-import { useTranslation } from "../hooks/useTranslation";
-import { IMainState } from "../store/mainStateReducer";
 
 type ContentsProps = {
   documents: IDocument[];
@@ -48,7 +48,7 @@ const Contents: React.FC<ContentsProps> = ({
   if (!documents.length) {
     return <div id="no-documents"></div>;
   } else if (documentLoading) {
-    if (config && config?.loadingRenderer?.overrideComponent) {
+    if (config?.loadingRenderer?.overrideComponent) {
       const OverrideComponent = config.loadingRenderer.overrideComponent;
       return (
         <LoadingTimeout>
@@ -72,7 +72,7 @@ const Contents: React.FC<ContentsProps> = ({
     } else if (CurrentRenderer === undefined) {
       return null;
     } else {
-      if (config && config?.noRenderer?.overrideComponent) {
+      if (config?.noRenderer?.overrideComponent) {
         const OverrideComponent = config.noRenderer.overrideComponent;
         return (
           <OverrideComponent document={currentDocument} fileName={fileName} />
@@ -103,11 +103,11 @@ export const ProxyRenderer: FC = () => {
   const size = useWindowSize();
   const { t } = useTranslation();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `size` is intentionally a dependency so the rect is re-measured on window resize
   const containerRef = useCallback(
     (node: HTMLDivElement) => {
       node && dispatch(setRendererRect(node?.getBoundingClientRect()));
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [size, dispatch],
   );
 

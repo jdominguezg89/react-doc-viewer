@@ -1,7 +1,7 @@
-import React, { FC, useContext } from "react";
+import { type FC, useContext } from "react";
 import { Page } from "react-pdf";
 import styled from "styled-components";
-import { IStyledProps } from "../../../..";
+import type { IStyledProps } from "../../../..";
 import { useTranslation } from "../../../../hooks/useTranslation";
 import { PDFContext } from "../../state";
 

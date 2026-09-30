@@ -1,11 +1,11 @@
-import React, { FC, useContext } from "react";
+import { type FC, useContext } from "react";
 import styled from "styled-components";
+import type { IStyledProps } from "../../..";
 import { Button } from "../../../components/common";
-import { IStyledProps } from "../../..";
+import { useTranslation } from "../../../hooks/useTranslation";
 import { PDFContext } from "../state";
 import { setCurrentPage } from "../state/actions";
 import { NextPDFNavIcon, PrevPDFNavIcon } from "./icons";
-import { useTranslation } from "../../../hooks/useTranslation";
 
 const PDFPagination: FC = () => {
   const {

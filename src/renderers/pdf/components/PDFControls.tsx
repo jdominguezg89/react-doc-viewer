@@ -1,10 +1,10 @@
-import React, { FC, useContext } from "react";
+import { type FC, useContext } from "react";
 import styled from "styled-components";
+import type { IStyledProps } from "../../..";
 import { Button, LinkButton } from "../../../components/common";
-import { IStyledProps } from "../../..";
+import { useTranslation } from "../../../hooks/useTranslation";
 import { PDFContext } from "../state";
 import { setPDFPaginated, setZoomLevel } from "../state/actions";
-import { useTranslation } from "../../../hooks/useTranslation";
 import {
   DownloadPDFIcon,
   ResetZoomPDFIcon,

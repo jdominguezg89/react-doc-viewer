@@ -17,6 +17,7 @@ export const NextDocIcon = (props: IIconProps) => {
 const DocNavIcon = ({ color, size, reverse }: IIconProps) => {
   return (
     <svg
+      aria-hidden="true"
       width={size || "100%"}
       height={size || "100%"}
       style={{ transform: `${reverse ? "rotate(180deg)" : ""}` }}
@@ -41,6 +42,7 @@ export const LoadingIcon = (props: IIconProps) => {
 
   return (
     <svg
+      aria-hidden="true"
       width={size || "100%"}
       height={size || "100%"}
       version="1.1"

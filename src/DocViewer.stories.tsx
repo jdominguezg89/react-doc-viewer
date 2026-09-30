@@ -1,15 +1,13 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
+import type { DocViewerRef, IDocument } from ".";
 import DocViewer from "./DocViewer";
-import { DocViewerRenderers } from "./renderers";
-
+import csvFile from "./exampleFiles/csv-file.csv?url";
+import epsFile from "./exampleFiles/eps-file.eps?url";
 import pdfFile from "./exampleFiles/pdf-file.pdf";
 import pdfMultiplePagesFile from "./exampleFiles/pdf-multiple-pages-file.pdf";
 import pngFile from "./exampleFiles/png-image.png?url";
-import csvFile from "./exampleFiles/csv-file.csv?url";
-import epsFile from "./exampleFiles/eps-file.eps?url";
 import webpFile from "./exampleFiles/webp-file.webp?url";
-
-import { DocViewerRef, IDocument } from ".";
+import { DocViewerRenderers } from "./renderers";
 
 export default {
   title: "DocViewer",
@@ -91,13 +89,11 @@ export const ManualNextPrevNavigation = () => {
   };
 
   return (
-    <>
-      <DocViewer
-        documents={docs}
-        activeDocument={activeDocument}
-        onDocumentChange={handleDocumentChange}
-      />
-    </>
+    <DocViewer
+      documents={docs}
+      activeDocument={activeDocument}
+      onDocumentChange={handleDocumentChange}
+    />
   );
 };
 
@@ -107,10 +103,10 @@ export const WithRef = () => {
   return (
     <>
       <div>
-        <button onClick={() => docViewerRef?.current?.prev()}>
+        <button type="button" onClick={() => docViewerRef?.current?.prev()}>
           Prev Document By Ref
         </button>
-        <button onClick={() => docViewerRef?.current?.next()}>
+        <button type="button" onClick={() => docViewerRef?.current?.next()}>
           Next Document By Ref
         </button>
       </div>

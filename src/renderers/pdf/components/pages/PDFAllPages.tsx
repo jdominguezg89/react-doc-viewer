@@ -1,4 +1,4 @@
-import React, { FC, useContext } from "react";
+import { type FC, useContext } from "react";
 import { PDFContext } from "../../state";
 import PDFSinglePage from "./PDFSinglePage";
 

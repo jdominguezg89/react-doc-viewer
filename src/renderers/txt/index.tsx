@@ -1,6 +1,6 @@
-import React, { ReactNode } from "react";
+import type { ReactNode } from "react";
 import styled from "styled-components";
-import { DocRenderer } from "../..";
+import type { DocRenderer } from "../..";
 import { textFileLoader } from "../../utils/fileLoaders";
 
 const TXTRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {

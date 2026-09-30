@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
 import papaparse from "papaparse";
-import { DocRenderer } from "../..";
+import { useEffect, useState } from "react";
+import styled from "styled-components";
+import type { DocRenderer } from "../..";
 import { textFileLoader } from "../../utils/fileLoaders";
 
 const CSVRenderer: DocRenderer = ({

@@ -1,10 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import DocViewer from "../index";
-
 import csvFile from "../exampleFiles/csv-file.csv?url";
-import pdfFile from "../exampleFiles/pdf-file.pdf?url";
 import gifFile from "../exampleFiles/gif-image.gif?url";
+import pdfFile from "../exampleFiles/pdf-file.pdf?url";
 import pngFile from "../exampleFiles/png-image.png?url";
+import DocViewer from "../index";
 
 test("renders component with no documents", () => {
   render(<DocViewer documents={[]} />);

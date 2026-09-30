@@ -1,16 +1,16 @@
-import { IMainState } from "../../../store/mainStateReducer";
+import type { IMainState } from "../../../store/mainStateReducer";
 import {
-  PDFActions as PDFStateActions,
-  SetCurrentPage,
-  SetNumPages,
-  SetPDFPaginated,
-  SetZoomLevel,
+  type PDFActions as PDFStateActions,
+  SET_CURRENT_MAIN_STATE,
   SET_CURRENT_PAGE,
   SET_NUM_PAGES,
   SET_PDF_PAGINATED,
   SET_ZOOM_LEVEL,
-  SET_CURRENT_MAIN_STATE,
-  SetCurrentMainState,
+  type SetCurrentMainState,
+  type SetCurrentPage,
+  type SetNumPages,
+  type SetPDFPaginated,
+  type SetZoomLevel,
 } from "./actions";
 
 export type IPDFState = {

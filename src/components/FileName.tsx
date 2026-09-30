@@ -1,9 +1,9 @@
 "use client";
 
-import { FC, useContext } from "react";
+import { type FC, useContext } from "react";
 import styled from "styled-components";
+import type { IStyledProps } from "..";
 import { DocViewerContext } from "../store/DocViewerProvider";
-import { IStyledProps } from "..";
 import { getFileName } from "../utils/getFileName";
 
 export const FileName: FC = () => {

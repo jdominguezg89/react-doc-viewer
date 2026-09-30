@@ -1,10 +1,9 @@
-import React from "react";
-import styled from "styled-components";
-import { DocRenderer, IStyledProps } from "../..";
-import PDFPages from "./components/pages/PDFPages";
-import PDFControls from "./components/PDFControls";
-import { PDFProvider } from "./state";
 import { pdfjs } from "react-pdf";
+import styled from "styled-components";
+import type { DocRenderer, IStyledProps } from "../..";
+import PDFControls from "./components/PDFControls";
+import PDFPages from "./components/pages/PDFPages";
+import { PDFProvider } from "./state";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`,

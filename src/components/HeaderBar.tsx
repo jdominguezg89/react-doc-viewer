@@ -1,10 +1,10 @@
 "use client";
 
-import { FC, useContext } from "react";
+import { type FC, useContext } from "react";
 import styled from "styled-components";
-import { DocViewerContext } from "../store/DocViewerProvider";
+import type { IStyledProps } from "../models";
 import { nextDocument, previousDocument } from "../store/actions";
-import { IStyledProps } from "../models";
+import { DocViewerContext } from "../store/DocViewerProvider";
 import { DocumentNav } from "./DocumentNav";
 import { FileName } from "./FileName";
 

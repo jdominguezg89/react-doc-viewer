@@ -1,16 +1,9 @@
-import { defineConfig } from "vitest/config";
 import dsv from "@rollup/plugin-dsv";
-import dts from "vite-plugin-dts";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  plugins: [
-    dts({
-      tsconfigPath: "./tsconfig.build.json",
-    }),
-    dsv(),
-    nodePolyfills(),
-  ],
+  plugins: [dsv(), nodePolyfills()],
   build: {
     lib: {
       entry: "./src/index.tsx",

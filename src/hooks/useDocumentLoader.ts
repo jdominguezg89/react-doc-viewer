@@ -1,16 +1,16 @@
-import { Dispatch, useContext, useEffect } from "react";
-import { DocViewerContext } from "../store/DocViewerProvider";
+import { type Dispatch, useContext, useEffect } from "react";
+import type { DocRenderer } from "..";
 import {
-  MainStateActions,
+  type MainStateActions,
   setDocumentLoading,
   updateCurrentDocument,
 } from "../store/actions";
-import { IMainState } from "../store/mainStateReducer";
-import { DocRenderer } from "..";
+import { DocViewerContext } from "../store/DocViewerProvider";
+import type { IMainState } from "../store/mainStateReducer";
 import {
   defaultFileLoader,
-  FileLoaderComplete,
-  FileLoaderFuncProps,
+  type FileLoaderComplete,
+  type FileLoaderFuncProps,
 } from "../utils/fileLoaders";
 import { useRendererSelector } from "./useRendererSelector";
 
@@ -29,45 +29,43 @@ export const useDocumentLoader = (): {
 
   const documentURI = currentDocument?.uri || "";
 
-  useEffect(
-    () => {
-      if (!currentDocument || currentDocument.fileType !== undefined) return;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy dependency list, revisited in the loader rewrite
+  useEffect(() => {
+    if (!currentDocument || currentDocument.fileType !== undefined) return;
 
-      const controller = new AbortController();
-      const { signal } = controller;
+    const controller = new AbortController();
+    const { signal } = controller;
 
-      fetch(documentURI, {
-        method:
-          prefetchMethod || documentURI.startsWith("blob:") ? "GET" : "HEAD",
-        signal,
-        headers: state?.requestHeaders,
+    fetch(documentURI, {
+      method:
+        prefetchMethod || documentURI.startsWith("blob:") ? "GET" : "HEAD",
+      signal,
+      headers: state?.requestHeaders,
+    })
+      .then((response) => {
+        const contentTypeRaw = response.headers.get("content-type");
+        const contentTypes = contentTypeRaw?.split(";") || [];
+        const contentType = contentTypes.length ? contentTypes[0] : undefined;
+
+        dispatch(
+          updateCurrentDocument({
+            ...currentDocument,
+            fileType: contentType || undefined,
+          }),
+        );
       })
-        .then((response) => {
-          const contentTypeRaw = response.headers.get("content-type");
-          const contentTypes = contentTypeRaw?.split(";") || [];
-          const contentType = contentTypes.length ? contentTypes[0] : undefined;
+      .catch((error) => {
+        if (error?.name !== "AbortError") {
+          throw error;
+        }
+      });
 
-          dispatch(
-            updateCurrentDocument({
-              ...currentDocument,
-              fileType: contentType || undefined,
-            }),
-          );
-        })
-        .catch((error) => {
-          if (error?.name !== "AbortError") {
-            throw error;
-          }
-        });
+    return () => {
+      controller.abort();
+    };
+  }, [currentFileNo, documentURI, currentDocument]);
 
-      return () => {
-        controller.abort();
-      };
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentFileNo, documentURI, currentDocument],
-  );
-
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy dependency list, revisited in the loader rewrite
   useEffect(() => {
     if (!currentDocument || CurrentRenderer === undefined) return;
 
@@ -107,7 +105,6 @@ export const useDocumentLoader = (): {
     return () => {
       controller.abort();
     };
-    /* eslint-disable react-hooks/exhaustive-deps */
   }, [CurrentRenderer, currentFileNo]);
 
   return { state, dispatch, CurrentRenderer };

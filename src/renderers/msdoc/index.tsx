@@ -1,6 +1,5 @@
-import React from "react";
 import styled from "styled-components";
-import { DocRenderer } from "../..";
+import type { DocRenderer } from "../..";
 
 const MSDocRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
   if (!currentDocument) return null;

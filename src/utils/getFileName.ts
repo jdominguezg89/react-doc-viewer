@@ -1,4 +1,4 @@
-import { IDocument } from "..";
+import type { IDocument } from "..";
 
 export const getFileName = (
   document: IDocument | undefined,

@@ -1,5 +1,4 @@
-/* eslint-disable */
-import React, { FC, useContext, useEffect } from "react";
+import { type FC, useContext, useEffect } from "react";
 import { Document } from "react-pdf";
 import styled from "styled-components";
 import { useTranslation } from "../../../../hooks/useTranslation";
@@ -9,7 +8,7 @@ import { initialPDFState } from "../../state/reducer";
 import { PDFAllPages } from "./PDFAllPages";
 import PDFSinglePage from "./PDFSinglePage";
 
-const PDFPages: FC<{}> = () => {
+const PDFPages: FC = () => {
   const {
     state: { mainState, paginated },
     dispatch,
@@ -18,9 +17,10 @@ const PDFPages: FC<{}> = () => {
 
   const currentDocument = mainState?.currentDocument || null;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: page count must reset whenever the document changes
   useEffect(() => {
     dispatch(setNumPages(initialPDFState.numPages));
-  }, [currentDocument]);
+  }, [currentDocument, dispatch]);
 
   if (!currentDocument || currentDocument.fileData === undefined) return null;
 

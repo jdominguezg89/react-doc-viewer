@@ -1,4 +1,3 @@
-/* eslint-disable */
 // @ts-nocheck
 let tiffDataView = undefined;
 let littleEndian = undefined;

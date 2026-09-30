@@ -1,17 +1,17 @@
-import React, {
+import {
   createContext,
-  Dispatch,
-  FC,
-  PropsWithChildren,
+  type Dispatch,
+  type FC,
+  type PropsWithChildren,
   useEffect,
   useReducer,
 } from "react";
-import { IMainState } from "../../../store/mainStateReducer";
-import { PDFActions, SET_CURRENT_MAIN_STATE } from "./actions";
+import type { IMainState } from "../../../store/mainStateReducer";
+import { type PDFActions, SET_CURRENT_MAIN_STATE } from "./actions";
 import {
+  type IPDFState,
   initialPDFState,
-  IPDFState,
-  PDFStateReducer,
+  type PDFStateReducer,
   reducer,
 } from "./reducer";
 

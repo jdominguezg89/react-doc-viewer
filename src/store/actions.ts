@@ -1,4 +1,4 @@
-import { IConfig, IDocument } from "../models";
+import type { IConfig, IDocument } from "../models";
 
 export const SET_ALL_DOCUMENTS = "SET_ALL_DOCUMENTS";
 export const SET_DOCUMENT_LOADING = "SET_DOCUMENT_LOADING";

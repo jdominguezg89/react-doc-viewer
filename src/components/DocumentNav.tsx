@@ -1,13 +1,13 @@
 "use client";
 
-import { FC, useContext } from "react";
+import { type FC, useContext } from "react";
 import styled from "styled-components";
-import { DocViewerContext } from "../store/DocViewerProvider";
+import type { IStyledProps } from "..";
+import { useTranslation } from "../hooks/useTranslation";
 import { nextDocument, previousDocument } from "../store/actions";
-import { IStyledProps } from "..";
+import { DocViewerContext } from "../store/DocViewerProvider";
 import { ButtonSecondary } from "./common/Button";
 import { NextDocIcon, PrevDocIcon } from "./icons";
-import { useTranslation } from "../hooks/useTranslation";
 
 export const DocumentNav: FC = () => {
   const {

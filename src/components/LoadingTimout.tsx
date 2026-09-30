@@ -1,6 +1,12 @@
 "use client";
 
-import { FC, PropsWithChildren, useContext, useEffect, useState } from "react";
+import {
+  type FC,
+  type PropsWithChildren,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { DocViewerContext } from "../store/DocViewerProvider";
 
 export const LoadingTimeout: FC<PropsWithChildren> = ({ children }) => {

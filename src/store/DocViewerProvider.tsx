@@ -1,17 +1,17 @@
-import React, {
+import {
   createContext,
-  Dispatch,
-  useEffect,
-  useReducer,
-  PropsWithChildren,
-  useImperativeHandle,
+  type Dispatch,
   forwardRef,
+  type PropsWithChildren,
+  useEffect,
+  useImperativeHandle,
+  useReducer,
 } from "react";
-import { DocViewerRef } from "..";
-import { DocViewerProps } from "../DocViewer";
+import type { DocViewerRef } from "..";
+import type { DocViewerProps } from "../DocViewer";
 import { defaultLanguage, locales } from "../i18n";
 import {
-  MainStateActions,
+  type MainStateActions,
   nextDocument,
   previousDocument,
   setAllDocuments,
@@ -19,10 +19,10 @@ import {
   updateCurrentDocument,
 } from "./actions";
 import {
-  IMainState,
+  type IMainState,
   initialState,
+  type MainStateReducer,
   mainStateReducer,
-  MainStateReducer,
 } from "./mainStateReducer";
 
 const DocViewerContext = createContext<{
@@ -50,18 +50,17 @@ const DocViewerProvider = forwardRef<
   const [state, dispatch] = useReducer<MainStateReducer>(mainStateReducer, {
     ...initialState,
     documents: documents || [],
-    currentDocument:
-      documents && documents.length
+    currentDocument: documents?.length
+      ? initialActiveDocument
         ? initialActiveDocument
-          ? initialActiveDocument
-          : documents[0]
-        : undefined,
+        : documents[0]
+      : undefined,
     config,
     pluginRenderers,
     prefetchMethod,
     requestHeaders,
     currentFileNo: initialActiveDocument
-      ? documents.findIndex((doc) => doc === initialActiveDocument) ?? 0
+      ? (documents.indexOf(initialActiveDocument) ?? 0)
       : 0,
     language: language && locales[language] ? language : defaultLanguage,
     activeDocument,
@@ -89,7 +88,7 @@ const DocViewerProvider = forwardRef<
         dispatch(nextDocument());
       },
     }),
-    [dispatch],
+    [],
   );
 
   return (

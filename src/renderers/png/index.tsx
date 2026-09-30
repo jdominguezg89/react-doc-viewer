@@ -1,6 +1,5 @@
-import React from "react";
 import styled from "styled-components";
-import { DocRenderer } from "../..";
+import type { DocRenderer } from "../..";
 import ImageProxyRenderer from "../image";
 
 const StyledImageRenderer = styled(ImageProxyRenderer)`

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { DocRenderer } from "../..";
+import type { DocRenderer } from "../..";
 import { useTranslation } from "../../hooks/useTranslation";
 import { arrayBufferFileLoader } from "../../utils/fileLoaders";
 import ImageProxyRenderer from "../image";
@@ -22,7 +22,7 @@ const TIFFRenderer: DocRenderer = (props) => {
     try {
       canvas && parseTIFF(currentDocument.fileData as ArrayBuffer, canvas);
       setLoadedCanvas(true);
-    } catch (error) {
+    } catch {
       setCorruptedFile(true);
     }
   }, [currentDocument, loadedCanvas]);

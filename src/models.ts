@@ -1,6 +1,6 @@
-import { FC, ReactElement, ComponentType, PropsWithChildren } from "react";
-import { IMainState } from "./store/mainStateReducer";
-import { FileLoaderFunction } from "./utils/fileLoaders";
+import type { ComponentType, FC, PropsWithChildren, ReactElement } from "react";
+import type { IMainState } from "./store/mainStateReducer";
+import type { FileLoaderFunction } from "./utils/fileLoaders";
 
 export interface IConfig {
   header?: IHeaderConfig;
@@ -42,8 +42,7 @@ export type IHeaderOverride = (
   state: IMainState,
   previousDocument: () => void,
   nextDocument: () => void,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-) => ReactElement<any, any> | null;
+) => ReactElement | null;
 
 export interface ITheme {
   primary?: string;
