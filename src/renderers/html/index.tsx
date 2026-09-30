@@ -3,7 +3,8 @@ import { useTranslation } from "../../hooks/useTranslation";
 import type { DocRenderer } from "../../models";
 import { dataURLFileLoader } from "../../utils/fileLoaders";
 
-const DATA_URL_PREFIX = /^data:text\/html?(?:;charset=([^;,]*))?(;base64)?,/i;
+const DATA_URL_PREFIX =
+  /^data:text\/html?(?:;\s*charset=([^;,]*))?(;base64)?,/i;
 
 /** Decodes the HTML renderer's data URL into a string. */
 export const decodeHtmlDataUrl = (dataUrl: string): string => {

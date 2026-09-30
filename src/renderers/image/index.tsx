@@ -1,5 +1,6 @@
-import type { DocRenderer } from "../..";
+import type { DocRenderer } from "../../models";
 import { cx } from "../../utils/cx";
+import { getFileName } from "../../utils/getFileName";
 
 const ImageProxyRenderer: DocRenderer = ({
   mainState: { currentDocument },
@@ -15,7 +16,7 @@ const ImageProxyRenderer: DocRenderer = ({
           id="image-img"
           className="rdv-image-renderer__img"
           src={currentDocument.fileData as string}
-          alt={currentDocument.fileName || ""}
+          alt={getFileName(currentDocument, false)}
         />
       )}
     </div>
