@@ -1,6 +1,7 @@
 "use client";
 
-import "./cssStyles";
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
 import DocViewer from "./DocViewer";
 
 export default DocViewer;

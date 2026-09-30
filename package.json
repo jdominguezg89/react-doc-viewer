@@ -16,25 +16,22 @@
     "url": "https://github.com/cyntler/react-doc-viewer"
   },
   "files": [
-    "dist/**"
+    "dist"
   ],
   "types": "./dist/index.d.ts",
-  "main": "./dist/react-doc-viewer.cjs",
-  "module": "./dist/react-doc-viewer.js",
+  "main": "./dist/index.js",
   "exports": {
     ".": {
-      "import": "./dist/react-doc-viewer.js",
-      "require": "./dist/react-doc-viewer.cjs",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
-    "./dist/index.css": {
-      "import": "./dist/index.css",
-      "require": "./dist/index.css"
-    }
+    "./dist/index.css": "./dist/index.css",
+    "./package.json": "./package.json"
   },
   "scripts": {
     "start": "storybook dev -p 6006",
-    "build": "rm -rf dist && tsc && vite build && tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && tsc && vite build && tsc -p tsconfig.build.json && node scripts/fix-dts.mjs && node scripts/verify-dist.mjs",
     "typecheck": "tsc",
     "test": "vitest run",
     "lint": "biome lint .",
@@ -45,17 +42,16 @@
     "deploy": "pnpm run storybook:build && gh-pages --nojekyll -d storybook-static --message \"feat: storybook deploy\"",
     "prerelease": "pnpm run check && pnpm run test && pnpm run build",
     "release": "release-it && pnpm run deploy",
-    "build-readme-toc": "npx doctoc README.md --title \"## Table of Contents\""
+    "build-readme-toc": "npx doctoc README.md --title \"## Table of Contents\"",
+    "verify:dist": "node scripts/verify-dist.mjs"
   },
   "dependencies": {
-    "core-js": "^3.37.1",
     "mustache": "^4.2.0",
     "papaparse": "^5.4.1",
     "react-pdf": "^9.0.0",
     "styled-components": "^6.1.11"
   },
   "devDependencies": {
-    "@rollup/plugin-dsv": "^3.0.4",
     "@storybook/addon-essentials": "^8.1.5",
     "@storybook/addon-interactions": "^8.1.5",
     "@storybook/addon-links": "^8.1.5",
@@ -74,7 +70,6 @@
     "storybook": "^8.1.5",
     "typescript": "7.0.2",
     "vite": "^5.2.12",
-    "vite-plugin-node-polyfills": "^0.22.0",
     "vitest": "^1.6.0",
     "vitest-fetch-mock": "^0.2.2",
     "@types/mustache": "^4.2.6",
@@ -85,20 +80,11 @@
     "react": ">=17.0.0",
     "react-dom": ">=17.0.0"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "engines": {
     "node": ">=22.12.0"
   },
-  "packageManager": "pnpm@12.8.1+sha512.f64ba907507f5ceafe06c8d38e6052d0179444580ec1279ddd5bfc11cb48aa8a2644b66598e07e761da84872a9fc57d5f902b87fa49d024198d558612aabbe45"
+  "packageManager": "pnpm@12.8.1+sha512.f64ba907507f5ceafe06c8d38e6052d0179444580ec1279ddd5bfc11cb48aa8a2644b66598e07e761da84872a9fc57d5f902b87fa49d024198d558612aabbe45",
+  "sideEffects": [
+    "**/*.css"
+  ]
 }
