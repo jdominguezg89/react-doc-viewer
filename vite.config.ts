@@ -27,6 +27,7 @@ export default defineConfig({
       entry: "./src/index.tsx",
       formats: ["es"],
       fileName: () => "index.js",
+      cssFileName: "index",
     },
     cssCodeSplit: false,
     sourcemap: true,
@@ -43,8 +44,6 @@ export default defineConfig({
         exports: "named",
         // Keep the React Server Components boundary that Rollup strips.
         banner: '"use client";',
-        assetFileNames: (asset) =>
-          asset.name === "style.css" ? "index.css" : "[name][extname]",
       },
     },
   },

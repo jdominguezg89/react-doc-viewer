@@ -8,12 +8,7 @@ import {
 } from "react";
 import type { IMainState } from "../../../store/mainStateReducer";
 import { type PDFActions, SET_CURRENT_MAIN_STATE } from "./actions";
-import {
-  type IPDFState,
-  initialPDFState,
-  type PDFStateReducer,
-  reducer,
-} from "./reducer";
+import { type IPDFState, initialPDFState, reducer } from "./reducer";
 
 const PDFContext = createContext<{
   state: IPDFState;
@@ -24,7 +19,7 @@ const PDFProvider: FC<PropsWithChildren<{ mainState: IMainState }>> = ({
   children,
   mainState,
 }) => {
-  const [state, dispatch] = useReducer<PDFStateReducer>(reducer, {
+  const [state, dispatch] = useReducer(reducer, {
     ...initialPDFState,
     defaultZoomLevel:
       mainState.config?.pdfZoom?.defaultZoom ??

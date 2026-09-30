@@ -21,7 +21,6 @@ import {
 import {
   type IMainState,
   initialState,
-  type MainStateReducer,
   mainStateReducer,
 } from "./mainStateReducer";
 
@@ -47,7 +46,7 @@ const DocViewerProvider = forwardRef<
     onDocumentChange,
   } = props;
 
-  const [state, dispatch] = useReducer<MainStateReducer>(mainStateReducer, {
+  const [state, dispatch] = useReducer(mainStateReducer, {
     ...initialState,
     documents: documents || [],
     currentDocument: documents?.length
