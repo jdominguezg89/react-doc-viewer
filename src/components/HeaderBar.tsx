@@ -1,8 +1,6 @@
 "use client";
 
 import { type FC, useContext } from "react";
-import styled from "styled-components";
-import type { IStyledProps } from "../models";
 import { nextDocument, previousDocument } from "../store/actions";
 import { DocViewerContext } from "../store/DocViewerProvider";
 import { DocumentNav } from "./DocumentNav";
@@ -22,29 +20,12 @@ export const HeaderBar: FC = () => {
 
   if (override) {
     return override;
-  } else {
-    return (
-      <Container id="header-bar" data-testid="header-bar">
-        <FileName />
-        <DocumentNav />
-      </Container>
-    );
   }
+
+  return (
+    <div id="header-bar" data-testid="header-bar" className="rdv-header-bar">
+      <FileName />
+      <DocumentNav />
+    </div>
+  );
 };
-
-const Container = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  z-index: 1;
-  padding: 0 10px;
-  background-color: ${(props: IStyledProps) => props.theme.primary};
-  font-size: 16px;
-  min-height: 50px;
-
-  @media (max-width: 768px) {
-    min-height: 30px;
-    padding: 5px;
-    font-size: 10px;
-  }
-`;

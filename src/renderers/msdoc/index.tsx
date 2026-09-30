@@ -1,20 +1,19 @@
-import styled from "styled-components";
 import type { DocRenderer } from "../..";
 
 const MSDocRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
   if (!currentDocument) return null;
 
   return (
-    <Container id="msdoc-renderer">
-      <IFrame
+    <div id="msdoc-renderer" className="rdv-msdoc-renderer">
+      <iframe
         id="msdoc-iframe"
+        className="rdv-msdoc-renderer__frame"
         title="msdoc-iframe"
         src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
           currentDocument.uri,
         )}`}
-        frameBorder="0"
       />
-    </Container>
+    </div>
   );
 };
 
@@ -51,12 +50,3 @@ MSDocRenderer.fileTypes = [
 ];
 MSDocRenderer.weight = 0;
 MSDocRenderer.fileLoader = ({ fileLoaderComplete }) => fileLoaderComplete();
-
-const Container = styled.div`
-  width: 100%;
-`;
-const IFrame = styled.iframe`
-  width: 100%;
-  height: 100%;
-  border: 0;
-`;

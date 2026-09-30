@@ -33,8 +33,8 @@ for (const file of jsFiles) {
     `${file} does not start with the "use client" directive`,
   );
   assert(
-    !code.includes("data-styled"),
-    `${file} bundles styled-components; it must stay external`,
+    !code.includes("styled-components"),
+    `${file} references styled-components; styling is plain CSS now`,
   );
   assert(
     !/GlobalWorkerOptions\s*=\s*\{/.test(code),
@@ -64,20 +64,18 @@ for (const file of dtsFiles) {
 
 try {
   const mod = await import(pathToFileURL(entry).href);
-  assert(
-    typeof mod.default === "function",
-    "default export is not a component",
-  );
+  const isComponent =
+    typeof mod.default === "function" ||
+    (typeof mod.default === "object" &&
+      mod.default !== null &&
+      "$$typeof" in mod.default);
+  assert(isComponent, "default export is not a React component");
   assert(
     Array.isArray(mod.DocViewerRenderers),
     "DocViewerRenderers export missing",
   );
 } catch (error) {
-  // TODO(phase 4): promote to a failure once styled-components (whose Node
-  // CJS build breaks default-import interop) is removed.
-  console.warn(
-    `warning: importing dist/index.js in Node failed: ${error.message}`,
-  );
+  failures.push(`importing dist/index.js in Node failed: ${error.message}`);
 }
 
 if (failures.length) {

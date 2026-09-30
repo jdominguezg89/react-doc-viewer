@@ -35,3 +35,6 @@ export const supportedLanguages = Object.keys(locales);
 export type AvailableLanguages = keyof typeof locales;
 
 export const defaultLanguage: AvailableLanguages = "en";
+
+/** Languages rendered right-to-left. */
+export const rtlLanguages: AvailableLanguages[] = ["ar"];

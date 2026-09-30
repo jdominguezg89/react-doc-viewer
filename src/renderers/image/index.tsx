@@ -1,19 +1,24 @@
-import styled from "styled-components";
 import type { DocRenderer } from "../..";
+import { cx } from "../../utils/cx";
 
 const ImageProxyRenderer: DocRenderer = ({
   mainState: { currentDocument },
   children,
-  ...props
+  className,
 }) => {
   if (!currentDocument) return null;
 
   return (
-    <Container id="image-renderer" {...props}>
+    <div id="image-renderer" className={cx("rdv-image-renderer", className)}>
       {children || (
-        <Img id="image-img" src={currentDocument.fileData as string} />
+        <img
+          id="image-img"
+          className="rdv-image-renderer__img"
+          src={currentDocument.fileData as string}
+          alt={currentDocument.fileName || ""}
+        />
       )}
-    </Container>
+    </div>
   );
 };
 
@@ -21,18 +26,3 @@ export default ImageProxyRenderer;
 
 ImageProxyRenderer.fileTypes = [];
 ImageProxyRenderer.weight = 0;
-
-const Container = styled.div`
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background-color: #fff;
-`;
-
-const Img = styled.img`
-  max-width: 95%;
-  max-height: 95%;
-`;

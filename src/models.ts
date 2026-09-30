@@ -54,6 +54,7 @@ export interface ITheme {
   disableThemeScrollbar?: boolean;
 }
 
+/** @deprecated Styling no longer uses styled-components; kept for type compatibility. */
 export interface IStyledProps {
   theme: ITheme;
 }
@@ -67,6 +68,8 @@ export interface IDocument {
 
 export interface DocRendererProps {
   mainState: IMainState;
+  /** Extra class name applied to the renderer root (used by image renderers). */
+  className?: string;
 }
 
 export interface DocRenderer extends FC<PropsWithChildren<DocRendererProps>> {

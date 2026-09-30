@@ -1,6 +1,5 @@
 import papaparse from "papaparse";
 import { useEffect, useState } from "react";
-import styled from "styled-components";
 import type { DocRenderer } from "../..";
 import { textFileLoader } from "../../utils/fileLoaders";
 
@@ -26,8 +25,8 @@ const CSVRenderer: DocRenderer = ({
   }
 
   return (
-    <Container>
-      <Table>
+    <div className="rdv-csv-renderer">
+      <table className="rdv-csv-renderer__table">
         <thead>
           <tr>
             {rows[0].map((column) => (
@@ -44,8 +43,8 @@ const CSVRenderer: DocRenderer = ({
             </tr>
           ))}
         </tbody>
-      </Table>
-    </Container>
+      </table>
+    </div>
   );
 };
 
@@ -54,21 +53,3 @@ export default CSVRenderer;
 CSVRenderer.fileTypes = ["csv", "text/csv"];
 CSVRenderer.weight = 0;
 CSVRenderer.fileLoader = textFileLoader;
-
-const Container = styled.div`
-  width: 100%;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  text-align: left;
-
-  th,
-  td {
-    padding: 5px 10px;
-
-    &:empty {
-      display: none;
-    }
-  }
-`;

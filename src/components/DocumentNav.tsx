@@ -1,12 +1,10 @@
 "use client";
 
 import { type FC, useContext } from "react";
-import styled from "styled-components";
-import type { IStyledProps } from "..";
 import { useTranslation } from "../hooks/useTranslation";
 import { nextDocument, previousDocument } from "../store/actions";
 import { DocViewerContext } from "../store/DocViewerProvider";
-import { ButtonSecondary } from "./common/Button";
+import { Button } from "./common/Button";
 import { NextDocIcon, PrevDocIcon } from "./icons";
 
 export const DocumentNav: FC = () => {
@@ -18,14 +16,8 @@ export const DocumentNav: FC = () => {
 
   if (documents.length <= 1 || !currentDocument) return null;
 
-  let fileName = currentDocument.uri || "";
-  const splitURL = fileName?.split("/");
-  if (splitURL.length) {
-    fileName = splitURL[splitURL.length - 1];
-  }
-
   return (
-    <Container id="doc-nav">
+    <div id="doc-nav" className="rdv-doc-nav">
       <p id="doc-nav-info">
         {t("documentNavInfo", {
           currentFileNo: currentFileNo + 1,
@@ -33,45 +25,25 @@ export const DocumentNav: FC = () => {
         })}
       </p>
 
-      <ButtonPrev
+      <Button
+        variant="secondary"
         id="doc-nav-prev"
+        className="rdv-doc-nav__prev"
         onClick={() => dispatch(previousDocument())}
         disabled={currentFileNo === 0}
       >
         <PrevDocIcon color="#fff" size="60%" />
-      </ButtonPrev>
+      </Button>
 
-      <ButtonNext
+      <Button
+        variant="secondary"
         id="doc-nav-next"
+        className="rdv-doc-nav__next"
         onClick={() => dispatch(nextDocument())}
         disabled={currentFileNo >= documents.length - 1}
       >
         <NextDocIcon color="#fff" size="60%" />
-      </ButtonNext>
-    </Container>
+      </Button>
+    </div>
   );
 };
-
-const Container = styled.div`
-  min-width: 150px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  margin: 0 10px;
-  color: ${(props: IStyledProps) => props.theme.textPrimary};
-`;
-
-const ButtonPrev = styled(ButtonSecondary)`
-  width: 30px;
-  height: 30px;
-  margin: 0 5px 0 10px;
-
-  @media (max-width: 768px) {
-    width: 25px;
-    height: 25px;
-  }
-`;
-const ButtonNext = styled(ButtonPrev)`
-  margin: 0 5px;
-`;

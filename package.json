@@ -48,8 +48,7 @@
   "dependencies": {
     "mustache": "^4.2.0",
     "papaparse": "^5.4.1",
-    "react-pdf": "^9.0.0",
-    "styled-components": "^6.1.11"
+    "react-pdf": "^9.0.0"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "^8.1.5",

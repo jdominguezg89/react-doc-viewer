@@ -1,9 +1,9 @@
 import type { DocRenderer } from "../..";
 import ImageProxyRenderer from "../image";
 
-const JPGRenderer: DocRenderer = (props) => <ImageProxyRenderer {...props} />;
+const GIFRenderer: DocRenderer = (props) => <ImageProxyRenderer {...props} />;
 
-JPGRenderer.fileTypes = ["gif", "image/gif"];
-JPGRenderer.weight = 0;
+GIFRenderer.fileTypes = ["gif", "image/gif"];
+GIFRenderer.weight = 0;
 
-export default JPGRenderer;
+export default GIFRenderer;

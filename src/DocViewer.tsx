@@ -1,9 +1,10 @@
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+import "./styles.css";
 import { type CSSProperties, forwardRef, memo } from "react";
-import styled, { ThemeProvider } from "styled-components";
 import { HeaderBar } from "./components/HeaderBar";
 import { ProxyRenderer } from "./components/ProxyRenderer";
-import { defaultTheme } from "./defaultTheme";
-import type { AvailableLanguages } from "./i18n";
+import { type AvailableLanguages, rtlLanguages } from "./i18n";
 import type {
   DocRenderer,
   DocViewerRef,
@@ -13,6 +14,7 @@ import type {
 } from "./models";
 import { DocViewerRenderers } from "./renderers";
 import { DocViewerProvider } from "./store/DocViewerProvider";
+import { cx } from "./utils/cx";
 
 export interface DocViewerProps {
   documents: IDocument[];
@@ -29,8 +31,27 @@ export interface DocViewerProps {
   onDocumentChange?: (document: IDocument) => void;
 }
 
+const themeVariables: Array<[keyof ITheme, string]> = [
+  ["primary", "--rdv-primary"],
+  ["secondary", "--rdv-secondary"],
+  ["tertiary", "--rdv-tertiary"],
+  ["textPrimary", "--rdv-text-primary"],
+  ["textSecondary", "--rdv-text-secondary"],
+  ["textTertiary", "--rdv-text-tertiary"],
+];
+
+/** Maps the `theme` prop onto CSS custom properties consumed by styles.css. */
+const themeToStyle = (theme: ITheme | undefined): CSSProperties => {
+  const style: Record<string, string> = {};
+  for (const [key, variable] of themeVariables) {
+    const value = theme?.[key];
+    if (typeof value === "string") style[variable] = value;
+  }
+  return style as CSSProperties;
+};
+
 const DocViewer = forwardRef<DocViewerRef, DocViewerProps>((props, ref) => {
-  const { documents, theme } = props;
+  const { documents, theme, language } = props;
 
   if (!documents) {
     throw new Error("Please provide an array of documents to DocViewer!");
@@ -42,29 +63,19 @@ const DocViewer = forwardRef<DocViewerRef, DocViewerProps>((props, ref) => {
       pluginRenderers={DocViewerRenderers}
       {...props}
     >
-      <ThemeProvider
-        theme={theme ? { ...defaultTheme, ...theme } : defaultTheme}
+      <div
+        id="react-doc-viewer"
+        data-testid="react-doc-viewer"
+        data-themed-scrollbar={theme?.disableThemeScrollbar ? "false" : "true"}
+        dir={language && rtlLanguages.includes(language) ? "rtl" : undefined}
+        className={cx("rdv", props.className)}
+        style={{ ...themeToStyle(theme), ...props.style }}
       >
-        <Container
-          id="react-doc-viewer"
-          data-testid="react-doc-viewer"
-          className={props.className}
-          style={props.style}
-        >
-          <HeaderBar />
-          <ProxyRenderer />
-        </Container>
-      </ThemeProvider>
+        <HeaderBar />
+        <ProxyRenderer />
+      </div>
     </DocViewerProvider>
   );
 });
 
 export default memo(DocViewer);
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  background: #ffffff;
-  width: 100%;
-  height: 100%;
-`;

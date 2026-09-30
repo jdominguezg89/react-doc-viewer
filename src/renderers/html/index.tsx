@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-import styled from "styled-components";
-import type { DocRenderer, IStyledProps } from "../..";
+import type { DocRenderer } from "../..";
 import { dataURLFileLoader } from "../../utils/fileLoaders";
 
 const HTMLRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
@@ -35,9 +34,14 @@ const HTMLRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
   }, [currentDocument]);
 
   return (
-    <Container id="html-renderer">
-      <BodyIFrame id="html-body" sandbox="allow-same-origin" />
-    </Container>
+    <div id="html-renderer" className="rdv-html-renderer">
+      <iframe
+        id="html-body"
+        className="rdv-html-renderer__frame"
+        title="html-renderer"
+        sandbox="allow-same-origin"
+      />
+    </div>
   );
 };
 
@@ -46,17 +50,3 @@ export default HTMLRenderer;
 HTMLRenderer.fileTypes = ["htm", "html", "text/htm", "text/html"];
 HTMLRenderer.weight = 0;
 HTMLRenderer.fileLoader = dataURLFileLoader;
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 0 30px;
-`;
-
-const BodyIFrame = styled.iframe`
-  height: 100%;
-  padding: 15px;
-  margin: 20px 0 20px 0;
-  border: 1px solid ${(props: IStyledProps) => props.theme.secondary};
-`;

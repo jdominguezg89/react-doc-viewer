@@ -1,6 +1,5 @@
 import { pdfjs } from "react-pdf";
-import styled from "styled-components";
-import type { DocRenderer, IStyledProps } from "../..";
+import type { DocRenderer } from "../..";
 import PDFControls from "./components/PDFControls";
 import PDFPages from "./components/pages/PDFPages";
 import { PDFProvider } from "./state";
@@ -12,10 +11,14 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 const PDFRenderer: DocRenderer = ({ mainState }) => {
   return (
     <PDFProvider mainState={mainState}>
-      <Container id="pdf-renderer" data-testid="pdf-renderer">
+      <div
+        id="pdf-renderer"
+        data-testid="pdf-renderer"
+        className="rdv-pdf-renderer"
+      >
         <PDFControls />
         <PDFPages />
-      </Container>
+      </div>
     </PDFProvider>
   );
 };
@@ -24,28 +27,3 @@ export default PDFRenderer;
 
 PDFRenderer.fileTypes = ["pdf", "application/pdf"];
 PDFRenderer.weight = 0;
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-
-  /* width */
-  &::-webkit-scrollbar {
-    ${(props: IStyledProps) => {
-      return props.theme.disableThemeScrollbar ? "" : "width: 10px";
-    }};
-  }
-  /* Track */
-  &::-webkit-scrollbar-track {
-    /* background: ${(props: IStyledProps) => props.theme.secondary}; */
-  }
-  /* Handle */
-  &::-webkit-scrollbar-thumb {
-    background: ${(props: IStyledProps) => props.theme.tertiary};
-  }
-  /* Handle on hover */
-  &::-webkit-scrollbar-thumb:hover {
-    background: ${(props: IStyledProps) => props.theme.primary};
-  }
-`;
