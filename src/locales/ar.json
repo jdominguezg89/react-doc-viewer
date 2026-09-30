@@ -7,5 +7,13 @@
   "msgPluginSender": "المرسل",
   "pdfPluginLoading": "تحميل ...",
   "pdfPluginPageNumber": " {{ allPagesCount }} \\ {{ currentPage }} صفحة ",
-  "loadErrorMessage": "تعذّر تحميل المستند."
+  "loadErrorMessage": "تعذّر تحميل المستند.",
+  "pdfZoomInLabel": "تكبير",
+  "pdfZoomOutLabel": "تصغير",
+  "pdfZoomResetLabel": "إعادة الضبط إلى مستوى التكبير الافتراضي",
+  "pdfNextPageLabel": "الصفحة التالية",
+  "pdfPreviousPageLabel": "الصفحة السابقة",
+  "pdfTogglePaginationLabel": "التبديل بين صفحة واحدة والتمرير المستمر",
+  "previousDocumentLabel": "المستند السابق",
+  "nextDocumentLabel": "المستند التالي"
 }

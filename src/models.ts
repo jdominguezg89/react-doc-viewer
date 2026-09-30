@@ -12,6 +12,46 @@ export interface IConfig {
   pdfZoom?: IPdfZoomConfig;
   pdfVerticalScrollByDefault?: boolean;
   pdf?: IPdfConfig;
+  html?: IHtmlConfig;
+  msdoc?: IMsDocConfig;
+  fetch?: IFetchConfig;
+}
+
+export interface IHtmlConfig {
+  /**
+   * Value of the iframe `sandbox` attribute used to display HTML documents.
+   * Defaults to `""` (fully sandboxed: no scripts, opaque origin).
+   * Previous releases used `"allow-same-origin"`, which gives the document
+   * the host application's origin; opt back in only for trusted content.
+   */
+  sandbox?: string;
+}
+
+export interface IMsDocConfig {
+  /**
+   * Office documents are displayed through Microsoft's online viewer, which
+   * receives the document URL. Set to `false` to show a download link
+   * instead (for private or pre-signed URLs).
+   */
+  enabled?: boolean;
+  /** Viewer endpoint; the encoded document URL is appended as `src`. */
+  viewerUrl?: string;
+}
+
+export type RequestHeadersPolicy =
+  | "all"
+  | "same-origin"
+  | string[]
+  | ((uri: string) => boolean);
+
+export interface IFetchConfig {
+  /**
+   * Which document URLs receive the `requestHeaders` prop.
+   * `"all"` (default, previous behaviour), `"same-origin"`, a list of
+   * allowed origins, or a predicate. Use it to keep credentials from
+   * leaking to third-party hosts.
+   */
+  sendRequestHeadersTo?: RequestHeadersPolicy;
 }
 
 export type PdfDocumentOptions = NonNullable<DocumentProps["options"]>;
@@ -66,8 +106,8 @@ export interface IHeaderConfig {
 }
 
 export interface IPdfZoomConfig {
-  defaultZoom: number;
-  zoomJump: number;
+  defaultZoom?: number;
+  zoomJump?: number;
 }
 
 export type IHeaderOverride = (

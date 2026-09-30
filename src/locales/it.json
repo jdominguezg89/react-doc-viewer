@@ -7,5 +7,13 @@
   "msgPluginSender": "Mittente",
   "pdfPluginLoading": "Caricamento in corso...",
   "pdfPluginPageNumber": "Pagina {{ currentPage }}/{{ allPagesCount }}",
-  "loadErrorMessage": "Impossibile caricare il documento."
+  "loadErrorMessage": "Impossibile caricare il documento.",
+  "pdfZoomInLabel": "Ingrandisci",
+  "pdfZoomOutLabel": "Riduci",
+  "pdfZoomResetLabel": "Ripristina il livello di zoom predefinito",
+  "pdfNextPageLabel": "Pagina successiva",
+  "pdfPreviousPageLabel": "Pagina precedente",
+  "pdfTogglePaginationLabel": "Passa da pagina singola a scorrimento continuo",
+  "previousDocumentLabel": "Documento precedente",
+  "nextDocumentLabel": "Documento successivo"
 }

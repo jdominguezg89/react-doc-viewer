@@ -7,5 +7,13 @@
   "msgPluginSender": "Absender",
   "pdfPluginLoading": "Wird geladen...",
   "pdfPluginPageNumber": "Seite {{ currentPage }}/{{ allPagesCount }}",
-  "loadErrorMessage": "Das Dokument konnte nicht geladen werden."
+  "loadErrorMessage": "Das Dokument konnte nicht geladen werden.",
+  "pdfZoomInLabel": "Vergrößern",
+  "pdfZoomOutLabel": "Verkleinern",
+  "pdfZoomResetLabel": "Auf Standard-Zoomstufe zurücksetzen",
+  "pdfNextPageLabel": "Nächste Seite",
+  "pdfPreviousPageLabel": "Vorherige Seite",
+  "pdfTogglePaginationLabel": "Zwischen Einzelseite und fortlaufendem Scrollen wechseln",
+  "previousDocumentLabel": "Vorheriges Dokument",
+  "nextDocumentLabel": "Nächstes Dokument"
 }

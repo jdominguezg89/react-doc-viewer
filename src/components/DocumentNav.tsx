@@ -29,6 +29,8 @@ export const DocumentNav: FC = () => {
         variant="secondary"
         id="doc-nav-prev"
         className="rdv-doc-nav__prev"
+        aria-label={t("previousDocumentLabel")}
+        title={t("previousDocumentLabel")}
         onClick={previous}
         disabled={currentFileNo === 0}
       >
@@ -39,6 +41,8 @@ export const DocumentNav: FC = () => {
         variant="secondary"
         id="doc-nav-next"
         className="rdv-doc-nav__next"
+        aria-label={t("nextDocumentLabel")}
+        title={t("nextDocumentLabel")}
         onClick={next}
         disabled={currentFileNo >= documents.length - 1}
       >

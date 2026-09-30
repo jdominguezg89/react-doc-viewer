@@ -7,5 +7,13 @@
   "msgPluginSender": "Gönderen",
   "pdfPluginLoading": "Yükleniyor...",
   "pdfPluginPageNumber": "Sayfa {{ currentPage }}/{{ allPagesCount }}",
-  "loadErrorMessage": "Belge yüklenemedi."
+  "loadErrorMessage": "Belge yüklenemedi.",
+  "pdfZoomInLabel": "Yakınlaştır",
+  "pdfZoomOutLabel": "Uzaklaştır",
+  "pdfZoomResetLabel": "Varsayılan yakınlaştırma düzeyine sıfırla",
+  "pdfNextPageLabel": "Sonraki sayfa",
+  "pdfPreviousPageLabel": "Önceki sayfa",
+  "pdfTogglePaginationLabel": "Tek sayfa ile sürekli kaydırma arasında geçiş yap",
+  "previousDocumentLabel": "Önceki belge",
+  "nextDocumentLabel": "Sonraki belge"
 }

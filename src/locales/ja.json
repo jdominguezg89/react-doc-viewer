@@ -7,5 +7,13 @@
   "msgPluginSender": "送信者",
   "pdfPluginLoading": "ローティング中...",
   "pdfPluginPageNumber": "ページ {{ currentPage }}/{{ allPagesCount }}",
-  "loadErrorMessage": "ドキュメントを読み込めませんでした。"
+  "loadErrorMessage": "ドキュメントを読み込めませんでした。",
+  "pdfZoomInLabel": "拡大",
+  "pdfZoomOutLabel": "縮小",
+  "pdfZoomResetLabel": "既定のズームレベルに戻す",
+  "pdfNextPageLabel": "次のページ",
+  "pdfPreviousPageLabel": "前のページ",
+  "pdfTogglePaginationLabel": "単一ページと連続スクロールを切り替える",
+  "previousDocumentLabel": "前のドキュメント",
+  "nextDocumentLabel": "次のドキュメント"
 }

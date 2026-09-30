@@ -7,5 +7,13 @@
   "msgPluginSender": "Пошиљалац",
   "pdfPluginLoading": "Учитавање...",
   "pdfPluginPageNumber": "Страна {{ currentPage }}/{{ allPagesCount }}",
-  "loadErrorMessage": "Документ није могуће учитати."
+  "loadErrorMessage": "Документ није могуће учитати.",
+  "pdfZoomInLabel": "Увећај",
+  "pdfZoomOutLabel": "Умањи",
+  "pdfZoomResetLabel": "Врати на подразумевани ниво зумирања",
+  "pdfNextPageLabel": "Следећа страна",
+  "pdfPreviousPageLabel": "Претходна страна",
+  "pdfTogglePaginationLabel": "Пребаци између једне стране и непрекидног померања",
+  "previousDocumentLabel": "Претходни документ",
+  "nextDocumentLabel": "Следећи документ"
 }

@@ -1,17 +1,37 @@
-import type { DocRenderer } from "../..";
+import { NoRendererFallback } from "../../components/NoRendererFallback";
+import type { DocRenderer } from "../../models";
+import { getFileName } from "../../utils/getFileName";
 
-const MSDocRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
+const DEFAULT_VIEWER_URL = "https://view.officeapps.live.com/op/embed.aspx";
+
+const MSDocRenderer: DocRenderer = ({
+  mainState: { currentDocument, config },
+}) => {
   if (!currentDocument) return null;
+
+  const fileName = getFileName(
+    currentDocument,
+    config?.header?.retainURLParams || false,
+  );
+
+  if (config?.msdoc?.enabled === false) {
+    return (
+      <NoRendererFallback document={currentDocument} fileName={fileName} />
+    );
+  }
+
+  const viewerUrl = new URL(config?.msdoc?.viewerUrl ?? DEFAULT_VIEWER_URL);
+  viewerUrl.searchParams.set("src", currentDocument.uri);
 
   return (
     <div id="msdoc-renderer" className="rdv-msdoc-renderer">
       <iframe
         id="msdoc-iframe"
         className="rdv-msdoc-renderer__frame"
-        title="msdoc-iframe"
-        src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
-          currentDocument.uri,
-        )}`}
+        title={fileName || "msdoc-iframe"}
+        src={viewerUrl.toString()}
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        referrerPolicy="no-referrer"
       />
     </div>
   );

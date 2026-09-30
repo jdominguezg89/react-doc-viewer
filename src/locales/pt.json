@@ -7,5 +7,13 @@
   "msgPluginSender": "Remetente",
   "pdfPluginLoading": "Carregando...",
   "pdfPluginPageNumber": "Página {{ currentPage }}/{{ allPagesCount }}",
-  "loadErrorMessage": "Não foi possível carregar o documento."
+  "loadErrorMessage": "Não foi possível carregar o documento.",
+  "pdfZoomInLabel": "Ampliar",
+  "pdfZoomOutLabel": "Reduzir",
+  "pdfZoomResetLabel": "Repor o nível de zoom predefinido",
+  "pdfNextPageLabel": "Página seguinte",
+  "pdfPreviousPageLabel": "Página anterior",
+  "pdfTogglePaginationLabel": "Alternar entre página única e rolagem contínua",
+  "previousDocumentLabel": "Documento anterior",
+  "nextDocumentLabel": "Documento seguinte"
 }

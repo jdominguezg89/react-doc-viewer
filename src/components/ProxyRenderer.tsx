@@ -8,9 +8,9 @@ import type { DocRenderer, IConfig, IDocument } from "../models";
 import { setRendererRect } from "../store/actions";
 import type { IMainState } from "../store/mainStateReducer";
 import { getFileName } from "../utils/getFileName";
-import { LinkButton } from "./common";
 import { LoadingIcon } from "./icons";
 import { LoadingTimeout } from "./LoadingTimeout";
+import { NoRendererFallback } from "./NoRendererFallback";
 
 type ContentsProps = {
   documents: IDocument[];
@@ -99,22 +99,7 @@ const Contents: FC<ContentsProps> = ({
     return <OverrideComponent document={currentDocument} fileName={fileName} />;
   }
 
-  return (
-    <div id="no-renderer" data-testid="no-renderer">
-      {t("noRendererMessage", {
-        fileType: currentDocument?.fileType ?? "",
-      })}
-      <LinkButton
-        id="no-renderer-download"
-        className="rdv-no-renderer__download"
-        href={currentDocument?.uri}
-        download={fileName || true}
-        rel="noopener noreferrer"
-      >
-        {t("downloadButtonLabel")}
-      </LinkButton>
-    </div>
-  );
+  return <NoRendererFallback document={currentDocument} fileName={fileName} />;
 };
 
 export const ProxyRenderer: FC = () => {

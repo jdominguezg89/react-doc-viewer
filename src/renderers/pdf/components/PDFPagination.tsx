@@ -17,13 +17,19 @@ const PDFPagination: FC = () => {
       <Button
         id="pdf-pagination-prev"
         className="rdv-pdf-pagination__prev"
+        aria-label={t("pdfPreviousPageLabel")}
+        title={t("pdfPreviousPageLabel")}
         onClick={() => dispatch(setCurrentPage(currentPage - 1))}
         disabled={currentPage === 1}
       >
         <PrevPDFNavIcon color="#000" size="50%" />
       </Button>
 
-      <div id="pdf-pagination-info" className="rdv-pdf-pagination__info">
+      <div
+        id="pdf-pagination-info"
+        className="rdv-pdf-pagination__info"
+        aria-live="polite"
+      >
         {t("pdfPluginPageNumber", {
           currentPage,
           allPagesCount: numPages,
@@ -33,6 +39,8 @@ const PDFPagination: FC = () => {
       <Button
         id="pdf-pagination-next"
         className="rdv-pdf-pagination__next"
+        aria-label={t("pdfNextPageLabel")}
+        title={t("pdfNextPageLabel")}
         onClick={() => dispatch(setCurrentPage(currentPage + 1))}
         disabled={currentPage >= numPages}
       >

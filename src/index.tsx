@@ -3,6 +3,7 @@
 import DocViewer from "./DocViewer";
 
 export default DocViewer;
+export type { DocViewerProps } from "./DocViewer";
 export { type AvailableLanguages, supportedLanguages } from "./i18n";
 export * from "./models";
 export * from "./renderers";

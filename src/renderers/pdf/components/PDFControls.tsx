@@ -29,7 +29,7 @@ const PDFControls: FC = () => {
   const currentDocument = mainState?.currentDocument || null;
 
   return (
-    <div id="pdf-controls" className="rdv-pdf-controls">
+    <div id="pdf-controls" className="rdv-pdf-controls" role="toolbar">
       {paginated && numPages > 1 && <PDFPagination />}
 
       {currentDocument?.fileData && (
@@ -38,6 +38,7 @@ const PDFControls: FC = () => {
           className="rdv-pdf-controls__button"
           href={currentDocument?.fileData as string}
           download={currentDocument?.fileName || currentDocument?.uri}
+          aria-label={t("downloadButtonLabel")}
           title={t("downloadButtonLabel")}
         >
           <DownloadPDFIcon color="#000" size="75%" />
@@ -47,7 +48,9 @@ const PDFControls: FC = () => {
       <Button
         id="pdf-zoom-out"
         className="rdv-pdf-controls__button"
-        onMouseDown={() => dispatch(setZoomLevel(zoomLevel - zoomJump))}
+        aria-label={t("pdfZoomOutLabel")}
+        title={t("pdfZoomOutLabel")}
+        onClick={() => dispatch(setZoomLevel(zoomLevel - zoomJump))}
       >
         <ZoomOutPDFIcon color="#000" size="80%" />
       </Button>
@@ -55,7 +58,9 @@ const PDFControls: FC = () => {
       <Button
         id="pdf-zoom-in"
         className="rdv-pdf-controls__button"
-        onMouseDown={() => dispatch(setZoomLevel(zoomLevel + zoomJump))}
+        aria-label={t("pdfZoomInLabel")}
+        title={t("pdfZoomInLabel")}
+        onClick={() => dispatch(setZoomLevel(zoomLevel + zoomJump))}
       >
         <ZoomInPDFIcon color="#000" size="80%" />
       </Button>
@@ -63,7 +68,9 @@ const PDFControls: FC = () => {
       <Button
         id="pdf-zoom-reset"
         className="rdv-pdf-controls__button"
-        onMouseDown={() => dispatch(setZoomLevel(defaultZoomLevel))}
+        aria-label={t("pdfZoomResetLabel")}
+        title={t("pdfZoomResetLabel")}
+        onClick={() => dispatch(setZoomLevel(defaultZoomLevel))}
         disabled={Math.abs(zoomLevel - defaultZoomLevel) < 0.001}
       >
         <ResetZoomPDFIcon color="#000" size="70%" />
@@ -73,7 +80,10 @@ const PDFControls: FC = () => {
         <Button
           id="pdf-toggle-pagination"
           className="rdv-pdf-controls__button"
-          onMouseDown={() => dispatch(setPDFPaginated(!paginated))}
+          aria-label={t("pdfTogglePaginationLabel")}
+          title={t("pdfTogglePaginationLabel")}
+          aria-pressed={!paginated}
+          onClick={() => dispatch(setPDFPaginated(!paginated))}
         >
           <TogglePaginationPDFIcon
             color="#000"

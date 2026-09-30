@@ -14,6 +14,7 @@ import {
   type FileLoaderFuncProps,
 } from "../utils/fileLoaders";
 import { resolveFileType } from "../utils/fileType";
+import { shouldSendRequestHeaders } from "../utils/requestPolicy";
 import { useRendererSelector } from "./useRendererSelector";
 
 const toError = (reason: unknown): Error =>
@@ -35,6 +36,9 @@ export const useDocumentLoader = (): {
 
   const documentURI = currentDocument?.uri || "";
   const knownFileType = currentDocument?.fileType;
+  const headers = shouldSendRequestHeaders(documentURI, state.config)
+    ? requestHeaders
+    : undefined;
 
   // Step 1: discover the file type (unless the consumer provided one).
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-run only when the document (URI) or its known type changes
@@ -50,7 +54,7 @@ export const useDocumentLoader = (): {
       ...requestInit,
       method,
       signal,
-      headers: requestHeaders,
+      headers,
     })
       .then((response) => {
         if (signal.aborted) return;
@@ -101,6 +105,7 @@ export const useDocumentLoader = (): {
       }
       dispatch(updateCurrentDocument(updatedDocument));
       dispatch(setDocumentLoading(false));
+      state.onDocumentLoad?.(updatedDocument);
     };
 
     const loaderFunctionProps: FileLoaderFuncProps = {
@@ -112,7 +117,7 @@ export const useDocumentLoader = (): {
         dispatch(setDocumentError(error));
         state.onError?.(error, currentDocument);
       },
-      headers: requestHeaders,
+      headers,
       requestInit,
     };
 

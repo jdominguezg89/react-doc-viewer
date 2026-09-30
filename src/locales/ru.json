@@ -7,5 +7,13 @@
   "msgPluginSender": "Отправитель",
   "pdfPluginLoading": "Загрузка...",
   "pdfPluginPageNumber": "Страница {{ currentPage }}/{{ allPagesCount }}",
-  "loadErrorMessage": "Не удалось загрузить документ."
+  "loadErrorMessage": "Не удалось загрузить документ.",
+  "pdfZoomInLabel": "Увеличить",
+  "pdfZoomOutLabel": "Уменьшить",
+  "pdfZoomResetLabel": "Восстановить масштаб по умолчанию",
+  "pdfNextPageLabel": "Следующая страница",
+  "pdfPreviousPageLabel": "Предыдущая страница",
+  "pdfTogglePaginationLabel": "Переключить между одной страницей и непрерывной прокруткой",
+  "previousDocumentLabel": "Предыдущий документ",
+  "nextDocumentLabel": "Следующий документ"
 }

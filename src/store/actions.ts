@@ -60,6 +60,7 @@ export type SyncableProps = Pick<
   | "activeDocument"
   | "onDocumentChange"
   | "onError"
+  | "onDocumentLoad"
 >;
 
 export interface SyncProps {

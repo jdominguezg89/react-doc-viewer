@@ -7,5 +7,13 @@
   "msgPluginSender": "Pošiljalac",
   "pdfPluginLoading": "Učitavanje...",
   "pdfPluginPageNumber": "Strana {{ currentPage }}/{{ allPagesCount }}",
-  "loadErrorMessage": "Dokument nije moguće učitati."
+  "loadErrorMessage": "Dokument nije moguće učitati.",
+  "pdfZoomInLabel": "Uvećaj",
+  "pdfZoomOutLabel": "Umanji",
+  "pdfZoomResetLabel": "Vrati na podrazumevani nivo zumiranja",
+  "pdfNextPageLabel": "Sledeća strana",
+  "pdfPreviousPageLabel": "Prethodna strana",
+  "pdfTogglePaginationLabel": "Prebaci između jedne strane i neprekidnog pomeranja",
+  "previousDocumentLabel": "Prethodni dokument",
+  "nextDocumentLabel": "Sledeći dokument"
 }

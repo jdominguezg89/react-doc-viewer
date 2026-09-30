@@ -30,6 +30,7 @@ export type IMainState = {
   activeDocument?: IDocument;
   onDocumentChange?: (document: IDocument) => void;
   onError?: (error: Error, document?: IDocument) => void;
+  onDocumentLoad?: (document: IDocument) => void;
 };
 
 export const initialState: IMainState = {

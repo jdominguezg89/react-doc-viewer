@@ -72,6 +72,7 @@ const DocViewerProvider = forwardRef<
     activeDocument,
     onDocumentChange,
     onError,
+    onDocumentLoad,
   } = props;
 
   const resolvedLanguage =
@@ -95,6 +96,7 @@ const DocViewerProvider = forwardRef<
       activeDocument,
       onDocumentChange,
       onError,
+      onDocumentLoad,
     };
   });
 
@@ -129,6 +131,7 @@ const DocViewerProvider = forwardRef<
         activeDocument,
         onDocumentChange,
         onError,
+        onDocumentLoad,
       }),
     );
   }, [
@@ -140,6 +143,7 @@ const DocViewerProvider = forwardRef<
     activeDocument,
     onDocumentChange,
     onError,
+    onDocumentLoad,
   ]);
 
   useEffect(() => {

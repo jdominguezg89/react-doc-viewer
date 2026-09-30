@@ -7,5 +7,13 @@
   "msgPluginSender": "Nadawca",
   "pdfPluginLoading": "Wczytywanie...",
   "pdfPluginPageNumber": "Strona {{ currentPage }}/{{ allPagesCount }}",
-  "loadErrorMessage": "Nie udało się wczytać dokumentu."
+  "loadErrorMessage": "Nie udało się wczytać dokumentu.",
+  "pdfZoomInLabel": "Powiększ",
+  "pdfZoomOutLabel": "Pomniejsz",
+  "pdfZoomResetLabel": "Przywróć domyślny poziom powiększenia",
+  "pdfNextPageLabel": "Następna strona",
+  "pdfPreviousPageLabel": "Poprzednia strona",
+  "pdfTogglePaginationLabel": "Przełącz między pojedynczą stroną a ciągłym przewijaniem",
+  "previousDocumentLabel": "Poprzedni dokument",
+  "nextDocumentLabel": "Następny dokument"
 }

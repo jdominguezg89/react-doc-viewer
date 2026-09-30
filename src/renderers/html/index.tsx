@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 import type { DocRenderer } from "../../models";
 import { dataURLFileLoader } from "../../utils/fileLoaders";
@@ -20,30 +20,22 @@ export const decodeHtmlDataUrl = (dataUrl: string): string => {
   return new TextDecoder(charset).decode(bytes);
 };
 
-const HTMLRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
-  const frameRef = useRef<HTMLIFrameElement>(null);
-  const [failed, setFailed] = useState(false);
+const HTMLRenderer: DocRenderer = ({
+  mainState: { currentDocument, config },
+}) => {
   const { t } = useTranslation();
 
-  useEffect(() => {
-    const frame = frameRef.current;
+  const decoded = useMemo(() => {
     const data = currentDocument?.fileData;
-    if (!frame || typeof data !== "string") return;
-
+    if (typeof data !== "string") return { html: "", failed: false };
     try {
-      const body = decodeHtmlDataUrl(data);
-      const frameDocument = frame.contentWindow?.document;
-      if (!frameDocument) return;
-      frameDocument.open();
-      frameDocument.write(body);
-      frameDocument.close();
-      setFailed(false);
+      return { html: decodeHtmlDataUrl(data), failed: false };
     } catch {
-      setFailed(true);
+      return { html: "", failed: true };
     }
   }, [currentDocument]);
 
-  if (failed) {
+  if (decoded.failed) {
     return (
       <div id="html-renderer" className="rdv-html-renderer">
         <div role="alert">{t("brokenFile")}</div>
@@ -51,14 +43,16 @@ const HTMLRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
     );
   }
 
+  // `srcDoc` works with a fully sandboxed frame; the document gets an opaque
+  // origin and cannot run scripts unless the consumer relaxes `sandbox`.
   return (
     <div id="html-renderer" className="rdv-html-renderer">
       <iframe
-        ref={frameRef}
         id="html-body"
         className="rdv-html-renderer__frame"
         title={currentDocument?.fileName || "html-renderer"}
-        sandbox="allow-same-origin"
+        sandbox={config?.html?.sandbox ?? ""}
+        srcDoc={decoded.html}
       />
     </div>
   );

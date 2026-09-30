@@ -31,6 +31,8 @@ export interface DocViewerProps {
   language?: AvailableLanguages;
   activeDocument?: IDocument;
   onDocumentChange?: (document: IDocument) => void;
+  /** Called once a document's data has been loaded and a renderer is about to show it. */
+  onDocumentLoad?: (document: IDocument) => void;
   /** Called when a document fails to load. The viewer also shows an error state. */
   onError?: (error: Error, document?: IDocument) => void;
 }
