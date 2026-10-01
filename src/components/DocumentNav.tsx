@@ -34,7 +34,7 @@ export const DocumentNav: FC = () => {
         onClick={previous}
         disabled={currentFileNo === 0}
       >
-        <PrevDocIcon color="#fff" size="60%" />
+        <PrevDocIcon size="60%" />
       </Button>
 
       <Button
@@ -46,7 +46,7 @@ export const DocumentNav: FC = () => {
         onClick={next}
         disabled={currentFileNo >= documents.length - 1}
       >
-        <NextDocIcon color="#fff" size="60%" />
+        <NextDocIcon size="60%" />
       </Button>
     </div>
   );

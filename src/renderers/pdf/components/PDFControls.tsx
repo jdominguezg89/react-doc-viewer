@@ -41,7 +41,7 @@ const PDFControls: FC = () => {
           aria-label={t("downloadButtonLabel")}
           title={t("downloadButtonLabel")}
         >
-          <DownloadPDFIcon color="#000" size="75%" />
+          <DownloadPDFIcon size="75%" />
         </LinkButton>
       )}
 
@@ -52,7 +52,7 @@ const PDFControls: FC = () => {
         title={t("pdfZoomOutLabel")}
         onClick={() => dispatch(setZoomLevel(zoomLevel - zoomJump))}
       >
-        <ZoomOutPDFIcon color="#000" size="80%" />
+        <ZoomOutPDFIcon size="80%" />
       </Button>
 
       <Button
@@ -62,7 +62,7 @@ const PDFControls: FC = () => {
         title={t("pdfZoomInLabel")}
         onClick={() => dispatch(setZoomLevel(zoomLevel + zoomJump))}
       >
-        <ZoomInPDFIcon color="#000" size="80%" />
+        <ZoomInPDFIcon size="80%" />
       </Button>
 
       <Button
@@ -73,7 +73,7 @@ const PDFControls: FC = () => {
         onClick={() => dispatch(setZoomLevel(defaultZoomLevel))}
         disabled={Math.abs(zoomLevel - defaultZoomLevel) < 0.001}
       >
-        <ResetZoomPDFIcon color="#000" size="70%" />
+        <ResetZoomPDFIcon size="70%" />
       </Button>
 
       {numPages > 1 && (
@@ -85,11 +85,7 @@ const PDFControls: FC = () => {
           aria-pressed={!paginated}
           onClick={() => dispatch(setPDFPaginated(!paginated))}
         >
-          <TogglePaginationPDFIcon
-            color="#000"
-            size="70%"
-            reverse={paginated}
-          />
+          <TogglePaginationPDFIcon size="70%" reverse={paginated} />
         </Button>
       )}
     </div>

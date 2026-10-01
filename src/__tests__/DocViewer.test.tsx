@@ -1,6 +1,11 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import { createRef } from "react";
-import DocViewer, { type DocViewerRef, type IDocument } from "../index";
+import DocViewer, {
+  type DocRenderer,
+  type DocViewerRef,
+  DocViewerRenderers,
+  type IDocument,
+} from "../index";
 import { mockDocumentRoutes } from "../test/helpers";
 
 const routes = {
@@ -305,5 +310,41 @@ describe("DocViewer", () => {
       "href",
       "https://x.test/letter.doc",
     );
+  });
+});
+
+describe("opaque content types", () => {
+  const binary = () =>
+    Promise.resolve(new Response(new Uint8Array([137, 80, 78, 71])));
+
+  it("shows the no-renderer state for an unknown type instead of loading forever", async () => {
+    fetchMock.resetMocks();
+    fetchMock.mockResponse(binary);
+    render(
+      <DocViewer documents={[{ uri: "blob:https://x.test/0b1c-4d5e" }]} />,
+    );
+    expect(await screen.findByTestId("no-renderer")).toHaveTextContent(
+      "application/octet-stream",
+    );
+  });
+
+  it("lets a custom renderer claim application/octet-stream (blob images)", async () => {
+    fetchMock.resetMocks();
+    fetchMock.mockResponse(binary);
+    const BlobImageRenderer: DocRenderer = ({ mainState }) => (
+      <img alt="blob" src={mainState.currentDocument?.fileData as string} />
+    );
+    BlobImageRenderer.fileTypes = ["image/png", "application/octet-stream"];
+    BlobImageRenderer.weight = 1;
+
+    render(
+      <DocViewer
+        documents={[{ uri: "blob:https://x.test/0b1c-4d5e" }]}
+        pluginRenderers={[...DocViewerRenderers, BlobImageRenderer]}
+      />,
+    );
+    expect(
+      await screen.findByRole("img", { name: "blob" }),
+    ).toBeInTheDocument();
   });
 });

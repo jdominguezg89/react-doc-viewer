@@ -17,10 +17,14 @@ const OPAQUE_TYPES = new Set([
   "binary/octet-stream",
 ]);
 
+export const UNKNOWN_FILE_TYPE = "application/octet-stream";
+
 /**
  * Picks the file type used for renderer selection: the server's content type
  * unless it is missing or an opaque binary type, in which case the URI
- * extension is used. Returns "" when nothing usable is known.
+ * extension is used. When nothing usable is known the result is
+ * `application/octet-stream`, so the viewer can fall through to a renderer
+ * registered for that type or to the "no renderer" state.
  */
 export const resolveFileType = (
   contentType: string | null | undefined,
@@ -28,5 +32,5 @@ export const resolveFileType = (
 ): string => {
   const normalized = normalizeFileType(contentType ?? undefined);
   if (!OPAQUE_TYPES.has(normalized)) return normalized;
-  return extensionFromUri(uri) || normalized;
+  return extensionFromUri(uri) || normalized || UNKNOWN_FILE_TYPE;
 };

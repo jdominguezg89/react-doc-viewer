@@ -21,7 +21,7 @@ export const NoRendererFallback: FC<Props> = ({
   const { t } = useTranslation();
 
   return (
-    <div id="no-renderer" data-testid="no-renderer">
+    <div id="no-renderer" data-testid="no-renderer" className="rdv-message">
       {message ??
         t("noRendererMessage", { fileType: document?.fileType ?? "" })}
       <LinkButton

@@ -32,6 +32,9 @@ describe("resolveFileType", () => {
     expect(resolveFileType("application/octet-stream", "/no-ext")).toBe(
       "application/octet-stream",
     );
-    expect(resolveFileType(null, "/no-ext")).toBe("");
+    expect(resolveFileType(null, "/no-ext")).toBe("application/octet-stream");
+    expect(resolveFileType("", "blob:https://app.test/0b1c-uuid")).toBe(
+      "application/octet-stream",
+    );
   });
 });

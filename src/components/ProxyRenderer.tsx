@@ -52,7 +52,12 @@ const Contents: FC<ContentsProps> = ({
     }
 
     return (
-      <div id="load-error" data-testid="load-error" role="alert">
+      <div
+        id="load-error"
+        data-testid="load-error"
+        className="rdv-message"
+        role="alert"
+      >
         {t("loadErrorMessage")}
       </div>
     );
@@ -123,7 +128,12 @@ export const ProxyRenderer: FC = () => {
   );
 
   return (
-    <div id="proxy-renderer" data-testid="proxy-renderer" ref={containerRef}>
+    <div
+      id="proxy-renderer"
+      data-testid="proxy-renderer"
+      className="rdv-proxy-renderer"
+      ref={containerRef}
+    >
       <Contents
         {...{
           state,

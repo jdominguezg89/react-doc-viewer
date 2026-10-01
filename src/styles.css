@@ -18,6 +18,33 @@
   height: 100%;
 }
 
+/*
+ * The renderer area fills the remaining height and scrolls. When the viewer's
+ * parent has no fixed height, it simply grows with the document.
+ */
+.rdv-proxy-renderer {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.rdv[data-themed-scrollbar="true"] .rdv-proxy-renderer::-webkit-scrollbar {
+  width: 10px;
+}
+
+.rdv-proxy-renderer::-webkit-scrollbar-thumb {
+  background: var(--rdv-tertiary);
+}
+
+.rdv-proxy-renderer::-webkit-scrollbar-thumb:hover {
+  background: var(--rdv-primary);
+}
+
+.rdv-message {
+  padding: 16px;
+}
+
 /* Buttons ------------------------------------------------------------------ */
 .rdv-button {
   display: flex;
@@ -138,18 +165,6 @@
   flex: 1;
 }
 
-.rdv[data-themed-scrollbar="true"] .rdv-pdf-renderer::-webkit-scrollbar {
-  width: 10px;
-}
-
-.rdv-pdf-renderer::-webkit-scrollbar-thumb {
-  background: var(--rdv-tertiary);
-}
-
-.rdv-pdf-renderer::-webkit-scrollbar-thumb:hover {
-  background: var(--rdv-primary);
-}
-
 .rdv-pdf-controls {
   display: flex;
   position: sticky;
@@ -215,19 +230,22 @@
 }
 
 .rdv-html-renderer__frame {
-  height: 100%;
+  flex: 1;
+  min-height: 300px;
   padding: 15px;
   margin: 20px 0;
   border: 1px solid var(--rdv-secondary);
 }
 
 .rdv-msdoc-renderer {
+  display: flex;
   width: 100%;
 }
 
 .rdv-msdoc-renderer__frame {
+  flex: 1;
   width: 100%;
-  height: 100%;
+  min-height: 400px;
   border: 0;
 }
 
@@ -243,6 +261,7 @@
 .rdv-csv-renderer__table th,
 .rdv-csv-renderer__table td {
   padding: 5px 10px;
+  text-align: start;
 }
 
 .rdv-csv-renderer__table th:empty,
@@ -251,10 +270,10 @@
 }
 
 .rdv-txt-renderer {
-  display: flex;
-  flex-direction: column;
   width: 100%;
   padding: 30px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .rdv-image-renderer {
