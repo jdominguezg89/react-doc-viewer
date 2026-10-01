@@ -44,7 +44,7 @@ This is a maintained fork of [cyntler/react-doc-viewer](https://github.com/cyntl
 | gif       | image/gif                                                                 |                             |
 | htm, html | text/htm, text/html                                                       | Sandboxed iframe            |
 | jpg, jpeg | image/jpg, image/jpeg                                                     |                             |
-| mp4       | video/mp4, video/quicktime, video/x-msvideo                               |                             |
+| mp4, mov, avi | video/mp4, video/quicktime, video/x-msvideo                           | Streamed by the browser     |
 | odt       | application/vnd.oasis.opendocument.text                                   | Office viewer, public URLs  |
 | pdf       | application/pdf                                                           |                             |
 | png       | image/png                                                                 |                             |
@@ -54,13 +54,14 @@ This is a maintained fork of [cyntler/react-doc-viewer](https://github.com/cyntl
 | webp      | image/webp                                                                |                             |
 | xls, xlsx | application/vnd.ms-excel, …spreadsheetml.sheet                            | Office viewer, public URLs  |
 
-Matching is case-insensitive and ignores MIME parameters. When a server answers with no content type or `application/octet-stream`, the file extension in the URL decides.
+Matching is case-insensitive and ignores MIME parameters. When a server answers with no content type or `application/octet-stream`, the file extension in the URL decides, provided a renderer handles that extension; otherwise the type is `application/octet-stream`, which a custom renderer can claim.
 
 ## Requirements
 
 - React and react-dom **19**.
 - ESM-only package. Bundlers (Vite, Next.js, webpack 5, Parcel, Rollup) and Node 22+ handle it natively; there is no CommonJS build.
-- Server-side rendering needs **Node 22.12 or newer** (pdf.js requirement).
+- TypeScript users: the stylesheet import ships its own declaration, so it type-checks without ambient `*.css` modules.
+- Server-side rendering needs **Node 22.13 or newer** (pdf.js requirement).
 - Browsers: evergreen. pdf.js 6 supports Chrome 125+ / Safari 18+ and current Firefox.
 
 ## Installation
@@ -119,14 +120,14 @@ export default function Page() {
 
 Notes:
 
-- The pdf.js worker is referenced with `new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url)`, which both webpack and Turbopack turn into a static asset. No `next.config` changes, no `serverExternalPackages`, no copying of worker files.
+- The pdf.js worker ships inside the package and is referenced with `new URL("./pdf.worker.min.mjs", import.meta.url)`, which both webpack and Turbopack turn into a static asset. No `next.config` changes, no `serverExternalPackages`, no copying of worker files.
 - Server rendering produces the viewer chrome and loading state; documents are fetched in the browser. The PDF engine (react-pdf + pdf.js) is loaded lazily on the client, only when a PDF is shown.
 - If you pass `onError`, `onDocumentChange` or other callbacks from a Server Component, wrap the viewer in your own client component, since functions cannot cross the server/client boundary.
-- The example in [`use-cases/nextjs`](./use-cases/nextjs) is a minimal App Router project that consumes the published package.
+- The example in [`use-cases/nextjs`](./use-cases/nextjs) is a minimal App Router project that consumes the built package through the pnpm workspace.
 
 ## PDF worker and pdf.js options
 
-By default the worker is the one shipped with the exact `pdfjs-dist` version this package depends on, resolved from `node_modules` by your bundler. Two ways to override it:
+By default the worker is a copy of the one from the exact `pdfjs-dist` version this package depends on. It ships in the package (`dist/pdf.worker.min.mjs`) and your bundler emits it as a local asset; this works in Vite (dev and build), Next.js, webpack 5 and Parcel without configuration. Two ways to override it:
 
 ```ts
 // Globally, once, before the first PDF renders (for CSP / offline / CDN setups):
@@ -156,7 +157,6 @@ Other pdf.js settings live under `config.pdf`:
         cMapUrl: "/pdfjs/cmaps/",
         standardFontDataUrl: "/pdfjs/standard_fonts/",
         wasmUrl: "/pdfjs/wasm/",
-        withCredentials: true,
       },
       externalLinkTarget: "_blank", // default
       onLoadError: (error) => console.error(error),
@@ -168,6 +168,8 @@ Other pdf.js settings live under `config.pdf`:
 ```
 
 The cMap, font and wasm directories are in the `pdfjs-dist` package (`cmaps/`, `standard_fonts/`, `wasm/`); copy them to your static assets if your documents need them.
+
+The PDF file itself is downloaded by the viewer, not by pdf.js. Use the `requestInit` prop (for example `requestInit={{ credentials: "include" }}`) and `requestHeaders` for cookies and auth headers; `httpHeaders` and `withCredentials` in `documentOptions` have no effect.
 
 ## Props
 
@@ -214,7 +216,7 @@ function Viewer() {
       disableHeader: false,
       disableFileName: false,
       retainURLParams: false,
-      overrideComponent: (state, previous, next) => <MyHeader … />,
+      overrideComponent: MyHeader, // (state, previous, next) => ReactElement, see below
     },
     loadingRenderer: {
       overrideComponent: ({ document, fileName }) => <p>Loading {fileName}…</p>,
@@ -280,7 +282,7 @@ const [active, setActive] = useState(docs[0]);
 <DocViewer documents={docs} activeDocument={active} onDocumentChange={setActive} />
 ```
 
-Passing a new `documents` array with the same contents does not reset the viewer; changing its contents does.
+Passing a new `documents` array with the same contents does not reset the viewer. When the contents change, the document on screen stays (and is not reloaded) as long as it is still in the list; otherwise the viewer starts again from `initialActiveDocument` or the first entry.
 
 **Pre-signed URLs and HTTP verbs**
 
@@ -336,7 +338,8 @@ Colours are CSS custom properties on the root element. Set them through the `the
 ```
 
 ```css
-.my-viewer {
+/* `.rdv.my-viewer` wins over the defaults regardless of stylesheet order. */
+.rdv.my-viewer {
   --rdv-primary: #5296d8;
   --rdv-text-primary: #fff;
 }
@@ -354,7 +357,8 @@ Colours are CSS custom properties on the root element. Set them through the `the
 
 Pick `textPrimary` so it is readable on both `primary` and `tertiary`: the page counter sits on the toolbar.
 
-- `className` and `style` go to the root element, so `styled(DocViewer)`, CSS modules or Tailwind classes all work.
+- `className` and `style` go to the root element, so `styled(DocViewer)` and CSS modules work. The root sets `display`, `background`, `width` and `height` with a single class; utility frameworks that put their classes in a cascade layer (Tailwind v4) lose to it, so use the `style` prop or size the parent instead.
+- The viewer fills a parent with a fixed height and scrolls inside it. Without one it grows with the document; if you then scroll the page and want the PDF toolbar to stick to the page, add `#react-doc-viewer #proxy-renderer { overflow: visible; }`.
 - Every part has a stable element id (`#header-bar`, `#pdf-controls`, `#pdf-pagination`, `#image-renderer`, …) and a `rdv-*` class name for targeted overrides.
 - The default scrollbar styling can be disabled with `theme.disableThemeScrollbar`.
 
@@ -370,9 +374,9 @@ Available: `ar`, `de`, `en`, `es`, `fr`, `it`, `ja`, `pl`, `pt`, `ru`, `se`, `sr
 
 - **HTML documents** render in an iframe with `sandbox=""` (no scripts, opaque origin). Set `config.html.sandbox` to relax this for trusted content.
 - **Office documents** are shown through Microsoft's viewer, which receives the document URL; use `config.msdoc.enabled = false` to show a download link instead, for private or pre-signed URLs.
-- **Request headers** are sent to every document URL by default (as in 1.x). Restrict them with `config.fetch.sendRequestHeadersTo` when documents can come from third-party hosts.
+- **Request headers** are sent to every document URL by default (as in 1.x). Restrict them with `config.fetch.sendRequestHeadersTo` when documents can come from third-party hosts. The policy checks the document URL only: if a URL may redirect to another origin, also pass `requestInit={{ redirect: "error" }}`, since browsers forward custom headers on redirects (only `Authorization` is stripped).
 - **PDF links** open in a new tab with `rel="noopener noreferrer"` (`config.pdf.externalLinkTarget`).
-- **Content Security Policy**: the worker is a same-origin static asset in most setups; if you serve it from a CDN, allow that origin in `worker-src` and point `configurePdfWorker()` at it.
+- **Content Security Policy**: the bundled worker is a same-origin static asset, so `worker-src 'self'` is enough. If you point `configurePdfWorker()` or `config.pdf.workerSrc` at another origin, pdf.js starts it through a `blob:` wrapper that imports the file: allow `blob:` in `worker-src` and that origin in `script-src`, and make sure the host sends CORS headers.
 
 ## Storybook
 
@@ -381,7 +385,7 @@ pnpm install
 pnpm start
 ```
 
-The stories under `src/DocViewer.stories.tsx` cover every renderer, theming, localisation, error states and the configuration options.
+The stories under `src/DocViewer.stories.tsx` cover the PDF, image, CSV, text and HTML renderers, theming, localisation, error states and the configuration options.
 
 ## Contributing
 

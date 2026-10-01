@@ -15,7 +15,7 @@ Version 2 is a modernisation release. Most 1.x code keeps working unchanged; the
 
 1. **React 19.** Upgrade `react` and `react-dom` to 19 (required by react-pdf 11).
 2. **ESM only.** There is no CommonJS build anymore. Bundlers and Node 22+ handle ESM natively. Jest users need ESM support (or switch to Vitest).
-3. **Node 22.12+** for server-side rendering (pdf.js requirement).
+3. **Node 22.13+** for server-side rendering (pdf.js requirement).
 4. **Remove PDF overrides.** Delete any `overrides` / `resolutions` for `react-pdf` or `pdfjs-dist` from your `package.json`. The package now pins the exact `pdfjs-dist` version react-pdf expects and loads the worker from `node_modules`, not from unpkg.
 5. **Keep the stylesheet import** (`@jdominguezg89/react-doc-viewer/dist/index.css`); the path inside the package is unchanged.
 6. Run your type checker: a few types were tightened (see below).
@@ -26,7 +26,7 @@ Version 2 is a modernisation release. Most 1.x code keeps working unchanged; the
 
 | 1.x                                                                 | 2.x                                                                                            |
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Worker fetched from `https://unpkg.com/pdfjs-dist@<version>/…` at import time | Worker resolved from the `pdfjs-dist` package by your bundler, lazily, when a PDF is shown |
+| Worker fetched from `https://unpkg.com/pdfjs-dist@<version>/…` at import time | Worker shipped in the package (a copy from the pinned `pdfjs-dist`) and emitted by your bundler as a local asset, loaded lazily when a PDF is shown |
 | Not configurable                                                    | `configurePdfWorker(src)` globally or `config.pdf.workerSrc` per instance                      |
 | Version mismatches between the bundled pdf.js and the CDN worker    | `pdfjs-dist` pinned to react-pdf's exact version; the build fails if they diverge              |
 
@@ -45,9 +45,12 @@ styled-components was removed. Styling is plain CSS with custom properties:
 ### Behaviour changes
 
 - **HTML documents** are rendered in a fully sandboxed iframe (`sandbox=""`) using `srcdoc`. Scripts no longer run and the document no longer shares your origin. Restore the old behaviour with `config={{ html: { sandbox: "allow-same-origin" } }}` if you trust the content.
-- **`application/octet-stream`** responses are no longer sent to the Office viewer. The file extension in the URL now decides the renderer for opaque content types, which is what you want for `.docx` on S3; other binary files fall through to "no renderer".
+- **`application/octet-stream`** responses are no longer sent to the Office viewer. For a missing or opaque content type the file extension in the URL decides the renderer, which is what you want for `.docx` or `.png` on S3. If you have a custom renderer registered for `application/octet-stream`, it is still selected when the URL has no extension (for example `blob:` URLs) or an extension no renderer handles. When the URL has an extension a built-in renderer handles (`.png`, `.pdf`, …), that renderer wins unless your renderer lists the extension too and has a higher `weight`; alternatively set `fileType` on the document.
 - **Errors are surfaced.** A failed fetch (network error or non-2xx status) shows an error message (`config.errorRenderer` to customise) and calls `onError`. In 1.x the spinner stayed forever.
-- **Inline `documents` arrays** no longer reset the viewer on every parent render; the array contents are compared instead of the reference.
+- **Inline `documents` arrays** no longer reset the viewer on every parent render; the array contents are compared instead of the reference. When the list does change, the document on screen is kept if it is still in the list (1.x always jumped back to the first or initial document).
+- **The viewer scrolls inside a fixed-height parent** instead of overflowing it. If you relied on page scrolling with a sticky PDF toolbar, add `#react-doc-viewer #proxy-renderer { overflow: visible; }`.
+- **Text files** are decoded from the byte-order mark or the declared charset, then UTF-8. **Video** is streamed from its URL instead of being downloaded first.
+- **Default `textTertiary`** is darker (`#00000099`) so page labels meet contrast requirements, and the themed scrollbar thumb uses `textTertiary`/`secondary`.
 - **Zoom** is clamped to 0.25 – 5.
 - **`onDocumentChange`** is called from the navigation controls and the ref API (not from inside the reducer), so it fires exactly once per navigation, also under StrictMode.
 - Props such as `requestHeaders`, `language`, `pluginRenderers` and callbacks now update after mount.
@@ -73,4 +76,4 @@ styled-components was removed. Styling is plain CSS with custom properties:
 - CommonJS build (`dist/react-doc-viewer.cjs`).
 - React 17/18 support.
 - The `core-js` `Promise.withResolvers` polyfill (Node 22+ and evergreen browsers have it).
-- `dist/pdf.worker.mjs` (the unreferenced 2 MB copy of the worker).
+- The unpkg worker URL. (`dist/pdf.worker.min.mjs` is now the worker the package actually uses.)
