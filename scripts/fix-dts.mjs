@@ -43,8 +43,15 @@ for (const file of walk(distDir)) {
     .filter((line) => !/^\s*import\s+["'][^"']+\.css["'];?\s*$/.test(line))
     .filter((line) => !/^\s*import\s+["']\.\/cssStyles["'];?\s*$/.test(line))
     .join("\n")
-    .replace(/(["'])(\.\.?(?:\/[^"']*)?)\1/g, (_match, quote, specifier) => {
-      return `${quote}${resolveSpecifier(file, specifier)}${quote}`;
-    });
+    // Only module specifiers: `from "./x"`, `import("./x")`, `import "./x"`.
+    .replace(
+      /(from\s+|import\s*\(\s*|^\s*import\s+)(["'])(\.\.?(?:\/[^"']*)?)\2/gm,
+      (_match, lead, quote, specifier) =>
+        `${lead}${quote}${resolveSpecifier(file, specifier)}${quote}`,
+    );
   if (output !== source) writeFileSync(file, output);
 }
+
+// TypeScript 6+ checks side-effect imports; give the stylesheet a declaration
+// so `import "<package>/dist/index.css"` type-checks without ambient modules.
+writeFileSync(join(distDir, "index.css.d.ts"), "export {};\n");

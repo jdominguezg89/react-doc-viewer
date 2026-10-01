@@ -29,5 +29,9 @@ jobs:
         run: pnpm test
       - name: Build
         run: pnpm build
-      - name: Pack (dry run)
+      - name: Pack (runs the build again through prepack)
         run: pnpm pack --pack-destination /tmp
+      - name: Build Storybook
+        run: pnpm storybook:build
+      - name: Build the Next.js example against dist
+        run: pnpm --filter react-doc-viewer-nextjs-example build

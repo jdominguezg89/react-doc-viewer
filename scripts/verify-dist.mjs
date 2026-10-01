@@ -44,10 +44,25 @@ for (const file of jsFiles) {
 
 const allJs = jsFiles.map((file) => readFileSync(file, "utf8")).join("\n");
 assert(
-  allJs.includes(
-    'new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url)',
-  ),
-  "the pdf.js worker URL literal is missing from dist (the consumer bundler could not resolve the worker)",
+  allJs.includes('new URL("./pdf.worker.min.mjs", import.meta.url)'),
+  "the relative pdf.js worker URL is missing from dist",
+);
+assert(
+  !allJs.includes('new URL("pdfjs-dist/'),
+  "dist still refers to the worker through a bare specifier (breaks Vite dev in consumer apps)",
+);
+const workerFile = join(distDir, "pdf.worker.min.mjs");
+assert(
+  existsSync(workerFile) && statSync(workerFile).size > 500_000,
+  "dist/pdf.worker.min.mjs is missing or truncated",
+);
+assert(
+  existsSync(join(distDir, "index.css.d.ts")),
+  "dist/index.css.d.ts is missing",
+);
+assert(
+  !existsSync(join(distDir, "test")),
+  "test helpers leaked into dist/test",
 );
 assert(
   !allJs.includes("data:application/javascript") &&
@@ -78,7 +93,11 @@ assert(
 
 for (const file of dtsFiles) {
   const code = readFileSync(file, "utf8");
-  const bad = [...code.matchAll(/["'](\.\.?(?:\/[^"']*)?)["']/g)]
+  const bad = [
+    ...code.matchAll(
+      /(?:from\s+|import\s*\(\s*|^\s*import\s+)["'](\.\.?(?:\/[^"']*)?)["']/gm,
+    ),
+  ]
     .map((match) => match[1])
     .filter((specifier) => !specifier.endsWith(".js"));
   assert(

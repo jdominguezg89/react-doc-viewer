@@ -10,10 +10,11 @@
 export type PdfWorkerSource = string | URL;
 
 /**
- * The worker that ships with the `pdfjs-dist` version react-pdf depends on.
- * Bundlers (Vite, webpack 5, Next.js, Parcel, Rollup) understand the
- * `new URL(specifier, import.meta.url)` pattern and copy the worker into the
- * consumer's build, so no CDN is involved and the versions always match.
+ * The worker of the exact `pdfjs-dist` version react-pdf depends on.
+ * The published build ships a copy next to its chunks and rewrites this
+ * expression to `new URL("./pdf.worker.min.mjs", import.meta.url)` (see
+ * vite.config.ts), which every bundler turns into a local asset: no CDN, and
+ * the worker always matches the pdf.js version in use.
  */
 export const getDefaultPdfWorkerSource = (): string =>
   new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();

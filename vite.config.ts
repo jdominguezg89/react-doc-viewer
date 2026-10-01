@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
+
+const require = createRequire(import.meta.url);
 
 const pkg = JSON.parse(readFileSync("./package.json", "utf8")) as {
   dependencies?: Record<string, string>;
@@ -21,40 +24,56 @@ const isExternal = (id: string) =>
   !id.endsWith(".css") &&
   externalPackages.some((name) => id === name || id.startsWith(`${name}/`));
 
-const WORKER_URL_LITERAL =
+const WORKER_SOURCE_LITERAL =
   'new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url)';
+const WORKER_DIST_FILE = "pdf.worker.min.mjs";
+const WORKER_DIST_LITERAL = `new URL("./${WORKER_DIST_FILE}", import.meta.url)`;
 const WORKER_URL_PLACEHOLDER = "__RDV_PDF_WORKER_URL__";
 
 /**
- * In library mode Vite inlines every asset referenced through
- * `new URL(..., import.meta.url)` as a base64 data: URL, which would embed the
- * 1 MB pdf.js worker into dist/index.js. This plugin hides the expression from
- * Vite during the build and restores the literal in the emitted chunk so the
- * *consumer's* bundler resolves the worker from its own node_modules.
+ * Library build only. The source refers to the worker through the
+ * `pdfjs-dist` package, which is what Vite needs for dev, tests and Storybook.
+ * A published package cannot keep that form: Vite's dependency optimizer in a
+ * consumer's dev server rewrites a bare specifier inside `new URL()` to a
+ * path that does not exist, and library mode would inline the 1 MB worker as
+ * a data: URL. So the build ships the worker next to the chunks and points
+ * the emitted code at it with a plain relative URL, which every bundler
+ * (Vite dev/build, webpack 5, Turbopack, Parcel, Rollup) resolves the same
+ * way.
  */
-const preservePdfWorkerUrl = (): Plugin => ({
-  name: "rdv:preserve-pdf-worker-url",
-  apply: "build",
+const shipPdfWorker = (): Plugin => ({
+  name: "rdv:ship-pdf-worker",
+  // Not for app builds that reuse this config (Storybook strips `build.lib`).
+  apply: (config, env) => env.command === "build" && Boolean(config.build?.lib),
   enforce: "pre",
   transform(code, id) {
-    if (!id.includes("/renderers/pdf/worker.")) return null;
-    if (!code.includes(WORKER_URL_LITERAL)) return null;
+    if (!/[\\/]renderers[\\/]pdf[\\/]worker\./.test(id)) return null;
+    if (!code.includes(WORKER_SOURCE_LITERAL)) return null;
     return {
-      code: code.replaceAll(WORKER_URL_LITERAL, WORKER_URL_PLACEHOLDER),
+      code: code.replaceAll(WORKER_SOURCE_LITERAL, WORKER_URL_PLACEHOLDER),
       map: null,
     };
   },
   renderChunk(code) {
     if (!code.includes(WORKER_URL_PLACEHOLDER)) return null;
     return {
-      code: code.replaceAll(WORKER_URL_PLACEHOLDER, WORKER_URL_LITERAL),
+      code: code.replaceAll(WORKER_URL_PLACEHOLDER, WORKER_DIST_LITERAL),
       map: null,
     };
+  },
+  generateBundle() {
+    this.emitFile({
+      type: "asset",
+      fileName: WORKER_DIST_FILE,
+      source: readFileSync(
+        require.resolve("pdfjs-dist/build/pdf.worker.min.mjs"),
+      ),
+    });
   },
 });
 
 export default defineConfig({
-  plugins: [preservePdfWorkerUrl()],
+  plugins: [shipPdfWorker()],
   build: {
     lib: {
       entry: "./src/index.tsx",
