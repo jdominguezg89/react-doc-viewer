@@ -4,11 +4,20 @@ Version 2 is a modernisation release. Most 1.x code keeps working unchanged; the
 
 ## Checklist
 
+0. **New package name.** The maintained fork is published as `@jdominguezg89/react-doc-viewer`:
+
+   ```bash
+   pnpm remove @cyntler/react-doc-viewer
+   pnpm add @jdominguezg89/react-doc-viewer
+   ```
+
+   Then replace `@cyntler/react-doc-viewer` with `@jdominguezg89/react-doc-viewer` in your imports, including the stylesheet import. Nothing else about the import paths changed.
+
 1. **React 19.** Upgrade `react` and `react-dom` to 19 (required by react-pdf 11).
 2. **ESM only.** There is no CommonJS build anymore. Bundlers and Node 22+ handle ESM natively. Jest users need ESM support (or switch to Vitest).
 3. **Node 22.12+** for server-side rendering (pdf.js requirement).
 4. **Remove PDF overrides.** Delete any `overrides` / `resolutions` for `react-pdf` or `pdfjs-dist` from your `package.json`. The package now pins the exact `pdfjs-dist` version react-pdf expects and loads the worker from `node_modules`, not from unpkg.
-5. **Keep the stylesheet import** `@cyntler/react-doc-viewer/dist/index.css`; its path is unchanged.
+5. **Keep the stylesheet import** (`@jdominguezg89/react-doc-viewer/dist/index.css`); the path inside the package is unchanged.
 6. Run your type checker: a few types were tightened (see below).
 
 ## What changed

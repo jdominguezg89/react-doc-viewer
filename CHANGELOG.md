@@ -19,6 +19,7 @@ See [MIGRATION.md](./MIGRATION.md) for upgrade steps.
 
 ### Changed
 
+- **Breaking:** the package is published as `@jdominguezg89/react-doc-viewer` (maintained fork of `@cyntler/react-doc-viewer`).
 - **Breaking:** React 19 is required; the package is ESM-only; SSR needs Node 22.12+.
 - **Breaking:** styled-components removed in favour of plain CSS + custom properties. The `theme` prop and element ids are unchanged.
 - **Breaking:** HTML documents render in a fully sandboxed iframe via `srcdoc`.
@@ -27,6 +28,9 @@ See [MIGRATION.md](./MIGRATION.md) for upgrade steps.
 - All dependencies are externalised; `dist/index.js` is 26 kB (was 694 kB with pdf.js and styled-components bundled). The published tarball shrinks from 3.7 MB to about 70 kB.
 - The PDF renderer is loaded lazily, so apps that never show a PDF never download pdf.js.
 - The `"use client"` directive is preserved in the build output.
+- The renderer area is the scroll container again (`#proxy-renderer` fills the remaining height and scrolls), so the viewer stays inside a fixed-height parent.
+- Icons inherit the button text colour (`currentColor`), so custom themes no longer produce black-on-dark icons.
+- Unknown content types resolve to `application/octet-stream`, which a custom renderer can claim.
 - Declaration files use explicit `.js` extensions and `DocViewerRenderers` is typed.
 - Renderer matching is case-insensitive and ignores MIME parameters.
 - Built-in loaders read responses with `arrayBuffer()`/`text()` instead of `FileReader`.

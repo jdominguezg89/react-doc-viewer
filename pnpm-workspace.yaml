@@ -31,6 +31,7 @@ allowBuilds:
   canvas: false
   core-js: false
 
-# Dev-only: release-it pins an undici with open advisories.
+# Dev-only: transitive dependencies of release-it with open advisories.
 overrides:
   undici: "^7.30.0"
+  basic-ftp: "^6.2.1"

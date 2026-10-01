@@ -9,7 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@cyntler/react-doc-viewer": "workspace:*",
+    "@jdominguezg89/react-doc-viewer": "workspace:*",
     "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

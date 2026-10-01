@@ -1,4 +1,4 @@
-[![npm-version](https://img.shields.io/npm/v/@cyntler/react-doc-viewer.svg)](https://www.npmjs.com/package/@cyntler/react-doc-viewer)
+[![npm-version](https://img.shields.io/npm/v/@jdominguezg89/react-doc-viewer.svg)](https://www.npmjs.com/package/@jdominguezg89/react-doc-viewer)
 [![CI](https://github.com/jdominguezg89/react-doc-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/jdominguezg89/react-doc-viewer/actions/workflows/ci.yml)
 
 # react-doc-viewer
@@ -66,11 +66,11 @@ Matching is case-insensitive and ignores MIME parameters. When a server answers 
 ## Installation
 
 ```bash
-pnpm add @cyntler/react-doc-viewer
+pnpm add @jdominguezg89/react-doc-viewer
 ```
 
 ```bash
-npm install @cyntler/react-doc-viewer
+npm install @jdominguezg89/react-doc-viewer
 ```
 
 `react-pdf` and `pdfjs-dist` are regular dependencies of this package and are always installed in matching versions. You do not need to install or pin them yourself, and any `overrides` / `resolutions` for them from the 1.x days can be removed.
@@ -78,8 +78,8 @@ npm install @cyntler/react-doc-viewer
 ## Quick start
 
 ```tsx
-import DocViewer from "@cyntler/react-doc-viewer";
-import "@cyntler/react-doc-viewer/dist/index.css";
+import DocViewer from "@jdominguezg89/react-doc-viewer";
+import "@jdominguezg89/react-doc-viewer/dist/index.css";
 
 const docs = [
   { uri: "https://example.com/report.pdf" },
@@ -105,8 +105,8 @@ The package declares its own client boundary (`"use client"`), so you can import
 
 ```tsx
 // app/documents/page.tsx
-import DocViewer from "@cyntler/react-doc-viewer";
-import "@cyntler/react-doc-viewer/dist/index.css";
+import DocViewer from "@jdominguezg89/react-doc-viewer";
+import "@jdominguezg89/react-doc-viewer/dist/index.css";
 
 export default function Page() {
   return (
@@ -130,7 +130,7 @@ By default the worker is the one shipped with the exact `pdfjs-dist` version thi
 
 ```ts
 // Globally, once, before the first PDF renders (for CSP / offline / CDN setups):
-import { configurePdfWorker } from "@cyntler/react-doc-viewer";
+import { configurePdfWorker } from "@jdominguezg89/react-doc-viewer";
 configurePdfWorker("/static/pdf.worker.min.mjs");
 ```
 
@@ -190,7 +190,7 @@ The cMap, font and wasm directories are in the `pdfjs-dist` package (`cmaps/`, `
 | `ref`                   | `DocViewerRef`                                    | `{ prev(), next() }` for imperative navigation.                                                                         |
 
 ```tsx
-import DocViewer, { type DocViewerRef } from "@cyntler/react-doc-viewer";
+import DocViewer, { type DocViewerRef } from "@jdominguezg89/react-doc-viewer";
 
 function Viewer() {
   const ref = useRef<DocViewerRef>(null);
@@ -240,7 +240,7 @@ function Viewer() {
 The header override receives the full viewer state plus `previous`/`next` callbacks:
 
 ```tsx
-import type { IHeaderOverride } from "@cyntler/react-doc-viewer";
+import type { IHeaderOverride } from "@jdominguezg89/react-doc-viewer";
 
 const MyHeader: IHeaderOverride = (state, previous, next) => (
   <div>
@@ -291,7 +291,7 @@ Some services (S3, GCS) sign a URL for a single verb. Use `prefetchMethod="GET"`
 `DocViewerRenderers` is the array of all built-in renderers; each is also exported individually (`PDFRenderer`, `PNGRenderer`, `CSVRenderer`, …).
 
 ```tsx
-import DocViewer, { PDFRenderer, PNGRenderer } from "@cyntler/react-doc-viewer";
+import DocViewer, { PDFRenderer, PNGRenderer } from "@jdominguezg89/react-doc-viewer";
 
 <DocViewer documents={docs} pluginRenderers={[PDFRenderer, PNGRenderer]} />;
 ```
@@ -299,8 +299,8 @@ import DocViewer, { PDFRenderer, PNGRenderer } from "@cyntler/react-doc-viewer";
 **Custom renderer**
 
 ```tsx
-import type { DocRenderer } from "@cyntler/react-doc-viewer";
-import { textFileLoader } from "@cyntler/react-doc-viewer";
+import type { DocRenderer } from "@jdominguezg89/react-doc-viewer";
+import { textFileLoader } from "@jdominguezg89/react-doc-viewer";
 
 const MarkdownRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
   if (typeof currentDocument?.fileData !== "string") return null;
@@ -344,6 +344,15 @@ Colours are CSS custom properties on the root element. Set them through the `the
   background: #faf;
 }
 ```
+
+| Token (`theme` key)                | CSS variable            | Used for                                                        |
+| ---------------------------------- | ----------------------- | --------------------------------------------------------------- |
+| `primary` / `textPrimary`          | `--rdv-primary` / `--rdv-text-primary`     | Header bar, toolbar buttons and their icons, page counter |
+| `secondary` / `textSecondary`      | `--rdv-secondary` / `--rdv-text-secondary` | Previous/next document buttons, focus ring, HTML frame border |
+| `tertiary`                         | `--rdv-tertiary`        | PDF toolbar background, scrollbar thumb                         |
+| `textTertiary`                     | `--rdv-text-tertiary`   | Page labels in continuous-scroll mode                           |
+
+Pick `textPrimary` so it is readable on both `primary` and `tertiary`: the page counter sits on the toolbar.
 
 - `className` and `style` go to the root element, so `styled(DocViewer)`, CSS modules or Tailwind classes all work.
 - Every part has a stable element id (`#header-bar`, `#pdf-controls`, `#pdf-pagination`, `#image-renderer`, …) and a `rdv-*` class name for targeted overrides.

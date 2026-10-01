@@ -1,19 +1,23 @@
 {
-  "name": "@cyntler/react-doc-viewer",
+  "name": "@jdominguezg89/react-doc-viewer",
   "version": "1.17.1",
-  "description": "File viewer for React.",
+  "description": "File viewer for React: PDF, images, CSV, text, HTML, video and Office documents.",
   "author": "Matthew Mogford / Damian Cyntler",
   "type": "module",
   "keywords": [
-    "reactjs",
-    "react-library",
+    "react",
+    "react-19",
     "file-viewer",
-    "doc-viewer"
+    "doc-viewer",
+    "pdf-viewer",
+    "document-viewer",
+    "nextjs"
   ],
   "license": "Apache-2.0",
-  "homepage": "https://cyntler.github.io/react-doc-viewer",
+  "homepage": "https://github.com/jdominguezg89/react-doc-viewer#readme",
   "repository": {
-    "url": "https://github.com/cyntler/react-doc-viewer"
+    "type": "git",
+    "url": "git+https://github.com/jdominguezg89/react-doc-viewer.git"
   },
   "files": [
     "dist"
@@ -86,5 +90,11 @@
   "packageManager": "pnpm@12.8.1+sha512.f64ba907507f5ceafe06c8d38e6052d0179444580ec1279ddd5bfc11cb48aa8a2644b66598e07e761da84872a9fc57d5f902b87fa49d024198d558612aabbe45",
   "sideEffects": [
     "**/*.css"
-  ]
+  ],
+  "bugs": {
+    "url": "https://github.com/jdominguezg89/react-doc-viewer/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }
