@@ -1,19 +1,19 @@
 {
   "documentNavInfo": "مستند {{ currentFileNo }} من {{ allFilesCount }}",
-  "noRendererMessage": "{{{ fileType }}} : لا يمكننا عرض هذا النوع من الملفات",
+  "noRendererMessage": "لا يمكننا عرض هذا النوع من الملفات: {{{ fileType }}}",
   "downloadButtonLabel": "تحميل الملف",
   "brokenFile": "الملف تالف، يرجى التحقق منه على جهازك الخاص.",
   "msgPluginRecipients": "المستلمين",
   "msgPluginSender": "المرسل",
   "pdfPluginLoading": "تحميل ...",
-  "pdfPluginPageNumber": " {{ allPagesCount }} \\ {{ currentPage }} صفحة ",
+  "pdfPluginPageNumber": "صفحة {{ currentPage }} / {{ allPagesCount }}",
   "loadErrorMessage": "تعذّر تحميل المستند.",
   "pdfZoomInLabel": "تكبير",
   "pdfZoomOutLabel": "تصغير",
   "pdfZoomResetLabel": "إعادة الضبط إلى مستوى التكبير الافتراضي",
   "pdfNextPageLabel": "الصفحة التالية",
   "pdfPreviousPageLabel": "الصفحة السابقة",
-  "pdfTogglePaginationLabel": "التبديل بين صفحة واحدة والتمرير المستمر",
+  "pdfTogglePaginationLabel": "التمرير المستمر",
   "previousDocumentLabel": "المستند السابق",
   "nextDocumentLabel": "المستند التالي"
 }

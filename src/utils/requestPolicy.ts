@@ -11,9 +11,10 @@ export const shouldSendRequestHeaders = (
 
   let origin: string;
   try {
+    // Resolve like `fetch` does: against the document base URL (<base href>).
     origin = new URL(
       uri,
-      typeof window !== "undefined" ? window.location.href : undefined,
+      typeof document !== "undefined" ? document.baseURI : undefined,
     ).origin;
   } catch {
     return false;
@@ -22,5 +23,6 @@ export const shouldSendRequestHeaders = (
   if (policy === "same-origin") {
     return typeof window !== "undefined" && origin === window.location.origin;
   }
-  return policy.includes(origin);
+  // Anything that is not a list of origins fails closed.
+  return Array.isArray(policy) && policy.includes(origin);
 };

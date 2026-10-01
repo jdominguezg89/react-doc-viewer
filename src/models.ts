@@ -49,7 +49,8 @@ export interface IFetchConfig {
    * Which document URLs receive the `requestHeaders` prop.
    * `"all"` (default, previous behaviour), `"same-origin"`, a list of
    * allowed origins, or a predicate. Use it to keep credentials from
-   * leaking to third-party hosts.
+   * leaking to third-party hosts. Only the document URL is checked; add
+   * `requestInit={{ redirect: "error" }}` if a URL may redirect elsewhere.
    */
   sendRequestHeadersTo?: RequestHeadersPolicy;
 }
@@ -65,7 +66,8 @@ export interface IPdfConfig {
   workerSrc?: string | URL;
   /**
    * Extra options passed to pdf.js `getDocument` (for example `cMapUrl`,
-   * `standardFontDataUrl`, `wasmUrl`, `httpHeaders`, `withCredentials`).
+   * `standardFontDataUrl`, `wasmUrl`). The PDF itself is downloaded by the
+   * viewer, so use `requestHeaders` / `requestInit` for credentials.
    * Keep the object reference stable to avoid reloading the document.
    */
   documentOptions?: PdfDocumentOptions;

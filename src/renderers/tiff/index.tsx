@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 import type { DocRenderer } from "../../models";
 import { arrayBufferFileLoader } from "../../utils/fileLoaders";
+import { getFileName } from "../../utils/getFileName";
 import ImageProxyRenderer from "../image";
 import { parseTIFF } from "./tiffToCanvas";
 
@@ -40,7 +41,8 @@ const TIFFRenderer: DocRenderer = (props) => {
         ref={canvasRef}
         id="tiff-img"
         className="rdv-image-renderer__canvas"
-        aria-label={currentDocument?.fileName || "TIFF image"}
+        role="img"
+        aria-label={getFileName(currentDocument, false) || "TIFF"}
       />
     </ImageProxyRenderer>
   );

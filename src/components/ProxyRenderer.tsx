@@ -79,9 +79,6 @@ const Contents: FC<ContentsProps> = ({
           id="loading-renderer"
           data-testid="loading-renderer"
           className="rdv-loading"
-          role="status"
-          aria-live="polite"
-          aria-label={t("pdfPluginLoading")}
         >
           <div className="rdv-loading__icon">
             <LoadingIcon color="#444" size={40} />
@@ -127,13 +124,38 @@ export const ProxyRenderer: FC = () => {
     config?.header?.retainURLParams || false,
   );
 
+  // One always-mounted status line for assistive technology: live regions
+  // only announce changes to content that is already in the DOM.
+  let status = "";
+  if (currentDocument && !documentError) {
+    status = documentLoading
+      ? t("pdfPluginLoading")
+      : `${fileName} ${
+          documents.length > 1
+            ? t("documentNavInfo", {
+                currentFileNo: state.currentFileNo + 1,
+                allFilesCount: documents.length,
+              })
+            : ""
+        }`.trim();
+  }
+
   return (
+    // biome-ignore lint/a11y/useSemanticElements: kept as a div so existing `#proxy-renderer` selectors keep working
     <div
       id="proxy-renderer"
       data-testid="proxy-renderer"
       className="rdv-proxy-renderer"
       ref={containerRef}
+      // A named, focusable region: the scroll area must be reachable from
+      // the keyboard even when the document has no focusable content.
+      role="region"
+      aria-label={fileName || undefined}
+      tabIndex={currentDocument ? 0 : undefined}
     >
+      <div className="rdv-visually-hidden" role="status">
+        {status}
+      </div>
       <Contents
         {...{
           state,

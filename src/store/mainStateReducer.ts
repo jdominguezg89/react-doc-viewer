@@ -1,8 +1,10 @@
 import { type AvailableLanguages, defaultLanguage } from "../i18n";
 import type { DocRenderer, IConfig, IDocument } from "../models";
+import { normalizeFileType } from "../utils/fileType";
 import {
   type MainStateActions,
   NEXT_DOCUMENT,
+  PATCH_CURRENT_DOCUMENT,
   PREVIOUS_DOCUMENT,
   SET_ALL_DOCUMENTS,
   SET_DOCUMENT_ERROR,
@@ -20,6 +22,12 @@ export type IMainState = {
   /** Set when the current document failed to load; cleared on navigation. */
   documentError?: Error;
   currentDocument?: IDocument;
+  /**
+   * Internal: incremented every time a document has to be (re)loaded. Loader
+   * effects depend on it and loader results carry it, so late results for a
+   * previous load are dropped.
+   */
+  loadId: number;
   rendererRect?: DOMRect;
   config?: IConfig;
   pluginRenderers?: DocRenderer[];
@@ -39,6 +47,7 @@ export const initialState: IMainState = {
   documentLoading: true,
   documentError: undefined,
   currentDocument: undefined,
+  loadId: 0,
   rendererRect: undefined,
   config: {},
   pluginRenderers: [],
@@ -61,26 +70,81 @@ export const findDocumentIndex = (
   return documents.findIndex((doc) => doc.uri === document.uri);
 };
 
+/**
+ * Where the currently shown document sits in a new list: its old position if
+ * the entry there still has the same URI (keeps duplicates apart), otherwise
+ * the first entry with that URI, otherwise -1.
+ */
+const locateCurrent = (documents: IDocument[], state: IMainState): number => {
+  const current = state.currentDocument;
+  if (!current) return -1;
+  if (documents[state.currentFileNo]?.uri === current.uri) {
+    return state.currentFileNo;
+  }
+  return documents.findIndex((doc) => doc.uri === current.uri);
+};
+
+/** True when `next` describes the document that is already loaded as `current`. */
+const isSameLoadedDocument = (
+  current: IDocument | undefined,
+  next: IDocument | undefined,
+): boolean => {
+  if (!current || !next || current.uri !== next.uri) return false;
+  if (next.fileData !== undefined && next.fileData !== current.fileData) {
+    return false;
+  }
+  const nextType = normalizeFileType(next.fileType);
+  return !nextType || nextType === normalizeFileType(current.fileType);
+};
+
+const startLoading = (
+  state: IMainState,
+  currentFileNo: number,
+  currentDocument: IDocument | undefined,
+): IMainState => ({
+  ...state,
+  currentFileNo,
+  currentDocument,
+  documentLoading: currentDocument !== undefined,
+  documentError: undefined,
+  loadId: state.loadId + 1,
+});
+
 export const mainStateReducer: MainStateReducer = (
   state = initialState,
   action: MainStateActions,
 ): IMainState => {
   switch (action.type) {
     case SET_ALL_DOCUMENTS: {
-      const { documents, initialActiveDocument } = action;
-      const index = Math.max(
-        findDocumentIndex(documents, initialActiveDocument),
-        0,
-      );
+      const { documents, activeDocument, initialActiveDocument } = action;
 
-      return {
-        ...state,
-        documents,
-        currentDocument: documents[index],
-        currentFileNo: index,
-        documentLoading: documents.length > 0,
-        documentError: undefined,
-      };
+      // Controlled selection, else the document already on screen (if it is
+      // still in the list), else the initial document, else the first one.
+      let index = findDocumentIndex(documents, activeDocument);
+      if (index < 0) index = locateCurrent(documents, state);
+      if (index < 0)
+        index = findDocumentIndex(documents, initialActiveDocument);
+      if (index < 0) index = 0;
+
+      const target = documents[index];
+      const current = state.currentDocument;
+
+      if (current && isSameLoadedDocument(current, target)) {
+        // Same document: keep what was already loaded instead of reloading.
+        return {
+          ...state,
+          documents,
+          currentFileNo: index,
+          currentDocument: {
+            ...current,
+            ...target,
+            fileType: target.fileType ?? current.fileType,
+            fileData: target.fileData ?? current.fileData,
+          },
+        };
+      }
+
+      return startLoading({ ...state, documents }, index, target);
     }
 
     case SET_DOCUMENT_LOADING: {
@@ -97,41 +161,38 @@ export const mainStateReducer: MainStateReducer = (
 
     case NEXT_DOCUMENT: {
       if (state.currentFileNo >= state.documents.length - 1) return state;
-      const nextDocumentNo = state.currentFileNo + 1;
-
-      return {
-        ...state,
-        currentFileNo: nextDocumentNo,
-        currentDocument: state.documents[nextDocumentNo],
-        documentLoading: true,
-        documentError: undefined,
-      };
+      const index = state.currentFileNo + 1;
+      return startLoading(state, index, state.documents[index]);
     }
 
     case PREVIOUS_DOCUMENT: {
       if (state.currentFileNo <= 0) return state;
-      const prevDocumentNo = state.currentFileNo - 1;
-
-      return {
-        ...state,
-        currentFileNo: prevDocumentNo,
-        currentDocument: state.documents[prevDocumentNo],
-        documentLoading: true,
-        documentError: undefined,
-      };
+      const index = state.currentFileNo - 1;
+      return startLoading(state, index, state.documents[index]);
     }
 
     case UPDATE_CURRENT_DOCUMENT: {
       const { document } = action;
-      const index = findDocumentIndex(state.documents, document);
-      const changed = document.uri !== state.currentDocument?.uri;
+      const found = findDocumentIndex(state.documents, document);
+      const index = found >= 0 ? found : state.currentFileNo;
 
+      if (
+        index === state.currentFileNo &&
+        isSameLoadedDocument(state.currentDocument, document)
+      ) {
+        return state;
+      }
+
+      return startLoading(state, index, document);
+    }
+
+    case PATCH_CURRENT_DOCUMENT: {
+      if (action.loadId !== state.loadId || !state.currentDocument) {
+        return state;
+      }
       return {
         ...state,
-        currentDocument: document,
-        currentFileNo: index >= 0 ? index : state.currentFileNo,
-        documentLoading: changed ? true : state.documentLoading,
-        documentError: changed ? undefined : state.documentError,
+        currentDocument: { ...state.currentDocument, ...action.patch },
       };
     }
 

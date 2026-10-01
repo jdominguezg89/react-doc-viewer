@@ -19,7 +19,6 @@ const routes = {
   },
   "other.html": { body: "<h1>Other</h1>", type: "text/html" },
   "missing.png": { body: "nope", type: "text/plain", status: 404 },
-  noext: { body: "png-noext", type: "image/png" },
 };
 
 beforeEach(() => {
@@ -205,11 +204,12 @@ describe("DocViewer", () => {
       screen.getByRole("button", { name: "Następny dokument" }),
     ).toBeEnabled();
 
+    await screen.findByRole("img");
+
     rerender(<DocViewer documents={docs} language="ar" />);
-    expect(screen.getByTestId("react-doc-viewer")).toHaveAttribute(
-      "dir",
-      "rtl",
-    );
+    const root = screen.getByTestId("react-doc-viewer");
+    expect(root).toHaveAttribute("dir", "rtl");
+    expect(root).toHaveAttribute("lang", "ar");
   });
 
   it("maps the theme prop to CSS custom properties", () => {
@@ -270,11 +270,14 @@ describe("DocViewer", () => {
       />,
     );
     await screen.findByRole("img");
-    const [, init] = fetchMock.mock.calls[0];
-    expect((init as RequestInit).headers).toEqual({
-      Authorization: "Bearer secret",
-    });
-    expect((init as RequestInit).credentials).toBe("include");
+    // Both the content-type probe and the download carry them.
+    expect(fetchMock.mock.calls).toHaveLength(2);
+    for (const [, init] of fetchMock.mock.calls) {
+      expect(init).toMatchObject({
+        headers: { Authorization: "Bearer secret" },
+        credentials: "include",
+      });
+    }
   });
 
   it("calls onDocumentLoad once data is available", async () => {
@@ -346,5 +349,217 @@ describe("opaque content types", () => {
     expect(
       await screen.findByRole("img", { name: "blob" }),
     ).toBeInTheDocument();
+  });
+});
+
+describe("loading state machine", () => {
+  const methodOf = (init: unknown) =>
+    ((init as RequestInit | undefined)?.method ?? "GET").toUpperCase();
+  const downloadsOf = (suffix: string) =>
+    fetchMock.mock.calls.filter(
+      ([url, init]) => String(url).endsWith(suffix) && methodOf(init) === "GET",
+    );
+
+  beforeEach(() => {
+    fetchMock.resetMocks();
+    mockDocumentRoutes({
+      "one.png": { body: "png-one", type: "image/png" },
+      "notes.txt": { body: "hello from txt", type: "text/plain" },
+      "letter.docx": { body: "", type: "application/msword" },
+      "bin.html": { body: "<h1>Bin</h1>", type: "application/octet-stream" },
+      "photo.jfif": { body: "jfif-bytes", type: "application/octet-stream" },
+    });
+  });
+
+  it("keeps the shown document when the list grows or an entry is renamed", async () => {
+    const first = { uri: "https://x.test/notes.txt", fileType: "txt" };
+    const { rerender } = render(<DocViewer documents={[first]} />);
+    expect(await screen.findByText("hello from txt")).toBeInTheDocument();
+    const requests = fetchMock.mock.calls.length;
+
+    rerender(
+      <DocViewer
+        documents={[
+          { ...first, fileName: "Renamed" },
+          { uri: "https://x.test/one.png", fileType: "png" },
+        ]}
+      />,
+    );
+    await screen.findByText("Document 1 of 2");
+    expect(screen.getByText("hello from txt")).toBeInTheDocument();
+    expect(screen.getByTestId("file-name")).toHaveTextContent("Renamed");
+    expect(screen.queryByTestId("loading-renderer")).not.toBeInTheDocument();
+    expect(fetchMock.mock.calls).toHaveLength(requests);
+  });
+
+  it("navigates between two entries that share a uri", async () => {
+    const ref = createRef<DocViewerRef>();
+    const docs = [
+      { uri: "https://x.test/one.png", fileName: "first" },
+      { uri: "https://x.test/one.png", fileName: "second" },
+    ];
+    render(<DocViewer ref={ref} documents={docs} />);
+    expect(
+      await screen.findByRole("img", { name: "first" }),
+    ).toBeInTheDocument();
+
+    act(() => ref.current?.next());
+    expect(
+      await screen.findByRole("img", { name: "second" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Document 2 of 2")).toBeInTheDocument();
+  });
+
+  it("never loads a document with the previous document's renderer", async () => {
+    const ref = createRef<DocViewerRef>();
+    const onDocumentLoad = vi.fn();
+    render(
+      <DocViewer
+        ref={ref}
+        documents={[
+          { uri: "https://x.test/letter.docx" },
+          { uri: "https://x.test/one.png" },
+        ]}
+        onDocumentLoad={onDocumentLoad}
+      />,
+    );
+    await waitFor(() =>
+      expect(document.querySelector("iframe")).not.toBeNull(),
+    );
+    expect(onDocumentLoad).toHaveBeenCalledTimes(1);
+
+    act(() => ref.current?.next());
+    const img = await screen.findByRole("img", { name: "one.png" });
+    expect(img).toHaveAttribute(
+      "src",
+      expect.stringMatching(/^data:image\/png/),
+    );
+
+    // one callback per document, the second one with data; one download
+    expect(onDocumentLoad).toHaveBeenCalledTimes(2);
+    expect(onDocumentLoad).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        uri: "https://x.test/one.png",
+        fileData: expect.stringMatching(/^data:image\/png/),
+      }),
+    );
+    expect(downloadsOf("one.png")).toHaveLength(1);
+  });
+
+  it("probes the type when fileType is an empty string", async () => {
+    render(
+      <DocViewer
+        documents={[{ uri: "https://x.test/one.png", fileType: "" }]}
+      />,
+    );
+    expect(
+      await screen.findByRole("img", { name: "one.png" }),
+    ).toBeInTheDocument();
+  });
+
+  it("follows a changed initialActiveDocument", async () => {
+    const docs = [
+      { uri: "https://x.test/notes.txt" },
+      { uri: "https://x.test/one.png" },
+    ];
+    const { rerender } = render(
+      <DocViewer documents={docs} initialActiveDocument={docs[0]} />,
+    );
+    expect(await screen.findByText("hello from txt")).toBeInTheDocument();
+
+    rerender(<DocViewer documents={docs} initialActiveDocument={docs[1]} />);
+    expect(
+      await screen.findByRole("img", { name: "one.png" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Document 2 of 2")).toBeInTheDocument();
+  });
+
+  it("renders an .html file served as application/octet-stream", async () => {
+    render(<DocViewer documents={[{ uri: "https://x.test/bin.html" }]} />);
+    await waitFor(() =>
+      expect(document.querySelector("iframe")).toHaveAttribute(
+        "srcdoc",
+        "<h1>Bin</h1>",
+      ),
+    );
+  });
+
+  it("gives unknown extensions to a renderer registered for octet-stream", async () => {
+    const BlobImageRenderer: DocRenderer = ({ mainState }) => (
+      <img alt="custom" src={mainState.currentDocument?.fileData as string} />
+    );
+    BlobImageRenderer.fileTypes = ["image/png", "application/octet-stream"];
+    BlobImageRenderer.weight = 1;
+
+    render(
+      <DocViewer
+        documents={[{ uri: "https://x.test/photo.jfif" }]}
+        pluginRenderers={[...DocViewerRenderers, BlobImageRenderer]}
+      />,
+    );
+    expect(
+      await screen.findByRole("img", { name: "custom" }),
+    ).toBeInTheDocument();
+  });
+
+  it("streams video by extension without downloading it", async () => {
+    render(
+      <DocViewer
+        documents={[{ uri: "https://x.test/clip.mp4", fileType: "mp4" }]}
+      />,
+    );
+    await waitFor(() =>
+      expect(document.querySelector("video")).toHaveAttribute(
+        "src",
+        "https://x.test/clip.mp4",
+      ),
+    );
+    expect(fetchMock.mock.calls).toHaveLength(0);
+  });
+
+  it("resolves a relative Office viewer URL instead of throwing", async () => {
+    render(
+      <DocViewer
+        documents={[{ uri: "https://x.test/letter.docx" }]}
+        config={{ msdoc: { viewerUrl: "/office/embed.aspx" } }}
+      />,
+    );
+    await waitFor(() =>
+      expect(document.querySelector("iframe")?.getAttribute("src")).toMatch(
+        /\/office\/embed\.aspx\?src=https%3A%2F%2Fx\.test%2Fletter\.docx$/,
+      ),
+    );
+  });
+
+  it("announces loading and the shown document in a status region", async () => {
+    render(
+      <DocViewer
+        documents={[
+          { uri: "https://x.test/one.png" },
+          { uri: "https://x.test/notes.txt" },
+        ]}
+      />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("Loading...");
+    await screen.findByRole("img");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "one.png Document 1 of 2",
+    );
+    expect(screen.getByRole("region", { name: "one.png" })).toHaveAttribute(
+      "tabindex",
+      "0",
+    );
+  });
+
+  it("does not HTML-escape values in translations", async () => {
+    render(
+      <DocViewer
+        documents={[{ uri: "", fileType: "application/postscript" }]}
+        language="ja"
+      />,
+    );
+    const fallback = await screen.findByTestId("no-renderer");
+    expect(fallback).toHaveTextContent("application/postscript");
+    expect(fallback.textContent).not.toContain("&#x2F;");
   });
 });

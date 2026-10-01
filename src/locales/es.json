@@ -13,7 +13,7 @@
   "pdfZoomResetLabel": "Restablecer el nivel de zoom predeterminado",
   "pdfNextPageLabel": "Página siguiente",
   "pdfPreviousPageLabel": "Página anterior",
-  "pdfTogglePaginationLabel": "Alternar entre página única y desplazamiento continuo",
+  "pdfTogglePaginationLabel": "Desplazamiento continuo",
   "previousDocumentLabel": "Documento anterior",
   "nextDocumentLabel": "Documento siguiente"
 }

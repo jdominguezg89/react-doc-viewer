@@ -49,6 +49,12 @@ const routes = {
   "doc.pdf": { body: "%PDF-1.7", type: "application/pdf" },
 };
 
+// Load the lazy chunk up front so the first test does not race the default
+// findBy timeout on a cold import.
+beforeAll(async () => {
+  await import("./PDFRendererBody");
+});
+
 beforeEach(() => {
   fetchMock.resetMocks();
   mockDocumentRoutes(routes);
@@ -125,9 +131,8 @@ describe("PDF renderer", () => {
     act(() => reset.click());
     expect(screen.getByTestId("mock-page")).toHaveAttribute("data-scale", "1");
 
-    const toggle = screen.getByRole("button", {
-      name: "Toggle between single page and continuous scroll",
-    });
+    const toggle = screen.getByRole("button", { name: "Continuous scroll" });
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
     act(() => toggle.click());
     expect(screen.getAllByTestId("mock-page")).toHaveLength(3);
     expect(

@@ -1,6 +1,7 @@
 import { type FC, useContext } from "react";
 import { Button, LinkButton } from "../../../components/common";
 import { useTranslation } from "../../../hooks/useTranslation";
+import { getFileName } from "../../../utils/getFileName";
 import { PDFContext } from "../state";
 import { setPDFPaginated, setZoomLevel } from "../state/actions";
 import {
@@ -29,7 +30,7 @@ const PDFControls: FC = () => {
   const currentDocument = mainState?.currentDocument || null;
 
   return (
-    <div id="pdf-controls" className="rdv-pdf-controls" role="toolbar">
+    <div id="pdf-controls" className="rdv-pdf-controls">
       {paginated && numPages > 1 && <PDFPagination />}
 
       {currentDocument?.fileData && (
@@ -37,7 +38,7 @@ const PDFControls: FC = () => {
           id="pdf-download"
           className="rdv-pdf-controls__button"
           href={currentDocument?.fileData as string}
-          download={currentDocument?.fileName || currentDocument?.uri}
+          download={getFileName(currentDocument ?? undefined, false) || true}
           aria-label={t("downloadButtonLabel")}
           title={t("downloadButtonLabel")}
         >

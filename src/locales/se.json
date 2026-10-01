@@ -13,7 +13,7 @@
   "pdfZoomResetLabel": "Återställ standardzoomnivån",
   "pdfNextPageLabel": "Nästa sida",
   "pdfPreviousPageLabel": "Föregående sida",
-  "pdfTogglePaginationLabel": "Växla mellan enskild sida och kontinuerlig rullning",
+  "pdfTogglePaginationLabel": "Kontinuerlig rullning",
   "previousDocumentLabel": "Föregående dokument",
   "nextDocumentLabel": "Nästa dokument"
 }

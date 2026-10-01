@@ -20,7 +20,18 @@ const MSDocRenderer: DocRenderer = ({
     );
   }
 
-  const viewerUrl = new URL(config?.msdoc?.viewerUrl ?? DEFAULT_VIEWER_URL);
+  let viewerUrl: URL;
+  try {
+    // A relative viewerUrl (same-origin proxy) resolves against the page.
+    viewerUrl = new URL(
+      config?.msdoc?.viewerUrl ?? DEFAULT_VIEWER_URL,
+      document.baseURI,
+    );
+  } catch {
+    return (
+      <NoRendererFallback document={currentDocument} fileName={fileName} />
+    );
+  }
   viewerUrl.searchParams.set("src", currentDocument.uri);
 
   return (
@@ -30,7 +41,7 @@ const MSDocRenderer: DocRenderer = ({
         className="rdv-msdoc-renderer__frame"
         title={fileName || "msdoc-iframe"}
         src={viewerUrl.toString()}
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
         referrerPolicy="no-referrer"
       />
     </div>

@@ -9,7 +9,7 @@
   --rdv-tertiary: #ffffff99;
   --rdv-text-primary: #000;
   --rdv-text-secondary: #fff;
-  --rdv-text-tertiary: #00000044;
+  --rdv-text-tertiary: #00000099;
 
   display: flex;
   flex-direction: column;
@@ -34,11 +34,29 @@
 }
 
 .rdv-proxy-renderer::-webkit-scrollbar-thumb {
-  background: var(--rdv-tertiary);
+  background: var(--rdv-text-tertiary);
+  border-radius: 10px;
 }
 
 .rdv-proxy-renderer::-webkit-scrollbar-thumb:hover {
-  background: var(--rdv-primary);
+  background: var(--rdv-secondary);
+}
+
+.rdv-proxy-renderer:focus-visible {
+  outline: 2px solid var(--rdv-secondary);
+  outline-offset: -2px;
+}
+
+.rdv-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .rdv-message {
@@ -53,7 +71,8 @@
   width: 35px;
   height: 35px;
   padding: 0;
-  margin: 0 0 0 5px;
+  margin: 0;
+  margin-inline-start: 5px;
   text-align: center;
   font-size: 18px;
   border: 0;
@@ -123,7 +142,8 @@
 }
 
 .rdv-doc-nav__prev {
-  margin: 0 5px 0 10px;
+  margin: 0;
+  margin-inline: 10px 5px;
 }
 
 .rdv-doc-nav__next {
@@ -163,13 +183,21 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  /*
+   * Inside the flex scroll container: do not stretch to the container height
+   * (the sticky toolbar must travel the whole document) and do not grow with
+   * a zoomed page (the toolbar must stay within the visible width).
+   */
+  align-self: flex-start;
+  min-width: 0;
+  min-height: 100%;
 }
 
 .rdv-pdf-controls {
   display: flex;
   position: sticky;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   z-index: 1;
   justify-content: flex-end;
   padding: 8px;
@@ -195,7 +223,8 @@
 }
 
 .rdv-pdf-pagination__next {
-  margin: 0 20px 0 5px;
+  margin: 0;
+  margin-inline: 5px 20px;
 }
 
 .rdv-pdf-pagination__info {
@@ -215,7 +244,9 @@
 }
 
 .rdv-pdf-page__tag {
-  padding: 0 0 10px 10px;
+  padding: 0;
+  padding-block-end: 10px;
+  padding-inline-start: 10px;
   color: var(--rdv-text-tertiary);
   font-size: 14px;
   text-align: start;
@@ -314,6 +345,12 @@
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+/* Right-to-left: arrows follow the reading direction. */
+.rdv[dir="rtl"] .rdv-doc-nav svg,
+.rdv[dir="rtl"] .rdv-pdf-pagination svg {
+  scale: -1 1;
 }
 
 /* Responsive --------------------------------------------------------------- */

@@ -13,7 +13,7 @@
   "pdfZoomResetLabel": "Восстановить масштаб по умолчанию",
   "pdfNextPageLabel": "Следующая страница",
   "pdfPreviousPageLabel": "Предыдущая страница",
-  "pdfTogglePaginationLabel": "Переключить между одной страницей и непрерывной прокруткой",
+  "pdfTogglePaginationLabel": "Непрерывная прокрутка",
   "previousDocumentLabel": "Предыдущий документ",
   "nextDocumentLabel": "Следующий документ"
 }

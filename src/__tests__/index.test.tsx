@@ -16,7 +16,7 @@ test("renders component with no documents", () => {
   expect(screen.getByTestId("react-doc-viewer")).toBeDefined();
 });
 
-test("renders component with documents", () => {
+test("renders component with documents", async () => {
   const docs = [
     { uri: pdfFile },
     { uri: pngFile },
@@ -28,6 +28,7 @@ test("renders component with documents", () => {
 
   expect(screen.getByTestId("react-doc-viewer")).toBeDefined();
   expect(screen.getByText(`Document 1 of ${docs.length}`)).toBeDefined();
+  expect(await screen.findByRole("img")).toBeInTheDocument();
 });
 
 test("renders component with unsupported file type", async () => {

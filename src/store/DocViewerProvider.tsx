@@ -46,14 +46,24 @@ const DocViewerContext = createContext<DocViewerContextValue>({
   next: () => null,
 });
 
-/** Stable signature of a document list, so inline arrays do not reset the viewer. */
-const documentsSignature = (documents: IDocument[]): string =>
-  documents
-    .map(
-      (doc) =>
-        `${doc.uri}\u0001${doc.fileType ?? ""}\u0001${doc.fileName ?? ""}`,
-    )
-    .join("\u0002");
+/**
+ * Compares two document lists by content, so a new array with the same
+ * entries (an inline `documents={[...]}`) does not reset the viewer.
+ * `fileData` is compared by reference.
+ */
+const sameDocuments = (a: IDocument[], b: IDocument[]): boolean =>
+  a === b ||
+  (a.length === b.length &&
+    a.every((doc, index) => {
+      const other = b[index];
+      return (
+        doc === other ||
+        (doc.uri === other.uri &&
+          doc.fileType === other.fileType &&
+          doc.fileName === other.fileName &&
+          doc.fileData === other.fileData)
+      );
+    }));
 
 const DocViewerProvider = forwardRef<
   DocViewerRef,
@@ -104,17 +114,15 @@ const DocViewerProvider = forwardRef<
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  // Reset the document list only when its contents change, not its identity.
-  const signature = documentsSignature(documents);
-  const previousSignature = useRef(signature);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: the signature is the change detector for `documents`
+  // Apply a new document list only when its contents change.
+  const appliedDocuments = useRef(documents);
   useEffect(() => {
-    if (previousSignature.current === signature) return;
-    previousSignature.current = signature;
+    if (sameDocuments(appliedDocuments.current, documents)) return;
+    appliedDocuments.current = documents;
     dispatch(
-      setAllDocuments(documents, activeDocument ?? initialActiveDocument),
+      setAllDocuments(documents, { activeDocument, initialActiveDocument }),
     );
-  }, [signature]);
+  });
 
   useEffect(() => {
     if (config) dispatch(setMainConfig(config));
@@ -146,11 +154,22 @@ const DocViewerProvider = forwardRef<
     onDocumentLoad,
   ]);
 
+  // Controlled mode: follow `activeDocument`. The reducer ignores the
+  // dispatch when that document is already on screen.
   useEffect(() => {
-    if (!activeDocument) return;
-    if (activeDocument.uri === stateRef.current.currentDocument?.uri) return;
-    dispatch(updateCurrentDocument(activeDocument));
+    if (activeDocument) dispatch(updateCurrentDocument(activeDocument));
   }, [activeDocument]);
+
+  // Uncontrolled mode: a changed `initialActiveDocument` selects it, as in
+  // 1.x. The first run is skipped (the initial state already used it).
+  const appliedInitial = useRef(initialActiveDocument);
+  useEffect(() => {
+    if (appliedInitial.current === initialActiveDocument) return;
+    appliedInitial.current = initialActiveDocument;
+    if (initialActiveDocument && !stateRef.current.activeDocument) {
+      dispatch(updateCurrentDocument(initialActiveDocument));
+    }
+  }, [initialActiveDocument]);
 
   const previous = useCallback(() => {
     const {

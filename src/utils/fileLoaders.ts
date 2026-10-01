@@ -36,17 +36,41 @@ const bytesToBinaryString = (bytes: Uint8Array): string => {
   return binary;
 };
 
+const charsetOf = (contentType: string): string | undefined =>
+  contentType
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.toLowerCase().startsWith("charset="))
+    ?.slice("charset=".length)
+    .replace(/^"|"$/g, "");
+
+/**
+ * Decodes text like `FileReader.readAsText` did: a byte-order mark wins, then
+ * the charset declared in the content type, then UTF-8.
+ */
+export const decodeText = (buffer: ArrayBuffer, contentType = ""): string => {
+  const bytes = new Uint8Array(buffer);
+  let label = charsetOf(contentType) || "utf-8";
+  if (bytes[0] === 0xff && bytes[1] === 0xfe) label = "utf-16le";
+  else if (bytes[0] === 0xfe && bytes[1] === 0xff) label = "utf-16be";
+  else if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
+    label = "utf-8";
+  }
+  try {
+    return new TextDecoder(label).decode(buffer);
+  } catch {
+    // Unknown charset label.
+    return new TextDecoder().decode(buffer);
+  }
+};
+
 /** `data:<mime>[;charset=x];base64,...` from raw bytes and a content type. */
 export const bytesToDataUrl = (
   bytes: Uint8Array,
   contentType: string,
 ): string => {
-  const [mime = "application/octet-stream", ...params] = contentType
-    .split(";")
-    .map((part) => part.trim());
-  const charset = params
-    .find((param) => param.toLowerCase().startsWith("charset="))
-    ?.slice("charset=".length);
+  const mime = contentType.split(";")[0].trim();
+  const charset = charsetOf(contentType);
   const type = `${mime || "application/octet-stream"}${charset ? `;charset=${charset}` : ""}`;
   return `data:${type};base64,${btoa(bytesToBinaryString(bytes))}`;
 };
@@ -80,7 +104,7 @@ const _fileLoader: BaseFileLoaderFunction = ({
           result = bytesToBinaryString(new Uint8Array(buffer));
           break;
         case "text":
-          result = new TextDecoder().decode(buffer);
+          result = decodeText(buffer, contentType);
           break;
         default:
           result = bytesToDataUrl(new Uint8Array(buffer), contentType);

@@ -19,3 +19,22 @@ describe("decodeHtmlDataUrl", () => {
     expect(() => decodeHtmlDataUrl("data:text/html;base64,***")).toThrow();
   });
 });
+
+describe("decodeHtmlDataUrl with other media types", () => {
+  const base64 = "PGgxPkhpPC9oMT4="; // <h1>Hi</h1>
+
+  it("decodes an .html file served as application/octet-stream", () => {
+    expect(
+      decodeHtmlDataUrl(`data:application/octet-stream;base64,${base64}`),
+    ).toBe("<h1>Hi</h1>");
+  });
+
+  it("tolerates quoted and unknown charsets", () => {
+    expect(
+      decodeHtmlDataUrl(`data:text/html;charset="utf-8";base64,${base64}`),
+    ).toBe("<h1>Hi</h1>");
+    expect(
+      decodeHtmlDataUrl(`data:text/html;charset=bogus;base64,${base64}`),
+    ).toBe("<h1>Hi</h1>");
+  });
+});

@@ -19,6 +19,11 @@ const OPAQUE_TYPES = new Set([
 
 export const UNKNOWN_FILE_TYPE = "application/octet-stream";
 
+/** True for a missing content type or a generic binary one. */
+export const isOpaqueFileType = (
+  fileType: string | null | undefined,
+): boolean => OPAQUE_TYPES.has(normalizeFileType(fileType ?? undefined));
+
 /**
  * Picks the file type used for renderer selection: the server's content type
  * unless it is missing or an opaque binary type, in which case the URI
@@ -33,4 +38,25 @@ export const resolveFileType = (
   const normalized = normalizeFileType(contentType ?? undefined);
   if (!OPAQUE_TYPES.has(normalized)) return normalized;
   return extensionFromUri(uri) || normalized || UNKNOWN_FILE_TYPE;
+};
+
+/**
+ * Like `resolveFileType`, but aware of the registered renderers: when the
+ * content type is opaque and the URL extension is not something any renderer
+ * handles, a renderer registered for `application/octet-stream` gets the
+ * document instead (as in 1.x).
+ */
+export const resolveFileTypeForRenderers = (
+  contentType: string | null | undefined,
+  uri: string | undefined,
+  canRender: (fileType: string) => boolean,
+): string => {
+  const resolved = resolveFileType(contentType, uri);
+  if (!isOpaqueFileType(contentType) || resolved === UNKNOWN_FILE_TYPE) {
+    return resolved;
+  }
+  if (!canRender(resolved) && canRender(UNKNOWN_FILE_TYPE)) {
+    return UNKNOWN_FILE_TYPE;
+  }
+  return resolved;
 };

@@ -4,7 +4,7 @@ import "./styles.css";
 import { type CSSProperties, forwardRef, memo } from "react";
 import { HeaderBar } from "./components/HeaderBar";
 import { ProxyRenderer } from "./components/ProxyRenderer";
-import { type AvailableLanguages, rtlLanguages } from "./i18n";
+import { type AvailableLanguages, languageTag, rtlLanguages } from "./i18n";
 import type {
   DocRenderer,
   DocViewerRef,
@@ -73,6 +73,7 @@ const DocViewer = forwardRef<DocViewerRef, DocViewerProps>((props, ref) => {
         id="react-doc-viewer"
         data-testid="react-doc-viewer"
         data-themed-scrollbar={theme?.disableThemeScrollbar ? "false" : "true"}
+        lang={language ? languageTag(language) : undefined}
         dir={language && rtlLanguages.includes(language) ? "rtl" : undefined}
         className={cx("rdv", props.className)}
         style={{ ...themeToStyle(theme), ...props.style }}

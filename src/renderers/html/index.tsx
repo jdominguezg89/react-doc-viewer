@@ -2,9 +2,12 @@ import { useMemo } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 import type { DocRenderer } from "../../models";
 import { dataURLFileLoader } from "../../utils/fileLoaders";
+import { getFileName } from "../../utils/getFileName";
 
+// The renderer was already chosen, so any media type is accepted here (an
+// .html file served as application/octet-stream still decodes).
 const DATA_URL_PREFIX =
-  /^data:text\/html?(?:;\s*charset=([^;,]*))?(;base64)?,/i;
+  /^data:[^;,]*(?:;\s*charset="?([^;,"]*)"?)?(;base64)?,/i;
 
 /** Decodes the HTML renderer's data URL into a string. */
 export const decodeHtmlDataUrl = (dataUrl: string): string => {
@@ -18,7 +21,12 @@ export const decodeHtmlDataUrl = (dataUrl: string): string => {
   if (!base64) return decodeURIComponent(payload);
   const binary = window.atob(payload);
   const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-  return new TextDecoder(charset).decode(bytes);
+  try {
+    return new TextDecoder(charset).decode(bytes);
+  } catch {
+    // Unknown charset label.
+    return new TextDecoder().decode(bytes);
+  }
 };
 
 const HTMLRenderer: DocRenderer = ({
@@ -51,7 +59,7 @@ const HTMLRenderer: DocRenderer = ({
       <iframe
         id="html-body"
         className="rdv-html-renderer__frame"
-        title={currentDocument?.fileName || "html-renderer"}
+        title={getFileName(currentDocument, false) || "HTML"}
         sandbox={config?.html?.sandbox ?? ""}
         srcDoc={decoded.html}
       />

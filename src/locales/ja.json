@@ -13,7 +13,7 @@
   "pdfZoomResetLabel": "既定のズームレベルに戻す",
   "pdfNextPageLabel": "次のページ",
   "pdfPreviousPageLabel": "前のページ",
-  "pdfTogglePaginationLabel": "単一ページと連続スクロールを切り替える",
+  "pdfTogglePaginationLabel": "連続スクロール",
   "previousDocumentLabel": "前のドキュメント",
   "nextDocumentLabel": "次のドキュメント"
 }

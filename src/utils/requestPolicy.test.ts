@@ -42,3 +42,19 @@ describe("shouldSendRequestHeaders", () => {
     ).toBe(false);
   });
 });
+
+describe("shouldSendRequestHeaders hardening", () => {
+  it("fails closed for a plain string policy", () => {
+    const config = {
+      fetch: {
+        sendRequestHeadersTo: "https://api.example.com" as unknown as string[],
+      },
+    };
+    expect(
+      shouldSendRequestHeaders("https://api.example.co/x.pdf", config),
+    ).toBe(false);
+    expect(
+      shouldSendRequestHeaders("https://api.example.com/x.pdf", config),
+    ).toBe(false);
+  });
+});

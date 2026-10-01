@@ -36,5 +36,15 @@ export type AvailableLanguages = keyof typeof locales;
 
 export const defaultLanguage: AvailableLanguages = "en";
 
+/** BCP 47 tags for locale keys that are not valid language tags themselves. */
+const languageTags: Partial<Record<AvailableLanguages, string>> = {
+  se: "sv",
+  sr: "sr-Latn",
+  sr_cyr: "sr-Cyrl",
+};
+
+export const languageTag = (language: AvailableLanguages): string =>
+  languageTags[language] ?? language;
+
 /** Languages rendered right-to-left. */
 export const rtlLanguages: AvailableLanguages[] = ["ar"];

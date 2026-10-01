@@ -2,6 +2,7 @@ import {
   extensionFromUri,
   normalizeFileType,
   resolveFileType,
+  resolveFileTypeForRenderers,
 } from "./fileType";
 
 describe("normalizeFileType", () => {
@@ -35,6 +36,40 @@ describe("resolveFileType", () => {
     expect(resolveFileType(null, "/no-ext")).toBe("application/octet-stream");
     expect(resolveFileType("", "blob:https://app.test/0b1c-uuid")).toBe(
       "application/octet-stream",
+    );
+  });
+});
+
+describe("resolveFileTypeForRenderers", () => {
+  const known = (types: string[]) => (type: string) => types.includes(type);
+
+  it("keeps a usable content type and a renderable extension", () => {
+    expect(resolveFileTypeForRenderers("image/png", "/a.bin", known([]))).toBe(
+      "image/png",
+    );
+    expect(
+      resolveFileTypeForRenderers(
+        "application/octet-stream",
+        "/photo.png",
+        known(["png", "application/octet-stream"]),
+      ),
+    ).toBe("png");
+  });
+
+  it("hands unknown extensions to a renderer registered for octet-stream", () => {
+    const canRender = known(["image/png", "application/octet-stream"]);
+    for (const uri of [
+      "/photo.jfif",
+      "/files/report.v2",
+      "/download.php?id=7",
+    ]) {
+      expect(
+        resolveFileTypeForRenderers("application/octet-stream", uri, canRender),
+      ).toBe("application/octet-stream");
+    }
+    // nobody claims octet-stream: keep the extension for the message
+    expect(resolveFileTypeForRenderers(null, "/photo.jfif", known([]))).toBe(
+      "jfif",
     );
   });
 });

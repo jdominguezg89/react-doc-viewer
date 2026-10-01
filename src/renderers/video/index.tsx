@@ -17,5 +17,15 @@ const VideoRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
 
 export default VideoRenderer;
 
-VideoRenderer.fileTypes = ["video/mp4", "video/quicktime", "video/x-msvideo"];
+VideoRenderer.fileTypes = [
+  "mp4",
+  "mov",
+  "avi",
+  "video/mp4",
+  "video/quicktime",
+  "video/x-msvideo",
+];
 VideoRenderer.weight = 0;
+// The <video> element streams from the URI itself; reading the whole file
+// into memory first would be wasted work.
+VideoRenderer.fileLoader = ({ fileLoaderComplete }) => fileLoaderComplete();

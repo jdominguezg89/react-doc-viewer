@@ -13,7 +13,7 @@
   "pdfZoomResetLabel": "Przywróć domyślny poziom powiększenia",
   "pdfNextPageLabel": "Następna strona",
   "pdfPreviousPageLabel": "Poprzednia strona",
-  "pdfTogglePaginationLabel": "Przełącz między pojedynczą stroną a ciągłym przewijaniem",
+  "pdfTogglePaginationLabel": "Przewijanie ciągłe",
   "previousDocumentLabel": "Poprzedni dokument",
   "nextDocumentLabel": "Następny dokument"
 }
