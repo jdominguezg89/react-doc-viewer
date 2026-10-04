@@ -1,9 +1,17 @@
 ---
-name: Issue Template
-about: A default issue template.
+name: Bug report
+about: Something does not render or behave as documented.
 title: ""
 labels: ""
 assignees: ""
 ---
 
-<!-- Remember: This library uses the official MS Office online document viewing service. This means it works on an iframe basis and only supports public file URLs! Therefore, it may not be compatible with all projects. Currently, there is no way to natively render MS Office documents in the browser. -->
+**Package version, React version, bundler / framework:**
+
+**File type and how the document is provided** (URL, blob, `fileType` set or not):
+
+**What happens, and what you expected:**
+
+**Minimal reproduction** (code or a link):
+
+<!-- Office documents are displayed through Microsoft's online viewer, which only works with publicly reachable URLs. -->

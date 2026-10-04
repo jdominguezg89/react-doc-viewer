@@ -1,36 +1,80 @@
 name: Release
 
-# Publishes to npm when the version in package.json on main is not published
-# yet. Authentication uses npm Trusted Publishing (OIDC): no tokens stored.
+# On every push to main:
+#   1. publish to npm when the package.json version is not there yet
+#      (npm Trusted Publishing / OIDC: no tokens stored),
+#   2. create the vX.Y.Z tag and GitHub Release when they do not exist yet,
+#   3. deploy Storybook to GitHub Pages when a release was created.
+# Every stage looks at the real state (npm, GitHub Releases), so a rerun after a
+# partial failure, or after the manual first publish, resumes where it stopped.
+# One-time setup and troubleshooting: see RELEASING.md.
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      storybook:
+        description: Redeploy Storybook even when nothing is released
+        type: boolean
+        default: false
 
 concurrency:
   group: release
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   detect:
+    # "Run workflow" can be started from any branch; only main may release.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
-      publish: ${{ steps.check.outputs.publish }}
       version: ${{ steps.check.outputs.version }}
+      npm_tag: ${{ steps.check.outputs.npm_tag }}
+      publish: ${{ steps.check.outputs.publish }}
+      release: ${{ steps.check.outputs.release }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           NAME=$(node -p "require('./package.json').name")
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
-            echo "$NAME@$VERSION is already on npm; nothing to publish."
+
+          # Pre-releases (2.1.0-beta.0 -> "beta") must not become "latest";
+          # npm 11+ refuses to publish them without an explicit --tag.
+          case "$VERSION" in
+            *-*) NPM_TAG="${VERSION#*-}"; NPM_TAG="${NPM_TAG%%.*}" ;;
+            *) NPM_TAG=latest ;;
+          esac
+          echo "npm_tag=$NPM_TAG" >> "$GITHUB_OUTPUT"
+
+          # Only a 404 means "not published". Any other failure (network,
+          # registry outage) stops the run instead of attempting a publish.
+          if OUT=$(npm view "$NAME@$VERSION" version 2>&1); then
+            echo "$NAME@$VERSION is already on npm."
             echo "publish=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "$NAME@$VERSION is new; publishing."
+          elif grep -q "E404" <<<"$OUT"; then
+            echo "$NAME@$VERSION is not on npm yet."
             echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::npm view failed for a reason other than 404"
+            echo "$OUT"
+            exit 1
+          fi
+
+          if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "GitHub Release v$VERSION exists."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "GitHub Release v$VERSION is missing."
+            echo "release=true" >> "$GITHUB_OUTPUT"
           fi
 
   publish:
@@ -38,53 +82,82 @@ jobs:
     if: needs.detect.outputs.publish == 'true'
     runs-on: ubuntu-latest
     permissions:
-      contents: write # tag + GitHub Release
-      id-token: write # npm Trusted Publishing + provenance
+      contents: read
+      id-token: write # npm Trusted Publishing (OIDC) + provenance
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6.1.0
+      # Node 24 ships npm >= 11.5.1, which Trusted Publishing needs. No
+      # dependency cache in the job that holds the publishing identity.
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: pnpm
           registry-url: https://registry.npmjs.org
-      # Trusted Publishing needs a recent npm.
-      - run: npm install -g npm@latest
+          package-manager-cache: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check
       - run: pnpm run typecheck
       - run: pnpm test
       # `prepack` builds and verifies dist before the tarball is created.
-      - run: npm publish --access public --provenance
+      - run: npm publish --access public --provenance --tag "$NPM_TAG"
+        env:
+          NPM_TAG: ${{ needs.detect.outputs.npm_tag }}
+
+  release:
+    needs: [detect, publish]
+    # After a successful publish, and also when the version is already on npm
+    # but has no GitHub Release (manual first publish, or a rerun after this
+    # job failed).
+    if: >-
+      !cancelled() &&
+      needs.detect.result == 'success' &&
+      needs.detect.outputs.release == 'true' &&
+      (needs.publish.result == 'success' || needs.publish.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # tag + GitHub Release
+    steps:
       - name: Tag and GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.detect.outputs.version }}
+          NPM_TAG: ${{ needs.detect.outputs.npm_tag }}
         run: |
-          gh release create "v${{ needs.detect.outputs.version }}" \
+          set -euo pipefail
+          FLAGS=(--generate-notes)
+          if [ "$NPM_TAG" != latest ]; then FLAGS+=(--prerelease); fi
+          gh release create "v$VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "v${{ needs.detect.outputs.version }}" \
-            --generate-notes
+            --title "v$VERSION" \
+            "${FLAGS[@]}"
 
   storybook:
-    needs: [detect, publish]
+    needs: [detect, release]
+    if: >-
+      !cancelled() &&
+      needs.detect.result == 'success' &&
+      (needs.release.result == 'success' ||
+      (github.event_name == 'workflow_dispatch' && inputs.storybook))
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm storybook:build
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: storybook-static
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
