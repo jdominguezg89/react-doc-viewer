@@ -19,10 +19,8 @@ import {
   UNKNOWN_FILE_TYPE,
 } from "../utils/fileType";
 import { shouldSendRequestHeaders } from "../utils/requestPolicy";
+import { toError } from "../utils/toError";
 import { selectRenderer, useRendererSelector } from "./useRendererSelector";
-
-const toError = (reason: unknown): Error =>
-  reason instanceof Error ? reason : new Error(String(reason));
 
 /**
  * Custom Hook for loading the current document into context
@@ -39,6 +37,8 @@ export const useDocumentLoader = (): {
   // the latest props without re-running when those change.
   const latest = useRef(state);
   latest.current = state;
+
+  const notifiedLoadId = useRef(-1);
 
   const { CurrentRenderer } = useRendererSelector();
 
@@ -93,8 +93,10 @@ export const useDocumentLoader = (): {
         if (signal.aborted) return;
         const error = toError(reason);
         if (error.name === "AbortError") return;
-        dispatch(setDocumentError(error));
-        latest.current.onError?.(error, latest.current.currentDocument);
+        dispatch(setDocumentError(error, loadId));
+        if (latest.current.loadId === loadId) {
+          latest.current.onError?.(error, latest.current.currentDocument);
+        }
       });
 
     return () => {
@@ -108,7 +110,7 @@ export const useDocumentLoader = (): {
 
     if (CurrentRenderer === null || !documentURI) {
       // Nothing to render, or nothing to fetch (inline fileData only).
-      dispatch(setDocumentLoading(false));
+      dispatch(setDocumentLoading(false, loadId));
       return;
     }
 
@@ -122,9 +124,18 @@ export const useDocumentLoader = (): {
       const patch =
         result !== null && result !== undefined ? { fileData: result } : {};
       dispatch(patchCurrentDocument(loadId, patch));
-      dispatch(setDocumentLoading(false));
+      dispatch(setDocumentLoading(false, loadId));
       const loaded = latest.current.currentDocument;
-      if (loaded) latest.current.onDocumentLoad?.({ ...loaded, ...patch });
+      // Once per load: StrictMode runs this effect twice on mount, and a
+      // synchronous loader would otherwise report the document twice.
+      if (
+        loaded &&
+        latest.current.loadId === loadId &&
+        notifiedLoadId.current !== loadId
+      ) {
+        notifiedLoadId.current = loadId;
+        latest.current.onDocumentLoad?.({ ...loaded, ...patch });
+      }
     };
 
     const loaderFunctionProps: FileLoaderFuncProps = {
@@ -133,8 +144,10 @@ export const useDocumentLoader = (): {
       fileLoaderComplete,
       onError: (error) => {
         if (signal.aborted) return;
-        dispatch(setDocumentError(error));
-        latest.current.onError?.(error, latest.current.currentDocument);
+        dispatch(setDocumentError(error, loadId));
+        if (latest.current.loadId === loadId) {
+          latest.current.onError?.(error, latest.current.currentDocument);
+        }
       },
       headers: shouldSendRequestHeaders(documentURI, config)
         ? requestHeaders
@@ -142,10 +155,11 @@ export const useDocumentLoader = (): {
       requestInit,
     };
 
-    if (CurrentRenderer.fileLoader !== undefined) {
-      CurrentRenderer.fileLoader?.(loaderFunctionProps);
+    if (CurrentRenderer.fileLoader === null) {
+      // No loader: nothing to fetch, the renderer works from the URI.
+      fileLoaderComplete();
     } else {
-      defaultFileLoader(loaderFunctionProps);
+      (CurrentRenderer.fileLoader ?? defaultFileLoader)(loaderFunctionProps);
     }
 
     return () => {

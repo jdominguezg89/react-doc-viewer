@@ -2,19 +2,17 @@ import { type FC, useContext } from "react";
 import { PDFContext } from "../../state";
 import PDFSinglePage from "./PDFSinglePage";
 
-interface Props {
-  pageNum?: number;
-}
-
-export const PDFAllPages: FC<Props> = () => {
+export const PDFAllPages: FC = () => {
   const {
     state: { numPages },
   } = useContext(PDFContext);
 
-  const PagesArray = [];
-  for (let i = 0; i < numPages; i++) {
-    PagesArray.push(<PDFSinglePage key={i + 1} pageNum={i + 1} />);
-  }
-
-  return <>{PagesArray}</>;
+  return (
+    <>
+      {Array.from({ length: numPages }, (_, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: pages are identified by their position
+        <PDFSinglePage key={index} pageNum={index + 1} />
+      ))}
+    </>
+  );
 };

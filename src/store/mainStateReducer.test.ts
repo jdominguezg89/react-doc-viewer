@@ -5,7 +5,6 @@ import {
   setAllDocuments,
   setDocumentError,
   setDocumentLoading,
-  syncProps,
   updateCurrentDocument,
 } from "./actions";
 import {
@@ -163,13 +162,20 @@ describe("mainStateReducer", () => {
     expect(navigated.loadId).toBe(state.loadId + 1);
   });
 
-  it("syncs props", () => {
-    const state = mainStateReducer(
-      initialState,
-      syncProps({ language: "pl", requestHeaders: { a: "b" } }),
+  it("ignores loading and error results of a previous load", () => {
+    let state = mainStateReducer(initialState, setAllDocuments(docs));
+    const stale = state.loadId;
+    state = mainStateReducer(state, nextDocument());
+    expect(mainStateReducer(state, setDocumentLoading(false, stale))).toBe(
+      state,
     );
-    expect(state.language).toBe("pl");
-    expect(state.requestHeaders).toEqual({ a: "b" });
+    expect(
+      mainStateReducer(state, setDocumentError(new Error("x"), stale)),
+    ).toBe(state);
+    expect(
+      mainStateReducer(state, setDocumentLoading(false, state.loadId))
+        .documentLoading,
+    ).toBe(false);
   });
 });
 

@@ -3,8 +3,6 @@
   "noRendererMessage": "Brak funckji renderującej dla: {{{ fileType }}}",
   "downloadButtonLabel": "Pobierz plik",
   "brokenFile": "Twój plik jest uszkodzony. Sprawdź go na swoim komputerze.",
-  "msgPluginRecipients": "Odbiorcy",
-  "msgPluginSender": "Nadawca",
   "pdfPluginLoading": "Wczytywanie...",
   "pdfPluginPageNumber": "Strona {{ currentPage }}/{{ allPagesCount }}",
   "loadErrorMessage": "Nie udało się wczytać dokumentu.",

@@ -1,5 +1,5 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, FC } from "react";
-import { cx } from "../../utils/cx";
+import { cx } from "../utils/cx";
 
 type ButtonVariant = "primary" | "secondary";
 
@@ -22,14 +22,6 @@ export const Button: FC<ButtonProps> = ({
     )}
     {...props}
   />
-);
-
-export const ButtonPrimary: FC<ButtonProps> = (props) => (
-  <Button variant="primary" {...props} />
-);
-
-export const ButtonSecondary: FC<ButtonProps> = (props) => (
-  <Button variant="secondary" {...props} />
 );
 
 export type LinkButtonProps = AnchorHTMLAttributes<HTMLAnchorElement>;

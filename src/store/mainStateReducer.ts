@@ -9,9 +9,7 @@ import {
   SET_ALL_DOCUMENTS,
   SET_DOCUMENT_ERROR,
   SET_DOCUMENT_LOADING,
-  SET_MAIN_CONFIG,
   SET_RENDERER_RECT,
-  SYNC_PROPS,
   UPDATE_CURRENT_DOCUMENT,
 } from "./actions";
 
@@ -136,9 +134,10 @@ export const mainStateReducer: MainStateReducer = (
           documents,
           currentFileNo: index,
           currentDocument: {
-            ...current,
             ...target,
-            fileType: target.fileType ?? current.fileType,
+            fileType: normalizeFileType(target.fileType)
+              ? target.fileType
+              : current.fileType,
             fileData: target.fileData ?? current.fileData,
           },
         };
@@ -148,10 +147,16 @@ export const mainStateReducer: MainStateReducer = (
     }
 
     case SET_DOCUMENT_LOADING: {
+      if (action.loadId !== undefined && action.loadId !== state.loadId) {
+        return state;
+      }
       return { ...state, documentLoading: action.value };
     }
 
     case SET_DOCUMENT_ERROR: {
+      if (action.loadId !== undefined && action.loadId !== state.loadId) {
+        return state;
+      }
       return {
         ...state,
         documentError: action.error,
@@ -183,7 +188,21 @@ export const mainStateReducer: MainStateReducer = (
         return state;
       }
 
-      return startLoading(state, index, document);
+      // Selected by URI only: keep what the list entry says about it.
+      const entry = found >= 0 ? state.documents[found] : undefined;
+      const target =
+        entry && entry !== document
+          ? {
+              ...entry,
+              ...document,
+              fileType: normalizeFileType(document.fileType)
+                ? document.fileType
+                : entry.fileType,
+              fileName: document.fileName ?? entry.fileName,
+              fileData: document.fileData ?? entry.fileData,
+            }
+          : document;
+      return startLoading(state, index, target);
     }
 
     case PATCH_CURRENT_DOCUMENT: {
@@ -198,14 +217,6 @@ export const mainStateReducer: MainStateReducer = (
 
     case SET_RENDERER_RECT: {
       return { ...state, rendererRect: action.rect };
-    }
-
-    case SET_MAIN_CONFIG: {
-      return { ...state, config: action.config };
-    }
-
-    case SYNC_PROPS: {
-      return { ...state, ...action.props };
     }
 
     default:

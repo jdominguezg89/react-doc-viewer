@@ -1,16 +1,26 @@
-import { type FC, useContext, useEffect, useMemo } from "react";
-import { Document, type DocumentProps } from "react-pdf";
+import { type FC, useContext, useEffect, useRef } from "react";
+import { Document } from "react-pdf";
 import { useTranslation } from "../../../../hooks/useTranslation";
+import type { PdfDocumentOptions } from "../../../../models";
 import { PDFContext } from "../../state";
 import { setCurrentPage, setNumPages } from "../../state/actions";
 import { initialPDFState } from "../../state/reducer";
 import { PDFAllPages } from "./PDFAllPages";
 import PDFSinglePage from "./PDFSinglePage";
 
-type DocumentOptions = NonNullable<DocumentProps["options"]>;
-
-/** Library defaults for pdf.js `getDocument`; `config.pdf.documentOptions` is merged over them. */
-const defaultDocumentOptions: DocumentOptions = {};
+/** True when both option objects have the same own keys and values. */
+const sameOptions = (
+  a: PdfDocumentOptions | undefined,
+  b: PdfDocumentOptions | undefined,
+): boolean => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const keysA = Object.keys(a) as Array<keyof PdfDocumentOptions>;
+  return (
+    keysA.length === Object.keys(b).length &&
+    keysA.every((key) => a[key] === b[key])
+  );
+};
 
 const PDFPages: FC = () => {
   const {
@@ -22,11 +32,14 @@ const PDFPages: FC = () => {
   const currentDocument = mainState?.currentDocument || null;
   const pdfConfig = mainState?.config?.pdf;
 
-  // react-pdf reloads the document whenever `options` changes identity.
-  const options = useMemo<DocumentOptions>(
-    () => ({ ...defaultDocumentOptions, ...pdfConfig?.documentOptions }),
-    [pdfConfig?.documentOptions],
-  );
+  // react-pdf reloads the document whenever `options` changes identity, and
+  // `config` is often an inline object: keep the previous reference while the
+  // contents are the same.
+  const optionsRef = useRef(pdfConfig?.documentOptions);
+  if (!sameOptions(optionsRef.current, pdfConfig?.documentOptions)) {
+    optionsRef.current = pdfConfig?.documentOptions;
+  }
+  const options = optionsRef.current;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: page count must reset whenever the document changes
   useEffect(() => {

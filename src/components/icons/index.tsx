@@ -1,8 +1,6 @@
-"use client";
-
 export interface IIconProps {
   color?: string;
-  size?: string | number | string | undefined;
+  size?: string | number;
   reverse?: boolean;
 }
 

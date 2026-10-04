@@ -20,9 +20,8 @@ const OPAQUE_TYPES = new Set([
 export const UNKNOWN_FILE_TYPE = "application/octet-stream";
 
 /** True for a missing content type or a generic binary one. */
-export const isOpaqueFileType = (
-  fileType: string | null | undefined,
-): boolean => OPAQUE_TYPES.has(normalizeFileType(fileType ?? undefined));
+const isOpaqueFileType = (fileType: string | null | undefined): boolean =>
+  OPAQUE_TYPES.has(normalizeFileType(fileType ?? undefined));
 
 /**
  * Picks the file type used for renderer selection: the server's content type

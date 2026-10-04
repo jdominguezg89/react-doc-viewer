@@ -1,9 +1,7 @@
-"use client";
-
 import type { FC } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import type { IDocument } from "../models";
-import { LinkButton } from "./common";
+import { LinkButton } from "./Button";
 
 interface Props {
   document: IDocument | undefined;

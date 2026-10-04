@@ -2,7 +2,11 @@
   "name": "@jdominguezg89/react-doc-viewer",
   "version": "2.0.0",
   "description": "File viewer for React: PDF, images, CSV, text, HTML, video and Office documents.",
-  "author": "Matthew Mogford / Damian Cyntler",
+  "author": "jdominguezg89 (https://github.com/jdominguezg89)",
+  "contributors": [
+    "Matthew Mogford",
+    "Damian Cyntler"
+  ],
   "type": "module",
   "keywords": [
     "react",
@@ -36,6 +40,7 @@
       "types": "./dist/index.css.d.ts",
       "default": "./dist/index.css"
     },
+    "./dist/pdf.worker.min.mjs": "./dist/pdf.worker.min.mjs",
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -43,33 +48,24 @@
     "build": "rm -rf dist && tsc && vite build && tsc -p tsconfig.build.json && node scripts/fix-dts.mjs && node scripts/verify-dist.mjs",
     "typecheck": "tsc",
     "test": "vitest run",
-    "lint": "biome lint .",
-    "format": "biome format --write .",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "storybook:build": "rm -rf storybook-static && storybook build",
-    "build-readme-toc": "npx doctoc README.md --title \"## Table of Contents\"",
-    "verify:dist": "node scripts/verify-dist.mjs",
     "example:nextjs:build": "pnpm build && pnpm --filter react-doc-viewer-nextjs-example build",
     "prepack": "pnpm run build",
     "sync:pdfjs": "node scripts/sync-pdfjs.mjs"
   },
   "dependencies": {
-    "mustache": "^4.2.0",
     "papaparse": "^5.7.0",
     "pdfjs-dist": "6.3.289",
     "react-pdf": "11.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
-    "@storybook/addon-docs": "^10.6.1",
-    "@storybook/addon-links": "^10.6.1",
-    "@storybook/react": "^10.6.1",
     "@storybook/react-vite": "^10.6.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
-    "@types/mustache": "^4.2.6",
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.6.4",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

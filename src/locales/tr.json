@@ -3,8 +3,6 @@
   "noRendererMessage": "Dosya türü için görüntüleyici bulunamadı: {{{ fileType }}}",
   "downloadButtonLabel": "Dosyayı indir",
   "brokenFile": "Dosyanız bozuk. Lütfen kendi cihazınızda kontrol edin.",
-  "msgPluginRecipients": "Alıcılar",
-  "msgPluginSender": "Gönderen",
   "pdfPluginLoading": "Yükleniyor...",
   "pdfPluginPageNumber": "Sayfa {{ currentPage }}/{{ allPagesCount }}",
   "loadErrorMessage": "Belge yüklenemedi.",

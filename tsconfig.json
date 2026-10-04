@@ -8,12 +8,10 @@
     "strict": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["vitest/globals", "vite/client"]
+    "types": ["vitest/globals"]
   },
-  "include": ["src", ".storybook", "vite.config.ts", "vitest.setup.ts"],
-  "exclude": ["node_modules", "dist", "use-cases"]
+  "include": ["src", ".storybook", "vite.config.ts", "vitest.setup.ts"]
 }

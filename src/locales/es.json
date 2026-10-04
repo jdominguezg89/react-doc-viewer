@@ -3,8 +3,6 @@
   "noRendererMessage": "No hay procesador para el tipo de archivo: {{{ fileType }}}",
   "downloadButtonLabel": "Descargar archivo",
   "brokenFile": "Tu archivo está roto. Compruébalo en tu máquina.",
-  "msgPluginRecipients": "Destinatarios",
-  "msgPluginSender": "Remitente",
   "pdfPluginLoading": "Cargando...",
   "pdfPluginPageNumber": "Página {{ currentPage }}/{{ allPagesCount }}",
   "loadErrorMessage": "No se pudo cargar el documento.",

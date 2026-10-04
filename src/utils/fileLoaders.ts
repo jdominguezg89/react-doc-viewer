@@ -1,3 +1,5 @@
+import { toError } from "./toError";
+
 export interface FileLoaderFuncProps {
   documentURI: string;
   signal: AbortSignal;
@@ -22,9 +24,6 @@ interface BaseFileLoaderFuncOptions extends FileLoaderFuncProps {
 }
 
 type BaseFileLoaderFunction = (props: BaseFileLoaderFuncOptions) => void;
-
-const toError = (reason: unknown): Error =>
-  reason instanceof Error ? reason : new Error(String(reason));
 
 const CHUNK = 0x8000;
 

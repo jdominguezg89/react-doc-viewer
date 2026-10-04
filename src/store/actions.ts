@@ -1,5 +1,4 @@
-import type { IConfig, IDocument } from "../models";
-import type { IMainState } from "./mainStateReducer";
+import type { IDocument } from "../models";
 
 export const SET_ALL_DOCUMENTS = "SET_ALL_DOCUMENTS";
 export const SET_DOCUMENT_LOADING = "SET_DOCUMENT_LOADING";
@@ -9,8 +8,6 @@ export const PREVIOUS_DOCUMENT = "PREVIOUS_DOCUMENT";
 export const UPDATE_CURRENT_DOCUMENT = "UPDATE_CURRENT_DOCUMENT";
 export const PATCH_CURRENT_DOCUMENT = "PATCH_CURRENT_DOCUMENT";
 export const SET_RENDERER_RECT = "SET_RENDERER_RECT";
-export const SET_MAIN_CONFIG = "SET_MAIN_CONFIG";
-export const SYNC_PROPS = "SYNC_PROPS";
 
 export interface SetAllDocuments {
   type: typeof SET_ALL_DOCUMENTS;
@@ -24,21 +21,20 @@ export interface SetAllDocuments {
 export interface SetDocumentLoading {
   type: typeof SET_DOCUMENT_LOADING;
   value: boolean;
+  /** Load this belongs to; ignored when the viewer has moved on. */
+  loadId?: number;
 }
 
 export interface SetDocumentError {
   type: typeof SET_DOCUMENT_ERROR;
   error: Error | undefined;
+  /** Load this belongs to; ignored when the viewer has moved on. */
+  loadId?: number;
 }
 
 export interface SetRendererRect {
   type: typeof SET_RENDERER_RECT;
   rect: DOMRect;
-}
-
-export interface SetMainConfig {
-  type: typeof SET_MAIN_CONFIG;
-  config: IConfig;
 }
 
 export interface NextDocument {
@@ -65,24 +61,6 @@ export interface PreviousDocument {
   type: typeof PREVIOUS_DOCUMENT;
 }
 
-export type SyncableProps = Pick<
-  IMainState,
-  | "pluginRenderers"
-  | "prefetchMethod"
-  | "requestHeaders"
-  | "requestInit"
-  | "language"
-  | "activeDocument"
-  | "onDocumentChange"
-  | "onError"
-  | "onDocumentLoad"
->;
-
-export interface SyncProps {
-  type: typeof SYNC_PROPS;
-  props: SyncableProps;
-}
-
 export const setAllDocuments = (
   documents: IDocument[],
   selection: {
@@ -95,16 +73,22 @@ export const setAllDocuments = (
   ...selection,
 });
 
-export const setDocumentLoading = (value: boolean): SetDocumentLoading => ({
+export const setDocumentLoading = (
+  value: boolean,
+  loadId?: number,
+): SetDocumentLoading => ({
   type: SET_DOCUMENT_LOADING,
   value,
+  loadId,
 });
 
 export const setDocumentError = (
   error: Error | undefined,
+  loadId?: number,
 ): SetDocumentError => ({
   type: SET_DOCUMENT_ERROR,
   error,
+  loadId,
 });
 
 export const nextDocument = (): NextDocument => ({ type: NEXT_DOCUMENT });
@@ -127,16 +111,6 @@ export const setRendererRect = (rect: DOMRect): SetRendererRect => ({
   rect,
 });
 
-export const setMainConfig = (config: IConfig): SetMainConfig => ({
-  type: SET_MAIN_CONFIG,
-  config,
-});
-
-export const syncProps = (props: SyncableProps): SyncProps => ({
-  type: SYNC_PROPS,
-  props,
-});
-
 export type MainStateActions =
   | SetAllDocuments
   | SetDocumentLoading
@@ -145,6 +119,4 @@ export type MainStateActions =
   | PreviousDocument
   | UpdateCurrentDocument
   | PatchCurrentDocument
-  | SetRendererRect
-  | SetMainConfig
-  | SyncProps;
+  | SetRendererRect;

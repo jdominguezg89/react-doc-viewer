@@ -39,13 +39,12 @@ const PDFNavArrow = (props: IIconProps) => {
 };
 
 export const DownloadPDFIcon = (props: IIconProps) => {
-  const { color, size, reverse } = props;
+  const { color, size } = props;
   return (
     <svg
       aria-hidden="true"
       width={size || "100%"}
       height={size || "100%"}
-      style={{ transform: `${reverse ? "rotate(180deg)" : ""}` }}
       viewBox="0 0 24 24"
     >
       <path

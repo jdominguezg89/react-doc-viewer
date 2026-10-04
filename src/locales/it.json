@@ -3,8 +3,6 @@
   "noRendererMessage": "Nessun renderer per il tipo di file: {{{ fileType }}}",
   "downloadButtonLabel": "Scarica file",
   "brokenFile": "Il tuo file è danneggiato. Controllalo sul tuo computer.",
-  "msgPluginRecipients": "Destinatari",
-  "msgPluginSender": "Mittente",
   "pdfPluginLoading": "Caricamento in corso...",
   "pdfPluginPageNumber": "Pagina {{ currentPage }}/{{ allPagesCount }}",
   "loadErrorMessage": "Impossibile caricare il documento.",

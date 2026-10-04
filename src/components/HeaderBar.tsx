@@ -1,5 +1,3 @@
-"use client";
-
 import { type FC, useContext } from "react";
 import { DocViewerContext } from "../store/DocViewerProvider";
 import { DocumentNav } from "./DocumentNav";

@@ -1,19 +1,18 @@
-import mustache from "mustache";
 import { useCallback, useContext } from "react";
 import { defaultLanguage, locales } from "../i18n";
 import { DocViewerContext } from "../store/DocViewerProvider";
 
-// Translations are rendered as React text, never as HTML, so mustache's
-// HTML escaping would only produce visible entities ("&#x2F;").
+/**
+ * Fills `{{ name }}` placeholders. The locale files are internal and only
+ * use plain placeholders, and the result is rendered as React text, so no
+ * template engine or HTML escaping is needed.
+ */
 const render = (
   template: string,
   variables?: Record<string, string | number>,
-) =>
-  mustache.render(
-    template,
-    variables,
-    {},
-    { escape: (value) => String(value) },
+): string =>
+  template.replace(/\{\{\{?\s*(\w+)\s*\}?\}\}/g, (_match, name: string) =>
+    String(variables?.[name] ?? ""),
   );
 
 export const useTranslation = () => {

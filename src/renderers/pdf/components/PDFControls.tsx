@@ -1,5 +1,5 @@
 import { type FC, useContext } from "react";
-import { Button, LinkButton } from "../../../components/common";
+import { Button, LinkButton } from "../../../components/Button";
 import { useTranslation } from "../../../hooks/useTranslation";
 import { getFileName } from "../../../utils/getFileName";
 import { PDFContext } from "../state";

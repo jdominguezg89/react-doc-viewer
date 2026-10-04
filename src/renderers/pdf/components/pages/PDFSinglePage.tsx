@@ -40,7 +40,7 @@ const PDFSinglePage: FC<Props> = ({ pageNum }) => {
         </div>
       )}
       <Page
-        pageNumber={_pageNum || currentPage}
+        pageNumber={_pageNum}
         scale={zoomLevel}
         width={pageWidth}
         loading={t("pdfPluginLoading")}

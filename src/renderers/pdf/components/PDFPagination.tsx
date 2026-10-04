@@ -1,5 +1,5 @@
 import { type FC, useContext } from "react";
-import { Button } from "../../../components/common";
+import { Button } from "../../../components/Button";
 import { useTranslation } from "../../../hooks/useTranslation";
 import { PDFContext } from "../state";
 import { setCurrentPage } from "../state/actions";

@@ -1,5 +1,3 @@
-"use client";
-
 import { type FC, useCallback } from "react";
 import { useDocumentLoader } from "../hooks/useDocumentLoader";
 import { useTranslation } from "../hooks/useTranslation";

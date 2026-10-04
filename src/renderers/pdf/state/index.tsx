@@ -3,11 +3,11 @@ import {
   type Dispatch,
   type FC,
   type PropsWithChildren,
-  useEffect,
+  useMemo,
   useReducer,
 } from "react";
 import type { IMainState } from "../../../store/mainStateReducer";
-import { type PDFActions, SET_CURRENT_MAIN_STATE } from "./actions";
+import type { PDFActions } from "./actions";
 import { type IPDFState, initialPDFState, reducer } from "./reducer";
 
 const PDFContext = createContext<{
@@ -19,7 +19,7 @@ const PDFProvider: FC<PropsWithChildren<{ mainState: IMainState }>> = ({
   children,
   mainState,
 }) => {
-  const [state, dispatch] = useReducer(reducer, {
+  const [pdfState, dispatch] = useReducer(reducer, {
     ...initialPDFState,
     defaultZoomLevel:
       mainState.config?.pdfZoom?.defaultZoom ??
@@ -30,21 +30,16 @@ const PDFProvider: FC<PropsWithChildren<{ mainState: IMainState }>> = ({
     paginated: mainState.config?.pdfVerticalScrollByDefault
       ? false
       : initialPDFState.paginated,
-    mainState,
   });
 
-  useEffect(() => {
-    dispatch({
-      type: SET_CURRENT_MAIN_STATE,
-      value: mainState,
-    });
-  }, [mainState]);
-
-  return (
-    <PDFContext.Provider value={{ state, dispatch }}>
-      {children}
-    </PDFContext.Provider>
+  // The viewer state is passed through at render time, so the PDF subtree
+  // never sees a stale copy of it.
+  const value = useMemo(
+    () => ({ state: { ...pdfState, mainState }, dispatch }),
+    [pdfState, mainState],
   );
+
+  return <PDFContext.Provider value={value}>{children}</PDFContext.Provider>;
 };
 
 export { PDFContext, PDFProvider };

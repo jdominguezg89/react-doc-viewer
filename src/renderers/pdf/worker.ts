@@ -13,8 +13,9 @@ export type PdfWorkerSource = string | URL;
  * The worker of the exact `pdfjs-dist` version react-pdf depends on.
  * The published build ships a copy next to its chunks and rewrites this
  * expression to `new URL("./pdf.worker.min.mjs", import.meta.url)` (see
- * vite.config.ts), which every bundler turns into a local asset: no CDN, and
- * the worker always matches the pdf.js version in use.
+ * vite.config.ts), which bundlers turn into a local asset: no CDN, and the
+ * worker always matches the pdf.js version in use. (The dev servers of Vite 6
+ * and 7 cannot follow it; see "Vite 6/7 dev server" in the README.)
  */
 export const getDefaultPdfWorkerSource = (): string =>
   new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();

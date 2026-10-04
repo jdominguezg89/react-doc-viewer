@@ -3,8 +3,6 @@
   "noRendererMessage": "No renderer for file type: {{{ fileType }}}",
   "downloadButtonLabel": "Download file",
   "brokenFile": "Your file is broken. Please check it on your machine.",
-  "msgPluginRecipients": "Recipients",
-  "msgPluginSender": "Sender",
   "pdfPluginLoading": "Loading...",
   "pdfPluginPageNumber": "Page {{ currentPage }}/{{ allPagesCount }}",
   "loadErrorMessage": "The document could not be loaded.",

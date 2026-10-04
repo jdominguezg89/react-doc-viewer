@@ -15,4 +15,4 @@ pnpm --filter react-doc-viewer-nextjs-example start
   a file that does not exist to show the error state.
 - `/server-component` — `DocViewer` rendered directly from a Server Component.
 
-No `next.config` changes are needed for the PDF worker.
+There is no `next.config` file: the PDF worker needs no configuration.

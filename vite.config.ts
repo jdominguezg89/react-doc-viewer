@@ -37,9 +37,10 @@ const WORKER_URL_PLACEHOLDER = "__RDV_PDF_WORKER_URL__";
  * consumer's dev server rewrites a bare specifier inside `new URL()` to a
  * path that does not exist, and library mode would inline the 1 MB worker as
  * a data: URL. So the build ships the worker next to the chunks and points
- * the emitted code at it with a plain relative URL, which every bundler
- * (Vite dev/build, webpack 5, Turbopack, Parcel, Rollup) resolves the same
- * way.
+ * the emitted code at it with a plain relative URL, which Vite 8, webpack 5,
+ * Turbopack, Parcel and Rollup resolve the same way. (The esbuild-based
+ * optimizer of Vite 6/7 dev servers does not; the README documents the
+ * workaround.)
  */
 const shipPdfWorker = (): Plugin => ({
   name: "rdv:ship-pdf-worker",
@@ -85,16 +86,10 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       external: isExternal,
-      onwarn(warning, warn) {
-        // Rollup strips module-level directives; we re-add "use client" as a
-        // banner, so the warning is noise.
-        if (warning.code === "MODULE_LEVEL_DIRECTIVE") return;
-        if (warning.code === "SOURCEMAP_ERROR") return;
-        warn(warning);
-      },
       output: {
         exports: "named",
-        // Keep the React Server Components boundary that Rollup strips.
+        // The package is a client boundary for React Server Components: every
+        // emitted chunk starts with the directive.
         banner: '"use client";',
         chunkFileNames: "[name]-[hash].js",
       },
@@ -103,6 +98,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "happy-dom",
+    environmentOptions: {
+      // Do not fetch iframe sources (the Office viewer URL) during tests.
+      happyDOM: { settings: { disableIframePageLoading: true } },
+    },
     setupFiles: ["./vitest.setup.ts"],
   },
 });

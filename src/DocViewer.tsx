@@ -66,8 +66,8 @@ const DocViewer = forwardRef<DocViewerRef, DocViewerProps>((props, ref) => {
   return (
     <DocViewerProvider
       ref={ref}
-      pluginRenderers={DocViewerRenderers}
       {...props}
+      pluginRenderers={props.pluginRenderers ?? DocViewerRenderers}
     >
       <div
         id="react-doc-viewer"

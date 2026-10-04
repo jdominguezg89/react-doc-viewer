@@ -6,14 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": [
-      "**",
-      "!dist",
-      "!storybook-static",
-      "!use-cases",
-      "!pnpm-lock.yaml",
-      "!src/exampleFiles"
-    ]
+    "includes": ["**", "!use-cases", "!src/exampleFiles"]
   },
   "formatter": {
     "enabled": true,
