@@ -19,12 +19,14 @@ See [MIGRATION.md](./MIGRATION.md) for upgrade steps.
 
 ### Changed
 
+- `mustache` is no longer a dependency: the runtime dependencies are `react-pdf`, `pdfjs-dist` and `papaparse`.
+- The entry point exports an explicit list; `IMainState` is exported for typing header overrides and custom renderers. Only reachable declaration files are published.
 - **Breaking:** the package is published as `@jdominguezg89/react-doc-viewer` (maintained fork of `@cyntler/react-doc-viewer`).
 - **Breaking:** React 19 is required; the package is ESM-only; SSR needs Node 22.13+.
 - **Breaking:** styled-components removed in favour of plain CSS + custom properties. The `theme` prop and element ids are unchanged.
 - **Breaking:** HTML documents render in a fully sandboxed iframe via `srcdoc`.
 - **Breaking:** `application/octet-stream` is no longer routed to the Office viewer; the URL extension decides.
-- react-pdf 9 → 11, pdfjs-dist 4.3 → 6.3 (exact pin, verified against react-pdf at build time). The matching worker ships in the package and is referenced with a relative URL, which also works in Vite's dev server.
+- react-pdf 9 → 11, pdfjs-dist 4.3 → 6.3 (exact pin, verified against react-pdf at build time). The matching worker ships in the package (also exported as `./dist/pdf.worker.min.mjs`) and is referenced with a relative URL; Vite 6/7 dev servers need one `configurePdfWorker()` call, documented in the README.
 - All dependencies are externalised: the entry and its shared chunk are about 50 kB, plus 13 kB for the lazy PDF chunk (was 694 kB with pdf.js and styled-components bundled). The published tarball shrinks from 3.7 MB to about 0.5 MB, most of it the pdf.js worker that the package now actually uses.
 - The PDF renderer is loaded lazily, so apps that never show a PDF never download pdf.js.
 - The `"use client"` directive is preserved in the build output.
@@ -63,9 +65,15 @@ See [MIGRATION.md](./MIGRATION.md) for upgrade steps.
 - `ja`, `sr` and `sr_cyr` messages showed HTML entities; Arabic strings and arrows now follow the right-to-left layout.
 - A relative `config.msdoc.viewerUrl` threw during render; the PDF download link used the full URL (with query string) as file name.
 
+- A loader result arriving just after navigation could clear the next document's spinner or mark it as failed; `onDocumentLoad` fired twice under StrictMode for synchronous loaders.
+- Two `next()`/`prev()` calls in the same tick reported the wrong document to `onDocumentChange`.
+- A document opened right after a prop change was requested with the previous `requestHeaders`/`config`; a removed `config` kept applying; `pluginRenderers={undefined}` disabled every renderer; `fileLoader = null` never finished loading.
+- `initialActiveDocument` taken from an inline array snapped the viewer back on every parent render; `activeDocument` matched by `uri` lost the entry's `fileName` and `fileType`.
+- An inline `config.pdf.documentOptions` reloaded the PDF on every parent render.
+
 ### Removed
 
-- CommonJS build, React 17/18 support, `core-js` polyfill, unpkg worker URL, the unreferenced worker copy in the tarball, `ajv` and other unused dependencies.
+- CommonJS build, React 17/18 support, `core-js` polyfill, unpkg worker URL, the unreferenced unminified worker copy, `ajv` and other unused dependencies. Unused locale strings (`msgPlugin*`), `defaultTheme`, `release-it`, `gh-pages` and three Storybook packages.
 
 ## 1.17.1 and earlier
 

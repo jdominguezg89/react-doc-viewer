@@ -60,7 +60,7 @@ Matching is case-insensitive and ignores MIME parameters. When a server answers 
 
 - React and react-dom **19**.
 - ESM-only package. Bundlers (Vite, Next.js, webpack 5, Parcel, Rollup) and Node 22+ handle it natively; there is no CommonJS build.
-- TypeScript users: the stylesheet import ships its own declaration, so it type-checks without ambient `*.css` modules.
+- TypeScript users: the stylesheet import ships its own declaration, so it type-checks without ambient `*.css` modules. The public types reference react-pdf / pdf.js declarations, which need TypeScript 5.9 or newer; on older versions keep `skipLibCheck: true` (the default in Next.js and Vite templates).
 - Server-side rendering needs **Node 22.13 or newer** (pdf.js requirement).
 - Browsers: evergreen. pdf.js 6 supports Chrome 125+ / Safari 18+ and current Firefox.
 
@@ -127,7 +127,7 @@ Notes:
 
 ## PDF worker and pdf.js options
 
-By default the worker is a copy of the one from the exact `pdfjs-dist` version this package depends on. It ships in the package (`dist/pdf.worker.min.mjs`) and your bundler emits it as a local asset; this works in Vite (dev and build), Next.js, webpack 5 and Parcel without configuration. Two ways to override it:
+By default the worker is a copy of the one from the exact `pdfjs-dist` version this package depends on. It ships in the package (`dist/pdf.worker.min.mjs`) and your bundler emits it as a local asset. This works without configuration in Vite 8 (dev and build), in production builds of Vite 6/7, in Next.js, webpack 5 and Parcel. Two ways to override it:
 
 ```ts
 // Globally, once, before the first PDF renders (for CSP / offline / CDN setups):
@@ -143,7 +143,16 @@ configurePdfWorker("/static/pdf.worker.min.mjs");
 />
 ```
 
-`getDefaultPdfWorkerSource()` returns the bundled worker URL if you need it (for example to copy it into a CSP allow-list).
+`getDefaultPdfWorkerSource()` returns the bundled worker URL if you need it (for example to copy it into a CSP allow-list). The file is also exported as `@jdominguezg89/react-doc-viewer/dist/pdf.worker.min.mjs`, so you can copy it to a static directory or import its URL.
+
+**Vite 6/7 dev server.** The dependency optimizer in Vite 6 and 7 cannot follow the worker URL inside a pre-bundled package (symptom: "Setting up fake worker failed" in the console and a "file is broken" message for a valid PDF). Production builds are not affected, and Vite 8 is not affected at all. Hand the worker to the viewer yourself, once, at startup:
+
+```ts
+import { configurePdfWorker } from "@jdominguezg89/react-doc-viewer";
+import workerUrl from "@jdominguezg89/react-doc-viewer/dist/pdf.worker.min.mjs?url";
+
+configurePdfWorker(workerUrl);
+```
 
 Other pdf.js settings live under `config.pdf`:
 
@@ -192,6 +201,7 @@ The PDF file itself is downloaded by the viewer, not by pdf.js. Use the `request
 | `ref`                   | `DocViewerRef`                                    | `{ prev(), next() }` for imperative navigation.                                                                         |
 
 ```tsx
+import { useRef } from "react";
 import DocViewer, { type DocViewerRef } from "@jdominguezg89/react-doc-viewer";
 
 function Viewer() {
@@ -267,12 +277,24 @@ interface IDocument {
 **Uploaded files / blobs**
 
 ```tsx
-const [files, setFiles] = useState<File[]>([]);
+const [documents, setDocuments] = useState<IDocument[]>([]);
 
-<input type="file" multiple onChange={(e) => setFiles(Array.from(e.target.files ?? []))} />
-<DocViewer
-  documents={files.map((file) => ({ uri: URL.createObjectURL(file), fileName: file.name }))}
+<input
+  type="file"
+  multiple
+  onChange={(e) => {
+    // Create the object URLs once per selection, not on every render: a new
+    // URL is a different document and would restart the viewer.
+    for (const doc of documents) URL.revokeObjectURL(doc.uri);
+    setDocuments(
+      Array.from(e.target.files ?? [], (file) => ({
+        uri: URL.createObjectURL(file),
+        fileName: file.name,
+      })),
+    );
+  }}
 />
+<DocViewer documents={documents} />
 ```
 
 **Controlled navigation**
@@ -301,8 +323,11 @@ import DocViewer, { PDFRenderer, PNGRenderer } from "@jdominguezg89/react-doc-vi
 **Custom renderer**
 
 ```tsx
-import type { DocRenderer } from "@jdominguezg89/react-doc-viewer";
-import { textFileLoader } from "@jdominguezg89/react-doc-viewer";
+import DocViewer, {
+  type DocRenderer,
+  DocViewerRenderers,
+  textFileLoader,
+} from "@jdominguezg89/react-doc-viewer";
 
 const MarkdownRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
   if (typeof currentDocument?.fileData !== "string") return null;
@@ -398,9 +423,7 @@ Pull requests should keep `pnpm check`, `pnpm test` and `pnpm build` green; CI r
 
 ### Releasing
 
-Releases are automatic. Bump the version in the pull request (`pnpm version patch|minor|major --no-git-tag-version`) and add a CHANGELOG entry. When the pull request is merged into `main`, the `Release` workflow sees a version that is not on npm yet, runs the checks, publishes with npm provenance, creates the `vX.Y.Z` tag and GitHub Release, and deploys Storybook to GitHub Pages. Merges that do not change the version publish nothing.
-
-`pdfjs-dist` must stay on the exact version `react-pdf` depends on. After upgrading `react-pdf`, run `pnpm sync:pdfjs`; the build fails if the two diverge.
+Releases are automatic: bump the version in a pull request, add a CHANGELOG entry, merge into `main`, and the `Release` workflow publishes to npm with provenance, creates the tag and GitHub Release, and deploys Storybook. [RELEASING.md](https://github.com/jdominguezg89/react-doc-viewer/blob/main/RELEASING.md) has the one-time setup, the per-release steps and troubleshooting.
 
 ## License
 

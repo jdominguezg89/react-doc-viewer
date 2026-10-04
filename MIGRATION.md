@@ -32,6 +32,8 @@ Version 2 is a modernisation release. Most 1.x code keeps working unchanged; the
 
 If your CSP blocked unpkg you needed workarounds before; now nothing leaves your origin unless you configure it.
 
+Vite 6/7 only: their dev server cannot resolve the worker inside a pre-bundled dependency. Call `configurePdfWorker()` with `@jdominguezg89/react-doc-viewer/dist/pdf.worker.min.mjs?url` at startup (see the README). Vite 8, production builds and other bundlers need nothing.
+
 ### Styling
 
 styled-components was removed. Styling is plain CSS with custom properties:
@@ -53,11 +55,13 @@ styled-components was removed. Styling is plain CSS with custom properties:
 - **Default `textTertiary`** is darker (`#00000099`) so page labels meet contrast requirements, and the themed scrollbar thumb uses `textTertiary`/`secondary`.
 - **Zoom** is clamped to 0.25 – 5.
 - **`onDocumentChange`** is called from the navigation controls and the ref API (not from inside the reducer), so it fires exactly once per navigation, also under StrictMode.
-- Props such as `requestHeaders`, `language`, `pluginRenderers` and callbacks now update after mount.
+- Props such as `requestHeaders`, `language`, `pluginRenderers`, `config` and callbacks are always read from the current render; removing `config` or passing `pluginRenderers={undefined}` now falls back to the defaults.
+- `activeDocument` matched by `uri` keeps the `fileName` and `fileType` of the entry in `documents`.
 
 ### Types
 
-- `DocViewerProps` is exported.
+- `DocViewerProps` and `IMainState` are exported.
+- The public types reference react-pdf / pdf.js declarations, which need TypeScript 5.9+; older versions need `skipLibCheck: true`.
 - `DocViewerRenderers` is typed as `DocRenderer[]` (was `any[]` in the published types).
 - `fileLoaderComplete` accepts anything with a `result` property (`{ result }`), a `FileReader` still works.
 - `IPdfZoomConfig.defaultZoom` / `zoomJump` are optional.
