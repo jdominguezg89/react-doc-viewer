@@ -63,7 +63,7 @@ Do these once per repository / npm package. Until they are done the workflow can
 
    The npm page should show the provenance badge; the GitHub Release and https://jdominguezg89.github.io/react-doc-viewer/ should be updated.
 
-Pre-releases: a version such as `2.1.0-beta.0` is published under the `beta` dist-tag (not `latest`) and marked as a pre-release on GitHub.
+Pre-releases: a version such as `2.1.0-beta.0` (`pnpm version prerelease --preid beta --no-git-tag-version`) is published under the `beta` dist-tag, not `latest`, and marked as a pre-release on GitHub. A version without a named identifier (`2.0.1-0`) goes to the `next` dist-tag.
 
 Merges that do not change the version publish nothing. To redeploy Storybook only, run the workflow manually on `main` with "Redeploy Storybook" ticked.
 

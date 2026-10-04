@@ -1,4 +1,4 @@
-import { type FC, useContext, useEffect, useRef } from "react";
+import { type FC, useContext, useEffect, useState } from "react";
 import { Document } from "react-pdf";
 import { useTranslation } from "../../../../hooks/useTranslation";
 import type { PdfDocumentOptions } from "../../../../models";
@@ -8,17 +8,45 @@ import { initialPDFState } from "../../state/reducer";
 import { PDFAllPages } from "./PDFAllPages";
 import PDFSinglePage from "./PDFSinglePage";
 
-/** True when both option objects have the same own keys and values. */
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" &&
+  value !== null &&
+  Object.getPrototypeOf(value) === Object.prototype;
+
+const sameEntries = (
+  a: Record<string, unknown>,
+  b: Record<string, unknown>,
+  deep: boolean,
+): boolean => {
+  const keys = Object.keys(a);
+  return (
+    keys.length === Object.keys(b).length &&
+    keys.every((key) => {
+      const left = a[key];
+      const right = b[key];
+      if (left === right) return true;
+      // One level down, for values such as `httpHeaders: { ... }`.
+      return (
+        deep &&
+        isPlainObject(left) &&
+        isPlainObject(right) &&
+        sameEntries(left, right, false)
+      );
+    })
+  );
+};
+
+/** True when both option objects hold the same values. */
 const sameOptions = (
   a: PdfDocumentOptions | undefined,
   b: PdfDocumentOptions | undefined,
 ): boolean => {
   if (a === b) return true;
   if (!a || !b) return false;
-  const keysA = Object.keys(a) as Array<keyof PdfDocumentOptions>;
-  return (
-    keysA.length === Object.keys(b).length &&
-    keysA.every((key) => a[key] === b[key])
+  return sameEntries(
+    a as Record<string, unknown>,
+    b as Record<string, unknown>,
+    true,
   );
 };
 
@@ -34,18 +62,22 @@ const PDFPages: FC = () => {
 
   // react-pdf reloads the document whenever `options` changes identity, and
   // `config` is often an inline object: keep the previous reference while the
-  // contents are the same.
-  const optionsRef = useRef(pdfConfig?.documentOptions);
-  if (!sameOptions(optionsRef.current, pdfConfig?.documentOptions)) {
-    optionsRef.current = pdfConfig?.documentOptions;
+  // contents are the same. (State, not a ref: a render that never commits
+  // must not leave its value behind.)
+  const [options, setOptions] = useState(pdfConfig?.documentOptions);
+  if (!sameOptions(options, pdfConfig?.documentOptions)) {
+    setOptions(pdfConfig?.documentOptions);
   }
-  const options = optionsRef.current;
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: page count must reset whenever the document changes
+  // Reset the page state when the file itself changes. Keyed on the data
+  // react-pdf loads, not on the document object: that object is replaced
+  // whenever the list or a file name changes, without a reload.
+  const fileData = currentDocument?.fileData;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `fileData` is the trigger
   useEffect(() => {
     dispatch(setNumPages(initialPDFState.numPages));
     dispatch(setCurrentPage(initialPDFState.currentPage));
-  }, [currentDocument, dispatch]);
+  }, [fileData, dispatch]);
 
   if (!currentDocument || currentDocument.fileData === undefined) return null;
 

@@ -277,24 +277,30 @@ interface IDocument {
 **Uploaded files / blobs**
 
 ```tsx
-const [documents, setDocuments] = useState<IDocument[]>([]);
+function Upload() {
+  const [documents, setDocuments] = useState<IDocument[]>([]);
 
-<input
-  type="file"
-  multiple
-  onChange={(e) => {
-    // Create the object URLs once per selection, not on every render: a new
-    // URL is a different document and would restart the viewer.
-    for (const doc of documents) URL.revokeObjectURL(doc.uri);
-    setDocuments(
-      Array.from(e.target.files ?? [], (file) => ({
-        uri: URL.createObjectURL(file),
-        fileName: file.name,
-      })),
-    );
-  }}
-/>
-<DocViewer documents={documents} />
+  return (
+    <>
+      <input
+        type="file"
+        multiple
+        onChange={(e) => {
+          // Create the object URLs once per selection, not on every render:
+          // a new URL is a different document and would restart the viewer.
+          for (const doc of documents) URL.revokeObjectURL(doc.uri);
+          setDocuments(
+            Array.from(e.target.files ?? [], (file) => ({
+              uri: URL.createObjectURL(file),
+              fileName: file.name,
+            })),
+          );
+        }}
+      />
+      <DocViewer documents={documents} />
+    </>
+  );
+}
 ```
 
 **Controlled navigation**
@@ -376,14 +382,15 @@ Colours are CSS custom properties on the root element. Set them through the `the
 | Token (`theme` key)                | CSS variable            | Used for                                                        |
 | ---------------------------------- | ----------------------- | --------------------------------------------------------------- |
 | `primary` / `textPrimary`          | `--rdv-primary` / `--rdv-text-primary`     | Header bar, toolbar buttons and their icons, page counter |
-| `secondary` / `textSecondary`      | `--rdv-secondary` / `--rdv-text-secondary` | Previous/next document buttons, focus ring, HTML frame border |
-| `tertiary`                         | `--rdv-tertiary`        | PDF toolbar background, scrollbar thumb                         |
-| `textTertiary`                     | `--rdv-text-tertiary`   | Page labels in continuous-scroll mode                           |
+| `secondary` / `textSecondary`      | `--rdv-secondary` / `--rdv-text-secondary` | Previous/next document buttons                      |
+| `tertiary`                         | `--rdv-tertiary`        | PDF toolbar background                                          |
+| `textTertiary`                     | `--rdv-text-tertiary`   | Page labels in continuous-scroll mode, scrollbar thumb, HTML frame border |
+| (CSS only)                         | `--rdv-focus-ring`      | Keyboard focus ring, black by default                           |
 
 Pick `textPrimary` so it is readable on both `primary` and `tertiary`: the page counter sits on the toolbar.
 
 - `className` and `style` go to the root element, so `styled(DocViewer)` and CSS modules work. The root sets `display`, `background`, `width` and `height` with a single class; utility frameworks that put their classes in a cascade layer (Tailwind v4) lose to it, so use the `style` prop or size the parent instead.
-- The viewer fills a parent with a fixed height and scrolls inside it. Without one it grows with the document; if you then scroll the page and want the PDF toolbar to stick to the page, add `#react-doc-viewer #proxy-renderer { overflow: visible; }`.
+- The viewer fills a parent with a fixed height (also as a flex or grid item) and scrolls inside it. Without one it grows with the document; if you then scroll the page and want the PDF toolbar to stick to the page, add `#react-doc-viewer #proxy-renderer { overflow: visible; }`.
 - Every part has a stable element id (`#header-bar`, `#pdf-controls`, `#pdf-pagination`, `#image-renderer`, …) and a `rdv-*` class name for targeted overrides.
 - The default scrollbar styling can be disabled with `theme.disableThemeScrollbar`.
 

@@ -228,7 +228,7 @@ describe("(8) errors", () => {
     unmount();
   });
 
-  it("an errored document is retried when the same documents are passed again in a list that changed", () => {
+  it("an errored document stays in the error state when the list changes around it", () => {
     const onError = vi.fn();
     const { R, loads } = makeCapturingRenderer();
     const props = { pluginRenderers: [R], onError, config: NO_TIMEOUT };
@@ -236,6 +236,11 @@ describe("(8) errors", () => {
     act(() => loads[0].onError?.(new Error("boom")));
     expect(screen.getByTestId("load-error")).toBeInTheDocument();
     rerender(<DocViewer documents={[{ ...A }, B]} {...props} />);
+    // Same document: not reloaded, the error is still shown. Navigating away
+    // and back retries.
+    expect(loads).toHaveLength(1);
+    expect(screen.getByTestId("load-error")).toBeInTheDocument();
+    expect(onError).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -295,5 +300,9 @@ describe("(9) onDocumentLoad payload", () => {
       />,
     );
     expect(screen.getByTestId("simple")).toHaveTextContent("|inline text");
+    expect(onDocumentLoad).toHaveBeenCalledTimes(1);
+    expect(onDocumentLoad).toHaveBeenCalledWith(
+      expect.objectContaining({ fileType: "txt", fileData: "inline text" }),
+    );
   });
 });

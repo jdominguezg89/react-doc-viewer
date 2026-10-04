@@ -42,13 +42,13 @@ describe("mainStateReducer", () => {
     let state = mainStateReducer(initialState, setAllDocuments(docs));
     state = mainStateReducer(state, setDocumentError(new Error("x")));
     expect(state.documentLoading).toBe(false);
-    const before = state.loadId;
+    const before = state.loadId ?? 0;
 
     state = mainStateReducer(state, nextDocument());
     expect(state.currentFileNo).toBe(1);
     expect(state.documentLoading).toBe(true);
     expect(state.documentError).toBeUndefined();
-    expect(state.loadId).toBe(before + 1);
+    expect(state.loadId ?? 0).toBe(before + 1);
 
     state = mainStateReducer(state, nextDocument());
     state = mainStateReducer(state, nextDocument());
@@ -66,7 +66,10 @@ describe("mainStateReducer", () => {
 
     const patched = mainStateReducer(
       state,
-      patchCurrentDocument(state.loadId, { fileType: "pdf", fileData: "data" }),
+      patchCurrentDocument(state.loadId ?? 0, {
+        fileType: "pdf",
+        fileData: "data",
+      }),
     );
     expect(patched.currentDocument).toEqual({
       uri: "/a.pdf",
@@ -78,7 +81,7 @@ describe("mainStateReducer", () => {
 
     const stale = mainStateReducer(
       state,
-      patchCurrentDocument(state.loadId - 1, { fileType: "png" }),
+      patchCurrentDocument((state.loadId ?? 0) - 1, { fileType: "png" }),
     );
     expect(stale).toBe(state);
   });
@@ -90,10 +93,10 @@ describe("mainStateReducer", () => {
     );
     state = mainStateReducer(
       state,
-      patchCurrentDocument(state.loadId, { fileData: "hello" }),
+      patchCurrentDocument(state.loadId ?? 0, { fileData: "hello" }),
     );
     state = mainStateReducer(state, setDocumentLoading(false));
-    const { loadId } = state;
+    const loadId = state.loadId ?? 0;
 
     // append, rename: same document stays loaded, nothing reloads
     state = mainStateReducer(
@@ -103,7 +106,7 @@ describe("mainStateReducer", () => {
         { uri: "/b.txt", fileType: "txt" },
       ]),
     );
-    expect(state.loadId).toBe(loadId);
+    expect(state.loadId ?? 0).toBe(loadId);
     expect(state.documentLoading).toBe(false);
     expect(state.currentDocument).toMatchObject({
       fileData: "hello",
@@ -116,13 +119,13 @@ describe("mainStateReducer", () => {
       setAllDocuments([{ uri: "/z.txt" }, { uri: "/a.txt", fileType: "txt" }]),
     );
     expect(state.currentFileNo).toBe(1);
-    expect(state.loadId).toBe(loadId);
+    expect(state.loadId ?? 0).toBe(loadId);
 
     // the shown document disappears: start over with the first one
     state = mainStateReducer(state, setAllDocuments([{ uri: "/z.txt" }]));
     expect(state.currentFileNo).toBe(0);
     expect(state.documentLoading).toBe(true);
-    expect(state.loadId).toBe(loadId + 1);
+    expect(state.loadId ?? 0).toBe(loadId + 1);
   });
 
   it("reloads when inline fileData changes for the same uri", () => {
@@ -130,13 +133,13 @@ describe("mainStateReducer", () => {
       initialState,
       setAllDocuments([{ uri: "", fileType: "x", fileData: "ONE" }]),
     );
-    const { loadId } = state;
+    const loadId = state.loadId ?? 0;
     state = mainStateReducer(
       state,
       setAllDocuments([{ uri: "", fileType: "x", fileData: "TWO" }]),
     );
     expect(state.currentDocument?.fileData).toBe("TWO");
-    expect(state.loadId).toBe(loadId + 1);
+    expect(state.loadId ?? 0).toBe(loadId + 1);
   });
 
   it("switches documents in controlled mode and ignores no-op updates", () => {
@@ -154,17 +157,41 @@ describe("mainStateReducer", () => {
     const switched = mainStateReducer(state, updateCurrentDocument(twins[1]));
     expect(switched.currentFileNo).toBe(1);
     expect(switched.documentLoading).toBe(true);
-    expect(switched.loadId).toBe(state.loadId + 1);
+    expect(switched.loadId ?? 0).toBe((state.loadId ?? 0) + 1);
 
     // same-uri navigation also reloads
     const navigated = mainStateReducer(state, nextDocument());
     expect(navigated.currentDocument?.fileName).toBe("second");
-    expect(navigated.loadId).toBe(state.loadId + 1);
+    expect(navigated.loadId ?? 0).toBe((state.loadId ?? 0) + 1);
+  });
+
+  it("resolves a controlled document the same way when the list changes", () => {
+    const list = [
+      { uri: "/a", fileType: "cap", fileName: "Alpha" },
+      { uri: "/b", fileType: "cap", fileName: "Beta" },
+    ];
+    const active = { uri: "/b", fileType: "other" };
+    let state = mainStateReducer(initialState, setAllDocuments(list));
+    state = mainStateReducer(state, updateCurrentDocument(active));
+    expect(state.currentDocument).toMatchObject({
+      uri: "/b",
+      fileType: "other",
+      fileName: "Beta",
+    });
+    const before = state.loadId ?? 0;
+
+    state = mainStateReducer(
+      state,
+      setAllDocuments([...list, { uri: "/c" }], { activeDocument: active }),
+    );
+    expect(state.currentDocument?.fileType).toBe("other");
+    expect(state.currentFileNo).toBe(1);
+    expect(state.loadId ?? 0).toBe(before);
   });
 
   it("ignores loading and error results of a previous load", () => {
     let state = mainStateReducer(initialState, setAllDocuments(docs));
-    const stale = state.loadId;
+    const stale = state.loadId ?? 0;
     state = mainStateReducer(state, nextDocument());
     expect(mainStateReducer(state, setDocumentLoading(false, stale))).toBe(
       state,
@@ -173,7 +200,7 @@ describe("mainStateReducer", () => {
       mainStateReducer(state, setDocumentError(new Error("x"), stale)),
     ).toBe(state);
     expect(
-      mainStateReducer(state, setDocumentLoading(false, state.loadId))
+      mainStateReducer(state, setDocumentLoading(false, state.loadId ?? 0))
         .documentLoading,
     ).toBe(false);
   });

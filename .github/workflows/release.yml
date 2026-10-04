@@ -53,6 +53,12 @@ jobs:
             *-*) NPM_TAG="${VERSION#*-}"; NPM_TAG="${NPM_TAG%%.*}" ;;
             *) NPM_TAG=latest ;;
           esac
+          # "2.0.1-0" (pnpm version prerelease without --preid) has no usable
+          # name; npm rejects numeric dist-tags.
+          case "$NPM_TAG" in
+            [A-Za-z]*) ;;
+            *) NPM_TAG=next ;;
+          esac
           echo "npm_tag=$NPM_TAG" >> "$GITHUB_OUTPUT"
 
           # Only a 404 means "not published". Any other failure (network,

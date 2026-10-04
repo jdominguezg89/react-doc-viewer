@@ -177,12 +177,12 @@ describe("(3) documents replaced", () => {
       currentDocument: { uri: "/a", fileType: "image/png", fileData: "data:" },
       documentLoading: false,
     };
-    const loadId = state.loadId;
+    const loadId = state.loadId ?? 0;
     state = mainStateReducer(
       state,
       setAllDocuments([{ uri: "/a", fileType: "" }, { uri: "/b" }]),
     );
-    expect(state.loadId).toBe(loadId);
+    expect(state.loadId ?? 0).toBe(loadId);
     expect(state.currentDocument?.fileType).toBe("image/png");
   });
 

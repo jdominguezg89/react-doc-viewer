@@ -21,7 +21,7 @@ describe("misc", () => {
     expect(await screen.findByText("hello")).toBeInTheDocument();
   });
 
-  it("stale failure in the window: which document does onError report, and does B recover?", () => {
+  it("a failure of the previous document arriving right after navigation does not affect the next one", () => {
     const ref = createRef<DocViewerRef>();
     const onError = vi.fn();
     const { R, loads } = makeCapturingRenderer();
@@ -39,5 +39,8 @@ describe("misc", () => {
       loads[0].onError?.(new Error("A failed"));
     });
     act(() => loads[1].fileLoaderComplete({ result: "B-data" }));
+    expect(screen.queryByTestId("load-error")).toBeNull();
+    expect(screen.getByTestId("cap")).toHaveTextContent("|B-data");
+    expect(onError.mock.calls.length).toBeLessThanOrEqual(1);
   });
 });

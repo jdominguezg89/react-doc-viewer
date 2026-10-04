@@ -6,8 +6,11 @@ import DocViewer, {
 } from "../../index";
 import { mockDocumentRoutes } from "../../test/helpers";
 
-const { pdfjsMock } = vi.hoisted(() => ({
+const { pdfjsMock, seenOptions } = vi.hoisted(() => ({
   pdfjsMock: { GlobalWorkerOptions: { workerSrc: "" }, version: "0.0.0-test" },
+  // Every `options` object the mocked <Document> received; react-pdf reloads
+  // the file whenever its identity changes.
+  seenOptions: [] as unknown[],
 }));
 
 vi.mock("react-pdf", () => {
@@ -16,11 +19,14 @@ vi.mock("react-pdf", () => {
     children,
     onLoadSuccess,
     className,
+    options,
   }: {
     children?: ReactNode;
     onLoadSuccess?: (info: { numPages: number }) => void;
     className?: string;
+    options?: unknown;
   }) => {
+    seenOptions.push(options);
     // Fire once per mount, like a real document load.
     useEffect(() => {
       // Real documents load asynchronously, after the parent's effects.
@@ -59,6 +65,7 @@ beforeEach(() => {
   fetchMock.resetMocks();
   mockDocumentRoutes(routes);
   pdfjsMock.GlobalWorkerOptions.workerSrc = "";
+  seenOptions.length = 0;
   configurePdfWorker();
 });
 
@@ -139,5 +146,48 @@ describe("PDF renderer", () => {
       screen.queryByRole("button", { name: "Next page" }),
     ).not.toBeInTheDocument();
     expect(toggle).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("keeps the page and pagination when the documents list changes around the PDF", async () => {
+    const pdf = { uri: "https://x.test/doc.pdf" };
+    const { rerender } = render(<DocViewer documents={[pdf]} />);
+    await screen.findByText("Page 1/3");
+    act(() => screen.getByRole("button", { name: "Next page" }).click());
+    expect(screen.getByText("Page 2/3")).toBeInTheDocument();
+
+    // A second entry and a new file name for the PDF: same file, no reload.
+    rerender(
+      <DocViewer
+        documents={[
+          { ...pdf, fileName: "Renamed.pdf" },
+          { uri: "https://x.test/other.pdf" },
+        ]}
+      />,
+    );
+    await screen.findByText("Document 1 of 2");
+    expect(screen.getByText("Page 2/3")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-page")).toHaveAttribute("data-page", "2");
+    expect(screen.getByRole("button", { name: "Next page" })).toBeEnabled();
+  });
+
+  it("passes a stable options object for equal inline documentOptions", async () => {
+    const Host = ({ cMapUrl, n }: { cMapUrl: string; n: number }) => (
+      <DocViewer
+        documents={[{ uri: "https://x.test/doc.pdf" }]}
+        config={{
+          pdf: { documentOptions: { cMapUrl, httpHeaders: { a: "b" } } },
+        }}
+        data-n={n}
+      />
+    );
+    const { rerender } = render(<Host cMapUrl="/cmaps/" n={0} />);
+    await screen.findByText("Page 1/3");
+    for (let i = 1; i <= 3; i++) rerender(<Host cMapUrl="/cmaps/" n={i} />);
+    expect(new Set(seenOptions).size).toBe(1);
+
+    // A real change is passed on.
+    rerender(<Host cMapUrl="/other/" n={4} />);
+    expect(new Set(seenOptions).size).toBe(2);
+    expect(seenOptions.at(-1)).toMatchObject({ cMapUrl: "/other/" });
   });
 });

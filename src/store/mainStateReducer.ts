@@ -23,9 +23,10 @@ export type IMainState = {
   /**
    * Internal: incremented every time a document has to be (re)loaded. Loader
    * effects depend on it and loader results carry it, so late results for a
-   * previous load are dropped.
+   * previous load are dropped. Optional so a state object built by hand (for
+   * example in a consumer's test of a custom renderer) does not need it.
    */
-  loadId: number;
+  loadId?: number;
   rendererRect?: DOMRect;
   config?: IConfig;
   pluginRenderers?: DocRenderer[];
@@ -95,6 +96,29 @@ const isSameLoadedDocument = (
   return !nextType || nextType === normalizeFileType(current.fileType);
 };
 
+const loadIdOf = (state: IMainState): number => state.loadId ?? 0;
+
+/**
+ * A document selected through `activeDocument`: when it is matched by URI
+ * only, the list entry supplies what the selection does not say (file name,
+ * file type, inline data).
+ */
+const mergeWithEntry = (
+  entry: IDocument | undefined,
+  selected: IDocument,
+): IDocument =>
+  entry && entry !== selected
+    ? {
+        ...entry,
+        ...selected,
+        fileType: normalizeFileType(selected.fileType)
+          ? selected.fileType
+          : entry.fileType,
+        fileName: selected.fileName ?? entry.fileName,
+        fileData: selected.fileData ?? entry.fileData,
+      }
+    : selected;
+
 const startLoading = (
   state: IMainState,
   currentFileNo: number,
@@ -105,7 +129,7 @@ const startLoading = (
   currentDocument,
   documentLoading: currentDocument !== undefined,
   documentError: undefined,
-  loadId: state.loadId + 1,
+  loadId: loadIdOf(state) + 1,
 });
 
 export const mainStateReducer: MainStateReducer = (
@@ -118,13 +142,19 @@ export const mainStateReducer: MainStateReducer = (
 
       // Controlled selection, else the document already on screen (if it is
       // still in the list), else the initial document, else the first one.
-      let index = findDocumentIndex(documents, activeDocument);
+      const controlled = findDocumentIndex(documents, activeDocument);
+      let index = controlled;
       if (index < 0) index = locateCurrent(documents, state);
       if (index < 0)
         index = findDocumentIndex(documents, initialActiveDocument);
       if (index < 0) index = 0;
 
-      const target = documents[index];
+      // Same resolution as UPDATE_CURRENT_DOCUMENT, so a controlled document
+      // does not change when the list around it does.
+      const target =
+        controlled >= 0 && activeDocument
+          ? mergeWithEntry(documents[index], activeDocument)
+          : documents[index];
       const current = state.currentDocument;
 
       if (current && isSameLoadedDocument(current, target)) {
@@ -147,14 +177,14 @@ export const mainStateReducer: MainStateReducer = (
     }
 
     case SET_DOCUMENT_LOADING: {
-      if (action.loadId !== undefined && action.loadId !== state.loadId) {
+      if (action.loadId !== undefined && action.loadId !== loadIdOf(state)) {
         return state;
       }
       return { ...state, documentLoading: action.value };
     }
 
     case SET_DOCUMENT_ERROR: {
-      if (action.loadId !== undefined && action.loadId !== state.loadId) {
+      if (action.loadId !== undefined && action.loadId !== loadIdOf(state)) {
         return state;
       }
       return {
@@ -188,25 +218,12 @@ export const mainStateReducer: MainStateReducer = (
         return state;
       }
 
-      // Selected by URI only: keep what the list entry says about it.
       const entry = found >= 0 ? state.documents[found] : undefined;
-      const target =
-        entry && entry !== document
-          ? {
-              ...entry,
-              ...document,
-              fileType: normalizeFileType(document.fileType)
-                ? document.fileType
-                : entry.fileType,
-              fileName: document.fileName ?? entry.fileName,
-              fileData: document.fileData ?? entry.fileData,
-            }
-          : document;
-      return startLoading(state, index, target);
+      return startLoading(state, index, mergeWithEntry(entry, document));
     }
 
     case PATCH_CURRENT_DOCUMENT: {
-      if (action.loadId !== state.loadId || !state.currentDocument) {
+      if (action.loadId !== loadIdOf(state) || !state.currentDocument) {
         return state;
       }
       return {

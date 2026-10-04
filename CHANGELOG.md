@@ -71,6 +71,11 @@ See [MIGRATION.md](./MIGRATION.md) for upgrade steps.
 - `initialActiveDocument` taken from an inline array snapped the viewer back on every parent render; `activeDocument` matched by `uri` lost the entry's `fileName` and `fileType`.
 - An inline `config.pdf.documentOptions` reloaded the PDF on every parent render.
 
+- A PDF lost its page position and pagination, or went blank in continuous mode, when the documents list changed around it.
+- The hidden status line could add phantom scroll to the host page; focus rings were invisible with themes whose `secondary` is white; `language="ar"` reversed file names, text and CSV content.
+- The PDF toolbar scrolled out of view sideways at high zoom; the PDF page width now follows container resizes (sidebars, split panes), not only window resizes.
+- Smaller layout fixes: video scrollbar, download button width in long locales, viewer as a direct flex/grid item, HTML/Office frame minimum heights.
+
 ### Removed
 
 - CommonJS build, React 17/18 support, `core-js` polyfill, unpkg worker URL, the unreferenced unminified worker copy, `ajv` and other unused dependencies. Unused locale strings (`msgPlugin*`), `defaultTheme`, `release-it`, `gh-pages` and three Storybook packages.

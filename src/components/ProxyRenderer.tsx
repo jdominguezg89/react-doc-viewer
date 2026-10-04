@@ -1,7 +1,6 @@
-import { type FC, useCallback } from "react";
+import { type FC, useEffect, useRef } from "react";
 import { useDocumentLoader } from "../hooks/useDocumentLoader";
 import { useTranslation } from "../hooks/useTranslation";
-import { useWindowSize } from "../hooks/useWindowSize";
 import type { DocRenderer, IConfig, IDocument } from "../models";
 import { setRendererRect } from "../store/actions";
 import type { IMainState } from "../store/mainStateReducer";
@@ -106,16 +105,39 @@ export const ProxyRenderer: FC = () => {
   const { state, dispatch, CurrentRenderer } = useDocumentLoader();
   const { documents, documentLoading, documentError, currentDocument, config } =
     state;
-  const size = useWindowSize();
   const { t } = useTranslation();
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `size` is intentionally a dependency so the rect is re-measured on window resize
-  const containerRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (node) dispatch(setRendererRect(node.getBoundingClientRect()));
-    },
-    [size, dispatch],
-  );
+  // Measure the scroll area whenever its own size changes (window resizes,
+  // but also sidebars and split panes), not only on window resize.
+  const containerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+    let width = -1;
+    let height = -1;
+    const measure = () => {
+      // The PDF toolbar is sized to the visible width (see styles.css).
+      node.style.setProperty("--rdv-scrollport-width", `${node.clientWidth}px`);
+      const rect = node.getBoundingClientRect();
+      if (
+        Math.abs(rect.width - width) < 1 &&
+        Math.abs(rect.height - height) < 1
+      ) {
+        return;
+      }
+      width = rect.width;
+      height = rect.height;
+      dispatch(setRendererRect(rect));
+    };
+    measure();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", measure);
+      return () => window.removeEventListener("resize", measure);
+    }
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [dispatch]);
 
   const fileName = getFileName(
     currentDocument,

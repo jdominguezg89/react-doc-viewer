@@ -31,7 +31,8 @@ export const useDocumentLoader = (): {
   CurrentRenderer: DocRenderer | null | undefined;
 } => {
   const { state, dispatch } = useContext(DocViewerContext);
-  const { currentDocument, loadId } = state;
+  const { currentDocument } = state;
+  const loadId = state.loadId ?? 0;
 
   // Effects read callbacks, headers and config from here so they always see
   // the latest props without re-running when those change.
@@ -94,7 +95,7 @@ export const useDocumentLoader = (): {
         const error = toError(reason);
         if (error.name === "AbortError") return;
         dispatch(setDocumentError(error, loadId));
-        if (latest.current.loadId === loadId) {
+        if ((latest.current.loadId ?? 0) === loadId) {
           latest.current.onError?.(error, latest.current.currentDocument);
         }
       });
@@ -111,6 +112,16 @@ export const useDocumentLoader = (): {
     if (CurrentRenderer === null || !documentURI) {
       // Nothing to render, or nothing to fetch (inline fileData only).
       dispatch(setDocumentLoading(false, loadId));
+      // Inline data needs no request: the document is ready as it is.
+      const ready = latest.current.currentDocument;
+      if (
+        CurrentRenderer &&
+        ready?.fileData !== undefined &&
+        notifiedLoadId.current !== loadId
+      ) {
+        notifiedLoadId.current = loadId;
+        latest.current.onDocumentLoad?.(ready);
+      }
       return;
     }
 
@@ -130,7 +141,7 @@ export const useDocumentLoader = (): {
       // synchronous loader would otherwise report the document twice.
       if (
         loaded &&
-        latest.current.loadId === loadId &&
+        (latest.current.loadId ?? 0) === loadId &&
         notifiedLoadId.current !== loadId
       ) {
         notifiedLoadId.current = loadId;
@@ -145,7 +156,7 @@ export const useDocumentLoader = (): {
       onError: (error) => {
         if (signal.aborted) return;
         dispatch(setDocumentError(error, loadId));
-        if (latest.current.loadId === loadId) {
+        if ((latest.current.loadId ?? 0) === loadId) {
           latest.current.onError?.(error, latest.current.currentDocument);
         }
       },
