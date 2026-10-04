@@ -1,0 +1,3 @@
+{
+  "reject": ["pdfjs-dist"]
+}

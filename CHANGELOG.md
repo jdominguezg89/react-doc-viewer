@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased] — 2.0.0
+## [2.0.0]
 
 See [MIGRATION.md](./MIGRATION.md) for upgrade steps.
 
@@ -37,7 +37,7 @@ See [MIGRATION.md](./MIGRATION.md) for upgrade steps.
 - Declaration files use explicit `.js` extensions and `DocViewerRenderers` is typed.
 - Renderer matching is case-insensitive and ignores MIME parameters.
 - Built-in loaders read responses with `arrayBuffer()`/`text()` instead of `FileReader`.
-- Tooling: pnpm 12, Biome 2 (replaces ESLint + Prettier), TypeScript 7, Vite 8, Vitest 5, Storybook 10, release-it 21; CI on Node 22 and 24. `pnpm audit` reports zero advisories (was 90).
+- Tooling: pnpm 12, Biome 2 (replaces ESLint + Prettier), TypeScript 7, Vite 8, Vitest 5, Storybook 10; CI on Node 22 and 24. Releases are published from GitHub Actions with npm provenance when a new version reaches `main`. `pnpm audit` reports zero advisories (was 90).
 
 ### Fixed
 

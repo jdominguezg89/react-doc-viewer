@@ -1,6 +1,6 @@
 {
   "name": "@jdominguezg89/react-doc-viewer",
-  "version": "1.17.1",
+  "version": "2.0.0",
   "description": "File viewer for React: PDF, images, CSV, text, HTML, video and Office documents.",
   "author": "Matthew Mogford / Damian Cyntler",
   "type": "module",
@@ -48,13 +48,11 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "storybook:build": "rm -rf storybook-static && storybook build",
-    "deploy": "pnpm run storybook:build && gh-pages --nojekyll -d storybook-static --message \"feat: storybook deploy\"",
-    "prerelease": "pnpm run check && pnpm run test",
-    "release": "release-it && pnpm run deploy",
     "build-readme-toc": "npx doctoc README.md --title \"## Table of Contents\"",
     "verify:dist": "node scripts/verify-dist.mjs",
     "example:nextjs:build": "pnpm build && pnpm --filter react-doc-viewer-nextjs-example build",
-    "prepack": "pnpm run build"
+    "prepack": "pnpm run build",
+    "sync:pdfjs": "node scripts/sync-pdfjs.mjs"
   },
   "dependencies": {
     "mustache": "^4.2.0",
@@ -75,11 +73,9 @@
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "gh-pages": "^6.3.0",
     "happy-dom": "^20.14.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "release-it": "^21.1.0",
     "storybook": "^10.6.1",
     "typescript": "7.0.2",
     "vite": "^8.3.2",

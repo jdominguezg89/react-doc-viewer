@@ -396,6 +396,12 @@ The stories under `src/DocViewer.stories.tsx` cover the PDF, image, CSV, text an
 
 Pull requests should keep `pnpm check`, `pnpm test` and `pnpm build` green; CI runs them on Node 22 and 24.
 
+### Releasing
+
+Releases are automatic. Bump the version in the pull request (`pnpm version patch|minor|major --no-git-tag-version`) and add a CHANGELOG entry. When the pull request is merged into `main`, the `Release` workflow sees a version that is not on npm yet, runs the checks, publishes with npm provenance, creates the `vX.Y.Z` tag and GitHub Release, and deploys Storybook to GitHub Pages. Merges that do not change the version publish nothing.
+
+`pdfjs-dist` must stay on the exact version `react-pdf` depends on. After upgrading `react-pdf`, run `pnpm sync:pdfjs`; the build fails if the two diverge.
+
 ## License
 
 Apache-2.0. Originally created by Matthew Mogford and maintained by Damian Cyntler; see [LICENSE](./LICENSE).

@@ -1,0 +1,90 @@
+name: Release
+
+# Publishes to npm when the version in package.json on main is not published
+# yet. Authentication uses npm Trusted Publishing (OIDC): no tokens stored.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.check.outputs.publish }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "$NAME@$VERSION is already on npm; nothing to publish."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "$NAME@$VERSION is new; publishing."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    needs: detect
+    if: needs.detect.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # tag + GitHub Release
+      id-token: write # npm Trusted Publishing + provenance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      # Trusted Publishing needs a recent npm.
+      - run: npm install -g npm@latest
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check
+      - run: pnpm run typecheck
+      - run: pnpm test
+      # `prepack` builds and verifies dist before the tarball is created.
+      - run: npm publish --access public --provenance
+      - name: Tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ needs.detect.outputs.version }}" \
+            --target "$GITHUB_SHA" \
+            --title "v${{ needs.detect.outputs.version }}" \
+            --generate-notes
+
+  storybook:
+    needs: [detect, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm storybook:build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: storybook-static
+      - id: deploy
+        uses: actions/deploy-pages@v4

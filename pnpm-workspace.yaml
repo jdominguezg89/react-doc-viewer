@@ -30,8 +30,3 @@ allowBuilds:
   esbuild: true
   canvas: false
   core-js: false
-
-# Dev-only: transitive dependencies of release-it with open advisories.
-overrides:
-  undici: "^7.30.0"
-  basic-ftp: "^6.2.1"
