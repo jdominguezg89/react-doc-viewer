@@ -1,11 +1,16 @@
-[![npm-version](https://img.shields.io/npm/v/@jdominguezg89/react-doc-viewer.svg)](https://www.npmjs.com/package/@jdominguezg89/react-doc-viewer)
+[![npm version](https://img.shields.io/npm/v/@jdominguezg89/react-doc-viewer.svg)](https://www.npmjs.com/package/@jdominguezg89/react-doc-viewer)
+[![npm downloads](https://img.shields.io/npm/dm/@jdominguezg89/react-doc-viewer.svg)](https://www.npmjs.com/package/@jdominguezg89/react-doc-viewer)
 [![CI](https://github.com/jdominguezg89/react-doc-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/jdominguezg89/react-doc-viewer/actions/workflows/ci.yml)
+[![types included](https://img.shields.io/npm/types/@jdominguezg89/react-doc-viewer.svg)](https://www.npmjs.com/package/@jdominguezg89/react-doc-viewer)
+[![license](https://img.shields.io/npm/l/@jdominguezg89/react-doc-viewer.svg)](./LICENSE)
 
 # react-doc-viewer
 
 A file viewer component for **React 19**: PDF, images, CSV, plain text, HTML, video and (through Microsoft's online viewer) Office documents.
 
-This is a maintained fork of [cyntler/react-doc-viewer](https://github.com/cyntler/react-doc-viewer), which is no longer developed. Version 2 modernises the whole stack; see the [migration guide](./MIGRATION.md) and the [changelog](./CHANGELOG.md).
+**[Live demo (Storybook)](https://jdominguezg89.github.io/react-doc-viewer/)**
+
+This is the actively maintained continuation of [cyntler/react-doc-viewer](https://github.com/cyntler/react-doc-viewer), which is no longer developed. Version 2 modernises the whole stack. Coming from `@cyntler/react-doc-viewer`? See the [migration guide](./MIGRATION.md) and the [changelog](./CHANGELOG.md).
 
 **Highlights**
 

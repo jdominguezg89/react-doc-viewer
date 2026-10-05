@@ -1,6 +1,6 @@
 {
   "name": "@jdominguezg89/react-doc-viewer",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "File viewer for React: PDF, images, CSV, text, HTML, video and Office documents.",
   "author": "jdominguezg89 (https://github.com/jdominguezg89)",
   "contributors": [

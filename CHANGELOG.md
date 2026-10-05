@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.0.1]
+
+No code changes. First release published from GitHub Actions with npm provenance.
+
+- README: badges, live demo link and wording now that the repository is standalone.
+- CI job renamed to "Lint, test and build (Node N)".
+
 ## [2.0.0]
 
 See [MIGRATION.md](./MIGRATION.md) for upgrade steps.
