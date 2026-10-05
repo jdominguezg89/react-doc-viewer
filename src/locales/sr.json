@@ -3,8 +3,15 @@
   "noRendererMessage": "Ne postoji pregledač za tip fajla: {{ fileType }}",
   "downloadButtonLabel": "Preuzimanje fajla",
   "brokenFile": "Vaš fajl nije dobar. Molimo Vas da probate da ga otvorite na vašem računaru.",
-  "msgPluginRecipients": "Primaoci",
-  "msgPluginSender": "Pošiljalac",
   "pdfPluginLoading": "Učitavanje...",
-  "pdfPluginPageNumber": "Strana {{ currentPage }}/{{ allPagesCount }}"
+  "pdfPluginPageNumber": "Strana {{ currentPage }}/{{ allPagesCount }}",
+  "loadErrorMessage": "Dokument nije moguće učitati.",
+  "pdfZoomInLabel": "Uvećaj",
+  "pdfZoomOutLabel": "Umanji",
+  "pdfZoomResetLabel": "Vrati na podrazumevani nivo zumiranja",
+  "pdfNextPageLabel": "Sledeća strana",
+  "pdfPreviousPageLabel": "Prethodna strana",
+  "pdfTogglePaginationLabel": "Neprekidno pomeranje",
+  "previousDocumentLabel": "Prethodni dokument",
+  "nextDocumentLabel": "Sledeći dokument"
 }

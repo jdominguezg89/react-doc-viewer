@@ -1,11 +1,11 @@
-import "core-js/proposals/promise-with-resolvers";
-import React, { CSSProperties, forwardRef, memo } from "react";
-import styled, { ThemeProvider } from "styled-components";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+import "./styles.css";
+import { type CSSProperties, forwardRef, memo } from "react";
 import { HeaderBar } from "./components/HeaderBar";
 import { ProxyRenderer } from "./components/ProxyRenderer";
-import { defaultTheme } from "./defaultTheme";
-import { AvailableLanguages } from "./i18n";
-import {
+import { type AvailableLanguages, languageTag, rtlLanguages } from "./i18n";
+import type {
   DocRenderer,
   DocViewerRef,
   IConfig,
@@ -14,6 +14,7 @@ import {
 } from "./models";
 import { DocViewerRenderers } from "./renderers";
 import { DocViewerProvider } from "./store/DocViewerProvider";
+import { cx } from "./utils/cx";
 
 export interface DocViewerProps {
   documents: IDocument[];
@@ -24,14 +25,39 @@ export interface DocViewerProps {
   pluginRenderers?: DocRenderer[];
   prefetchMethod?: string;
   requestHeaders?: Record<string, string>;
+  /** Extra `fetch` options used for every document request (credentials, mode, cache, ...). */
+  requestInit?: Omit<RequestInit, "signal" | "headers" | "method" | "body">;
   initialActiveDocument?: IDocument;
   language?: AvailableLanguages;
   activeDocument?: IDocument;
   onDocumentChange?: (document: IDocument) => void;
+  /** Called once a document's data has been loaded and a renderer is about to show it. */
+  onDocumentLoad?: (document: IDocument) => void;
+  /** Called when a document fails to load. The viewer also shows an error state. */
+  onError?: (error: Error, document?: IDocument) => void;
 }
 
+const themeVariables: Array<[keyof ITheme, string]> = [
+  ["primary", "--rdv-primary"],
+  ["secondary", "--rdv-secondary"],
+  ["tertiary", "--rdv-tertiary"],
+  ["textPrimary", "--rdv-text-primary"],
+  ["textSecondary", "--rdv-text-secondary"],
+  ["textTertiary", "--rdv-text-tertiary"],
+];
+
+/** Maps the `theme` prop onto CSS custom properties consumed by styles.css. */
+const themeToStyle = (theme: ITheme | undefined): CSSProperties => {
+  const style: Record<string, string> = {};
+  for (const [key, variable] of themeVariables) {
+    const value = theme?.[key];
+    if (typeof value === "string") style[variable] = value;
+  }
+  return style as CSSProperties;
+};
+
 const DocViewer = forwardRef<DocViewerRef, DocViewerProps>((props, ref) => {
-  const { documents, theme } = props;
+  const { documents, theme, language } = props;
 
   if (!documents) {
     throw new Error("Please provide an array of documents to DocViewer!");
@@ -40,32 +66,23 @@ const DocViewer = forwardRef<DocViewerRef, DocViewerProps>((props, ref) => {
   return (
     <DocViewerProvider
       ref={ref}
-      pluginRenderers={DocViewerRenderers}
       {...props}
+      pluginRenderers={props.pluginRenderers ?? DocViewerRenderers}
     >
-      <ThemeProvider
-        theme={theme ? { ...defaultTheme, ...theme } : defaultTheme}
+      <div
+        id="react-doc-viewer"
+        data-testid="react-doc-viewer"
+        data-themed-scrollbar={theme?.disableThemeScrollbar ? "false" : "true"}
+        lang={language ? languageTag(language) : undefined}
+        dir={language && rtlLanguages.includes(language) ? "rtl" : undefined}
+        className={cx("rdv", props.className)}
+        style={{ ...themeToStyle(theme), ...props.style }}
       >
-        <Container
-          id="react-doc-viewer"
-          data-testid="react-doc-viewer"
-          className={props.className}
-          style={props.style}
-        >
-          <HeaderBar />
-          <ProxyRenderer />
-        </Container>
-      </ThemeProvider>
+        <HeaderBar />
+        <ProxyRenderer />
+      </div>
     </DocViewerProvider>
   );
 });
 
 export default memo(DocViewer);
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  background: #ffffff;
-  width: 100%;
-  height: 100%;
-`;

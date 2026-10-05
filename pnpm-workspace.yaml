@@ -1,0 +1,9 @@
+packages:
+  - "."
+  - "use-cases/*"
+
+# Fail installs on a Node version outside `engines`.
+engineStrict: true
+
+allowBuilds:
+  esbuild: true

@@ -4,26 +4,41 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
     steps:
-      - uses: actions/checkout@v2
-      - name: Read .nvmrc
-        run: echo NVMRC=`cat .nvmrc` >> $GITHUB_ENV
-      - name: Setup Node.js
-        uses: actions/setup-node@v2.4.1
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7
         with:
-          node-version: ${{ env.NVMRC }}
-      - name: Install packages
-        run: npm i
-      - name: Check formatter
-        run: npm run prettier:check
-      - name: Check linter
-        run: npm run lint
-      - name: Check tests
-        run: npm run test
-      - name: Check build
-        run: npm run build
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Lint and format (Biome)
+        run: pnpm run check
+      - name: Typecheck
+        run: pnpm run typecheck
+      - name: Test
+        run: pnpm test
+      - name: Build
+        run: pnpm build
+      - name: Pack (runs the build again through prepack)
+        run: pnpm pack --pack-destination /tmp
+      - name: Build Storybook
+        run: pnpm storybook:build
+      - name: Build the Next.js example against dist
+        run: pnpm --filter react-doc-viewer-nextjs-example build

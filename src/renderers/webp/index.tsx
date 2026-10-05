@@ -1,5 +1,4 @@
-import React from "react";
-import { DocRenderer } from "../..";
+import type { DocRenderer } from "../..";
 import ImageProxyRenderer from "../image";
 
 const WebPRenderer: DocRenderer = (props) => <ImageProxyRenderer {...props} />;

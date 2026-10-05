@@ -1,21 +1,50 @@
-import React from "react";
-import styled from "styled-components";
-import { DocRenderer } from "../..";
+import { NoRendererFallback } from "../../components/NoRendererFallback";
+import type { DocRenderer } from "../../models";
+import { getFileName } from "../../utils/getFileName";
 
-const MSDocRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
+const DEFAULT_VIEWER_URL = "https://view.officeapps.live.com/op/embed.aspx";
+
+const MSDocRenderer: DocRenderer = ({
+  mainState: { currentDocument, config },
+}) => {
   if (!currentDocument) return null;
 
+  const fileName = getFileName(
+    currentDocument,
+    config?.header?.retainURLParams || false,
+  );
+
+  if (config?.msdoc?.enabled === false) {
+    return (
+      <NoRendererFallback document={currentDocument} fileName={fileName} />
+    );
+  }
+
+  let viewerUrl: URL;
+  try {
+    // A relative viewerUrl (same-origin proxy) resolves against the page.
+    viewerUrl = new URL(
+      config?.msdoc?.viewerUrl ?? DEFAULT_VIEWER_URL,
+      document.baseURI,
+    );
+  } catch {
+    return (
+      <NoRendererFallback document={currentDocument} fileName={fileName} />
+    );
+  }
+  viewerUrl.searchParams.set("src", currentDocument.uri);
+
   return (
-    <Container id="msdoc-renderer">
-      <IFrame
+    <div id="msdoc-renderer" className="rdv-msdoc-renderer">
+      <iframe
         id="msdoc-iframe"
-        title="msdoc-iframe"
-        src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
-          currentDocument.uri,
-        )}`}
-        frameBorder="0"
+        className="rdv-msdoc-renderer__frame"
+        title={fileName || "msdoc-iframe"}
+        src={viewerUrl.toString()}
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+        referrerPolicy="no-referrer"
       />
-    </Container>
+    </div>
   );
 };
 
@@ -27,7 +56,6 @@ const MSDocFTMaps = {
   docx: [
     "docx",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/octet-stream",
   ],
   xls: ["xls", "application/vnd.ms-excel"],
   xlsx: [
@@ -52,12 +80,3 @@ MSDocRenderer.fileTypes = [
 ];
 MSDocRenderer.weight = 0;
 MSDocRenderer.fileLoader = ({ fileLoaderComplete }) => fileLoaderComplete();
-
-const Container = styled.div`
-  width: 100%;
-`;
-const IFrame = styled.iframe`
-  width: 100%;
-  height: 100%;
-  border: 0;
-`;

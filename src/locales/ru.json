@@ -3,8 +3,15 @@
   "noRendererMessage": "Данный тип файла не поддерживается рендером: {{{ fileType }}}",
   "downloadButtonLabel": "Скачать файл",
   "brokenFile": "Ваш файл сломан. Пожалуйста, проверьте его на своём комьютере.",
-  "msgPluginRecipients": "Получатели",
-  "msgPluginSender": "Отправитель",
   "pdfPluginLoading": "Загрузка...",
-  "pdfPluginPageNumber": "Страница {{ currentPage }}/{{ allPagesCount }}"
+  "pdfPluginPageNumber": "Страница {{ currentPage }}/{{ allPagesCount }}",
+  "loadErrorMessage": "Не удалось загрузить документ.",
+  "pdfZoomInLabel": "Увеличить",
+  "pdfZoomOutLabel": "Уменьшить",
+  "pdfZoomResetLabel": "Восстановить масштаб по умолчанию",
+  "pdfNextPageLabel": "Следующая страница",
+  "pdfPreviousPageLabel": "Предыдущая страница",
+  "pdfTogglePaginationLabel": "Непрерывная прокрутка",
+  "previousDocumentLabel": "Предыдущий документ",
+  "nextDocumentLabel": "Следующий документ"
 }

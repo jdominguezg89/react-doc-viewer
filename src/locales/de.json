@@ -3,8 +3,15 @@
   "noRendererMessage": "Kein Renderer für Dateityp: {{{ fileType }}}",
   "downloadButtonLabel": "Datei herunterladen",
   "brokenFile": "Ihre Datei ist defekt. Bitte überprüfen Sie sie auf Ihrem Rechner.",
-  "msgPluginRecipients": "Empfänger",
-  "msgPluginSender": "Absender",
   "pdfPluginLoading": "Wird geladen...",
-  "pdfPluginPageNumber": "Seite {{ currentPage }}/{{ allPagesCount }}"
+  "pdfPluginPageNumber": "Seite {{ currentPage }}/{{ allPagesCount }}",
+  "loadErrorMessage": "Das Dokument konnte nicht geladen werden.",
+  "pdfZoomInLabel": "Vergrößern",
+  "pdfZoomOutLabel": "Verkleinern",
+  "pdfZoomResetLabel": "Auf Standard-Zoomstufe zurücksetzen",
+  "pdfNextPageLabel": "Nächste Seite",
+  "pdfPreviousPageLabel": "Vorherige Seite",
+  "pdfTogglePaginationLabel": "Fortlaufendes Scrollen",
+  "previousDocumentLabel": "Vorheriges Dokument",
+  "nextDocumentLabel": "Nächstes Dokument"
 }

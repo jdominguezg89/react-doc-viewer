@@ -3,8 +3,15 @@
   "noRendererMessage": "No hay procesador para el tipo de archivo: {{{ fileType }}}",
   "downloadButtonLabel": "Descargar archivo",
   "brokenFile": "Tu archivo está roto. Compruébalo en tu máquina.",
-  "msgPluginRecipients": "Destinatarios",
-  "msgPluginSender": "Remitente",
   "pdfPluginLoading": "Cargando...",
-  "pdfPluginPageNumber": "Página {{ currentPage }}/{{ allPagesCount }}"
+  "pdfPluginPageNumber": "Página {{ currentPage }}/{{ allPagesCount }}",
+  "loadErrorMessage": "No se pudo cargar el documento.",
+  "pdfZoomInLabel": "Acercar",
+  "pdfZoomOutLabel": "Alejar",
+  "pdfZoomResetLabel": "Restablecer el nivel de zoom predeterminado",
+  "pdfNextPageLabel": "Página siguiente",
+  "pdfPreviousPageLabel": "Página anterior",
+  "pdfTogglePaginationLabel": "Desplazamiento continuo",
+  "previousDocumentLabel": "Documento anterior",
+  "nextDocumentLabel": "Documento siguiente"
 }

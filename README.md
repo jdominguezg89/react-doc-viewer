@@ -1,299 +1,359 @@
-[![npm-version](https://img.shields.io/npm/v/@cyntler/react-doc-viewer.svg)](https://www.npmjs.com/package/@cyntler/react-doc-viewer)
-[![npm-download](https://img.shields.io/npm/dt/@cyntler/react-doc-viewer.svg)](https://www.npmjs.com/package/@cyntler/react-doc-viewer)
+[![npm-version](https://img.shields.io/npm/v/@jdominguezg89/react-doc-viewer.svg)](https://www.npmjs.com/package/@jdominguezg89/react-doc-viewer)
+[![CI](https://github.com/jdominguezg89/react-doc-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/jdominguezg89/react-doc-viewer/actions/workflows/ci.yml)
 
-## I am stopping work on this library
+# react-doc-viewer
 
-> [!WARNING]
-**Due to lack of free time to develop this library, I am stopping work on this library.<br>
-> It will not be developed in the near future.**
+A file viewer component for **React 19**: PDF, images, CSV, plain text, HTML, video and (through Microsoft's online viewer) Office documents.
 
-# @cyntler/react-doc-viewer
+This is a maintained fork of [cyntler/react-doc-viewer](https://github.com/cyntler/react-doc-viewer), which is no longer developed. Version 2 modernises the whole stack; see the [migration guide](./MIGRATION.md) and the [changelog](./CHANGELOG.md).
 
-File viewer for **React v17+**.
+**Highlights**
 
-> This is a fork of https://github.com/Alcumus/react-doc-viewer (inactivity for a long time).
+- PDF rendering with [react-pdf](https://github.com/wojtekmaj/react-pdf) 11 / pdf.js 6. The worker ships from the `pdfjs-dist` npm package: no CDN, no version drift, overridable for CSP or offline setups.
+- ESM-only, tree-shakeable, `"use client"` aware. Works in Next.js App Router out of the box.
+- Plain CSS with custom properties for theming. No CSS-in-JS runtime, no style registry needed for SSR.
+- Error states, `onError` / `onDocumentLoad` callbacks, keyboard-accessible controls with translated labels in 14 languages.
+- Hardened defaults: sandboxed HTML preview, configurable request-header policy, opt-out for the Office viewer.
 
-## Important note!
-
-> [!IMPORTANT]
-> This library uses the official MS Office online document viewing service. This means it works on an iframe basis and only supports public file URLs! Therefore, it may not be compatible with all projects. Currently, there is no way to natively render MS Office documents in the browser.
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-## Table of Contents
+## Table of contents
 
 - [Supported file types](#supported-file-types)
-- [Storybook Demo](#storybook-demo)
+- [Requirements](#requirements)
 - [Installation](#installation)
-- [Usage](#usage)
-  - [Required styles](#required-styles)
-  - [Basic](#basic)
-  - [Initial Active Document](#initial-active-document)
-  - [Control over the displayed document](#control-over-the-displayed-document)
-  - [Displaying blob/uploaded documents](#displaying-blobuploaded-documents)
-  - [Included Renderers](#included-renderers)
-  - [Custom Renderer](#custom-renderer)
-  - [Custom File Loader](#custom-file-loader)
-- [Theme](#theme)
-- [Custom pre-fetch HTTP Verb](#custom-pre-fetch-http-verb)
-- [Custom Request Headers](#custom-request-headers)
-- [Internationalization (i18n)](#internationalization-i18n)
-- [Styling](#styling)
-  - [CSS Class](#css-class)
-  - [CSS Class Default Override](#css-class-default-override)
-  - [React Inline](#react-inline)
-  - [Styled Components](#styled-components)
-- [Using DocViewerRef](#using-docviewerref)
+- [Quick start](#quick-start)
+- [Next.js App Router](#nextjs-app-router)
+- [PDF worker and pdf.js options](#pdf-worker-and-pdfjs-options)
+- [Props](#props)
 - [Config](#config)
-  - [Overriding Header Component](#overriding-header-component)
-  - [Overriding Loading Renderer](#overriding-loading-renderer)
-  - [Overriding No Renderer (Error)](#overriding-no-renderer-error)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- [Documents](#documents)
+- [Renderers](#renderers)
+- [Theming and styling](#theming-and-styling)
+- [Internationalisation](#internationalisation)
+- [Security notes](#security-notes)
+- [Storybook](#storybook)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Supported file types
 
-| Extension | MIME Type                                                                 | Comments |
-| --------- | ------------------------------------------------------------------------- | ------------- |
-| bmp       | image/bmp                                                                 | |
-| csv       | text/csv                                                                  | |
-| odt       | application/vnd.oasis.opendocument.text                                   | |
-| doc       | application/msword                                                        | Public URLs only! |
-| docx      | application/vnd.openxmlformats-officedocument.wordprocessingml.document   | Public URLs only! |
-| gif       | image/gif                                                                 | |
-| htm       | text/htm                                                                  | |
-| html      | text/html                                                                 | |
-| jpg       | image/jpg                                                                 | |
-| jpeg      | image/jpeg                                                                | |
-| pdf       | application/pdf                                                           | |
-| png       | image/png                                                                 | |
-| ppt       | application/vnd.ms-powerpoint                                             | Public URLs only! |
-| pptx      | application/vnd.openxmlformats-officedocument.presentationml.presentation | Public URLs only! |
-| tiff      | image/tiff                                                                | |
-| txt       | text/plain                                                                | |
-| xls       | application/vnd.ms-excel                                                  | Public URLs only! |
-| xlsx      | application/vnd.openxmlformats-officedocument.spreadsheetml.sheet         | Public URLs only! |
-| mp4       | video/mp4                                                                 | |
-| webp      | image/webp                                                                | |
+| Extension | MIME type                                                                 | Notes                       |
+| --------- | ------------------------------------------------------------------------- | --------------------------- |
+| bmp       | image/bmp                                                                 |                             |
+| csv       | text/csv                                                                  |                             |
+| doc, docx | application/msword, …wordprocessingml.document                            | Office viewer, public URLs  |
+| gif       | image/gif                                                                 |                             |
+| htm, html | text/htm, text/html                                                       | Sandboxed iframe            |
+| jpg, jpeg | image/jpg, image/jpeg                                                     |                             |
+| mp4, mov, avi | video/mp4, video/quicktime, video/x-msvideo                           | Streamed by the browser     |
+| odt       | application/vnd.oasis.opendocument.text                                   | Office viewer, public URLs  |
+| pdf       | application/pdf                                                           |                             |
+| png       | image/png                                                                 |                             |
+| ppt, pptx | application/vnd.ms-powerpoint, …presentationml.presentation               | Office viewer, public URLs  |
+| tif, tiff | image/tif, image/tiff                                                     |                             |
+| txt       | text/plain                                                                |                             |
+| webp      | image/webp                                                                |                             |
+| xls, xlsx | application/vnd.ms-excel, …spreadsheetml.sheet                            | Office viewer, public URLs  |
 
-## Storybook Demo
+Matching is case-insensitive and ignores MIME parameters. When a server answers with no content type or `application/octet-stream`, the file extension in the URL decides, provided a renderer handles that extension; otherwise the type is `application/octet-stream`, which a custom renderer can claim.
 
-https://cyntler.github.io/react-doc-viewer
+## Requirements
+
+- React and react-dom **19**.
+- ESM-only package. Bundlers (Vite, Next.js, webpack 5, Parcel, Rollup) and Node 22+ handle it natively; there is no CommonJS build.
+- TypeScript users: the stylesheet import ships its own declaration, so it type-checks without ambient `*.css` modules. The public types reference react-pdf / pdf.js declarations, which need TypeScript 5.9 or newer; on older versions keep `skipLibCheck: true` (the default in Next.js and Vite templates).
+- Server-side rendering needs **Node 22.13 or newer** (pdf.js requirement).
+- Browsers: evergreen. pdf.js 6 supports Chrome 125+ / Safari 18+ and current Firefox.
 
 ## Installation
 
-Use one of the package managers for Node.js.
+```bash
+pnpm add @jdominguezg89/react-doc-viewer
+```
 
 ```bash
- npm i @cyntler/react-doc-viewer
- # or
- yarn add @cyntler/react-doc-viewer
+npm install @jdominguezg89/react-doc-viewer
 ```
 
-## Usage
+`react-pdf` and `pdfjs-dist` are regular dependencies of this package and are always installed in matching versions. You do not need to install or pin them yourself, and any `overrides` / `resolutions` for them from the 1.x days can be removed.
 
-> **Warning:** _By default the component height will expand and contract to the current loaded file. The width will expand to fill the parent._
-
-### Required styles
-
-The library exports a CSS file containing classes needed for correct rendering of e.g. PDF files. It is best to include it at the beginning of the application or in the place where you use this library.
+## Quick start
 
 ```tsx
-import "@cyntler/react-doc-viewer/dist/index.css";
-```
+import DocViewer from "@jdominguezg89/react-doc-viewer";
+import "@jdominguezg89/react-doc-viewer/dist/index.css";
 
-### Basic
+const docs = [
+  { uri: "https://example.com/report.pdf" },
+  { uri: "https://example.com/photo.png", fileName: "Holiday photo" },
+];
 
-DocViewer requires at least an array of document objects to function.
-Each document object must have a uri to a file, either a url that returns a file or a local file.
-
-```tsx
-import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-import "@cyntler/react-doc-viewer/dist/index.css";
-
-function App() {
-  const docs = [
-    { uri: "https://url-to-my-pdf.pdf" }, // Remote file
-    { uri: require("./example-files/pdf.pdf") }, // Local File
-  ];
-
-  return <DocViewer documents={docs} pluginRenderers={DocViewerRenderers} />;
+export function App() {
+  return (
+    <div style={{ height: "80vh" }}>
+      <DocViewer documents={docs} />
+    </div>
+  );
 }
 ```
 
-### Initial Active Document
+Import the stylesheet once, anywhere in your app. The viewer fills its parent's width and height, so give the parent a height.
 
-By default, the first item in your `documents` array will be displayed after the component is rendered. However, there is a prop `initialActiveDocument` that you can point to the initial document that should be displayed.
+All built-in renderers are enabled by default. Pass `pluginRenderers` to use a subset or your own renderers (see [Renderers](#renderers)).
+
+## Next.js App Router
+
+The package declares its own client boundary (`"use client"`), so you can import it from a Server Component page directly:
 
 ```tsx
-import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-import "@cyntler/react-doc-viewer/dist/index.css";
+// app/documents/page.tsx
+import DocViewer from "@jdominguezg89/react-doc-viewer";
+import "@jdominguezg89/react-doc-viewer/dist/index.css";
 
-const App = () => {
-  const docs = [
-    { uri: "https://url-to-my-pdf.pdf" }, // Remote file
-    { uri: require("./example-files/pdf.pdf") }, // Local File
-  ];
-
+export default function Page() {
   return (
-    <DocViewer
-      documents={docs}
-      initialActiveDocument={docs[1]}
-      pluginRenderers={DocViewerRenderers}
-    />
+    <main style={{ height: "100vh" }}>
+      <DocViewer documents={[{ uri: "/sample.pdf" }]} />
+    </main>
   );
-};
+}
 ```
 
-### Control over the displayed document
+Notes:
 
-From version **1.11.0** you can control the displayed document through two props: `activeDocument` and `onDocumentChange`.
+- The pdf.js worker ships inside the package and is referenced with `new URL("./pdf.worker.min.mjs", import.meta.url)`, which both webpack and Turbopack turn into a static asset. No `next.config` changes, no `serverExternalPackages`, no copying of worker files.
+- Server rendering produces the viewer chrome and loading state; documents are fetched in the browser. The PDF engine (react-pdf + pdf.js) is loaded lazily on the client, only when a PDF is shown.
+- If you pass `onError`, `onDocumentChange` or other callbacks from a Server Component, wrap the viewer in your own client component, since functions cannot cross the server/client boundary.
+- The example in [`use-cases/nextjs`](./use-cases/nextjs) is a minimal App Router project that consumes the built package through the pnpm workspace.
 
-```jsx
-const DocViewerControlOverDisplayedDocument = () => {
-  const docs = [
-    { uri: "https://url-to-my-pdf.pdf" }, // Remote file
-    { uri: require("./example-files/pdf.pdf") }, // Local File
-  ];
-  const [activeDocument, setActiveDocument] = useState(docs[0]);
+## PDF worker and pdf.js options
 
-  const handleDocumentChange = (document) => {
-    setActiveDocument(document);
-  };
+By default the worker is a copy of the one from the exact `pdfjs-dist` version this package depends on. It ships in the package (`dist/pdf.worker.min.mjs`) and your bundler emits it as a local asset. This works without configuration in Vite 8 (dev and build), in production builds of Vite 6/7, in Next.js, webpack 5 and Parcel. Two ways to override it:
 
+```ts
+// Globally, once, before the first PDF renders (for CSP / offline / CDN setups):
+import { configurePdfWorker } from "@jdominguezg89/react-doc-viewer";
+configurePdfWorker("/static/pdf.worker.min.mjs");
+```
+
+```tsx
+// Per instance:
+<DocViewer
+  documents={docs}
+  config={{ pdf: { workerSrc: "https://cdn.example.com/pdf.worker.min.mjs" } }}
+/>
+```
+
+`getDefaultPdfWorkerSource()` returns the bundled worker URL if you need it (for example to copy it into a CSP allow-list). The file is also exported as `@jdominguezg89/react-doc-viewer/dist/pdf.worker.min.mjs`, so you can copy it to a static directory or import its URL.
+
+**Vite 6/7 dev server.** The dependency optimizer in Vite 6 and 7 cannot follow the worker URL inside a pre-bundled package (symptom: "Setting up fake worker failed" in the console and a "file is broken" message for a valid PDF). Production builds are not affected, and Vite 8 is not affected at all. Hand the worker to the viewer yourself, once, at startup:
+
+```ts
+import { configurePdfWorker } from "@jdominguezg89/react-doc-viewer";
+import workerUrl from "@jdominguezg89/react-doc-viewer/dist/pdf.worker.min.mjs?url";
+
+configurePdfWorker(workerUrl);
+```
+
+Other pdf.js settings live under `config.pdf`:
+
+```tsx
+<DocViewer
+  documents={docs}
+  config={{
+    pdf: {
+      // Passed to pdf.js getDocument(); keep the object reference stable.
+      documentOptions: {
+        cMapUrl: "/pdfjs/cmaps/",
+        standardFontDataUrl: "/pdfjs/standard_fonts/",
+        wasmUrl: "/pdfjs/wasm/",
+      },
+      externalLinkTarget: "_blank", // default
+      onLoadError: (error) => console.error(error),
+    },
+    pdfZoom: { defaultZoom: 1, zoomJump: 0.1 },
+    pdfVerticalScrollByDefault: false,
+  }}
+/>
+```
+
+The cMap, font and wasm directories are in the `pdfjs-dist` package (`cmaps/`, `standard_fonts/`, `wasm/`); copy them to your static assets if your documents need them.
+
+The PDF file itself is downloaded by the viewer, not by pdf.js. Use the `requestInit` prop (for example `requestInit={{ credentials: "include" }}`) and `requestHeaders` for cookies and auth headers; `httpHeaders` and `withCredentials` in `documentOptions` have no effect.
+
+## Props
+
+| Prop                    | Type                                              | Description                                                                                                             |
+| ----------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `documents`             | `IDocument[]`                                     | Required. See [Documents](#documents).                                                                                  |
+| `config`                | `IConfig`                                         | See [Config](#config).                                                                                                  |
+| `theme`                 | `ITheme`                                          | Colours, mapped to CSS custom properties. See [Theming](#theming-and-styling).                                          |
+| `className`, `style`    |                                                   | Applied to the root element.                                                                                            |
+| `pluginRenderers`       | `DocRenderer[]`                                   | Renderers to use. Defaults to all built-in renderers.                                                                   |
+| `initialActiveDocument` | `IDocument`                                       | Document shown first (uncontrolled).                                                                                    |
+| `activeDocument`        | `IDocument`                                       | Currently shown document (controlled). Matched by reference, then by `uri`.                                             |
+| `onDocumentChange`      | `(document) => void`                              | Called when the user (or the ref API) navigates.                                                                        |
+| `onDocumentLoad`        | `(document) => void`                              | Called when a document's data has been loaded.                                                                          |
+| `onError`               | `(error, document?) => void`                      | Called when a document fails to load. The viewer also renders an error state.                                           |
+| `prefetchMethod`        | `string`                                          | HTTP method for the content-type probe. Defaults to `HEAD` (`GET` for `blob:` URLs).                                    |
+| `requestHeaders`        | `Record<string, string>`                          | Headers for every document request. See `config.fetch.sendRequestHeadersTo`.                                            |
+| `requestInit`           | `RequestInit` subset                              | Extra `fetch` options: `credentials`, `mode`, `cache`, `referrerPolicy`, …                                              |
+| `language`              | `AvailableLanguages`                              | UI language. See [Internationalisation](#internationalisation).                                                         |
+| `ref`                   | `DocViewerRef`                                    | `{ prev(), next() }` for imperative navigation.                                                                         |
+
+```tsx
+import { useRef } from "react";
+import DocViewer, { type DocViewerRef } from "@jdominguezg89/react-doc-viewer";
+
+function Viewer() {
+  const ref = useRef<DocViewerRef>(null);
   return (
     <>
-      <DocViewer
-        documents={docs}
-        activeDocument={activeDocument}
-        onDocumentChange={handleDocumentChange}
-      />
+      <button type="button" onClick={() => ref.current?.prev()}>Previous</button>
+      <button type="button" onClick={() => ref.current?.next()}>Next</button>
+      <DocViewer ref={ref} documents={docs} config={{ header: { disableHeader: true } }} />
     </>
   );
-};
+}
 ```
 
-### Displaying blob/uploaded documents
+## Config
 
-Since **v1.6.2** you can use documents in the form of blobs, which allows you to e.g. display uploaded files.
+```tsx
+<DocViewer
+  documents={docs}
+  config={{
+    header: {
+      disableHeader: false,
+      disableFileName: false,
+      retainURLParams: false,
+      overrideComponent: MyHeader, // (state, previous, next) => ReactElement, see below
+    },
+    loadingRenderer: {
+      overrideComponent: ({ document, fileName }) => <p>Loading {fileName}…</p>,
+      showLoadingTimeout: 500, // ms before the loading UI appears; false = immediately
+    },
+    errorRenderer: {
+      overrideComponent: ({ document, fileName, error }) => <p>{error.message}</p>,
+    },
+    noRenderer: {
+      overrideComponent: ({ document, fileName }) => <p>Unsupported: {fileName}</p>,
+    },
+    csvDelimiter: ",",
+    pdfZoom: { defaultZoom: 1, zoomJump: 0.1 },
+    pdfVerticalScrollByDefault: false,
+    pdf: { /* see above */ },
+    html: { sandbox: "" }, // iframe sandbox attribute for HTML documents
+    msdoc: { enabled: true, viewerUrl: "https://view.officeapps.live.com/op/embed.aspx" },
+    fetch: { sendRequestHeadersTo: "all" }, // "all" | "same-origin" | string[] (origins) | (uri) => boolean
+  }}
+/>
+```
 
-```jsx
-const DocViewerWithInputApp = () => {
-  const [selectedDocs, setSelectedDocs] = useState<File[]>([]);
+The header override receives the full viewer state plus `previous`/`next` callbacks:
+
+```tsx
+import type { IHeaderOverride } from "@jdominguezg89/react-doc-viewer";
+
+const MyHeader: IHeaderOverride = (state, previous, next) => (
+  <div>
+    <span>{state.currentDocument?.fileName ?? state.currentDocument?.uri}</span>
+    <button type="button" onClick={previous} disabled={state.currentFileNo === 0}>Previous</button>
+    <button type="button" onClick={next} disabled={state.currentFileNo >= state.documents.length - 1}>Next</button>
+  </div>
+);
+```
+
+## Documents
+
+```ts
+interface IDocument {
+  uri: string;          // URL, blob: URL or data: URL of the file
+  fileType?: string;    // MIME type or extension; skips the content-type probe when set
+  fileName?: string;    // Display name (and download name)
+  fileData?: string | ArrayBuffer; // Filled by the loader
+}
+```
+
+**Uploaded files / blobs**
+
+```tsx
+function Upload() {
+  const [documents, setDocuments] = useState<IDocument[]>([]);
 
   return (
     <>
       <input
         type="file"
-        accept=".pdf"
         multiple
-        onChange={(el) =>
-          el.target.files?.length &&
-          setSelectedDocs(Array.from(el.target.files))
-        }
+        onChange={(e) => {
+          // Create the object URLs once per selection, not on every render:
+          // a new URL is a different document and would restart the viewer.
+          for (const doc of documents) URL.revokeObjectURL(doc.uri);
+          setDocuments(
+            Array.from(e.target.files ?? [], (file) => ({
+              uri: URL.createObjectURL(file),
+              fileName: file.name,
+            })),
+          );
+        }}
       />
-      <DocViewer
-        documents={selectedDocs.map((file) => ({
-          uri: window.URL.createObjectURL(file),
-          fileName: file.name,
-        }))}
-        pluginRenderers={DocViewerRenderers}
-      />
+      <DocViewer documents={documents} />
     </>
   );
-};
+}
 ```
 
-### Included Renderers
-
-To use the included renderers.
-`DocViewerRenderers` is an Array of all the included renderers.
+**Controlled navigation**
 
 ```tsx
-import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-import "@cyntler/react-doc-viewer/dist/index.css";
-
-<DocViewer
-  pluginRenderers={DocViewerRenderers}
-  {/* ... */}
-/>;
+const [active, setActive] = useState(docs[0]);
+<DocViewer documents={docs} activeDocument={active} onDocumentChange={setActive} />
 ```
 
-Or you can import individual renderers.
+Passing a new `documents` array with the same contents does not reset the viewer. When the contents change, the document on screen stays (and is not reloaded) as long as it is still in the list; otherwise the viewer starts again from `initialActiveDocument` or the first entry.
+
+**Pre-signed URLs and HTTP verbs**
+
+Some services (S3, GCS) sign a URL for a single verb. Use `prefetchMethod="GET"` so the content-type probe uses the same verb as the download, or set `fileType` on the document to skip the probe entirely.
+
+## Renderers
+
+`DocViewerRenderers` is the array of all built-in renderers; each is also exported individually (`PDFRenderer`, `PNGRenderer`, `CSVRenderer`, …).
 
 ```tsx
-import DocViewer, { PDFRenderer, PNGRenderer } from "@cyntler/react-doc-viewer";
-import "@cyntler/react-doc-viewer/dist/index.css";
+import DocViewer, { PDFRenderer, PNGRenderer } from "@jdominguezg89/react-doc-viewer";
 
-<DocViewer
-  pluginRenderers={[PDFRenderer, PNGRenderer]}
-  {/* ... */}
-/>;
+<DocViewer documents={docs} pluginRenderers={[PDFRenderer, PNGRenderer]} />;
 ```
 
-### Custom Renderer
-
-To create a custom renderer, that will just exist for your project.
+**Custom renderer**
 
 ```tsx
-import React from "react";
-import DocViewer from "@cyntler/react-doc-viewer";
+import DocViewer, {
+  type DocRenderer,
+  DocViewerRenderers,
+  textFileLoader,
+} from "@jdominguezg89/react-doc-viewer";
 
-const MyCustomPNGRenderer: DocRenderer = ({
-  mainState: { currentDocument },
-}) => {
-  if (!currentDocument) return null;
-
-  return (
-    <div id="my-png-renderer">
-      <img id="png-img" src={currentDocument.fileData as string} />
-    </div>
-  );
+const MarkdownRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
+  if (typeof currentDocument?.fileData !== "string") return null;
+  return <pre>{currentDocument.fileData}</pre>;
 };
 
-MyCustomPNGRenderer.fileTypes = ["png", "image/png"];
-MyCustomPNGRenderer.weight = 1;
+MarkdownRenderer.fileTypes = ["md", "text/markdown"];
+MarkdownRenderer.weight = 1;          // higher weight wins when several renderers match
+MarkdownRenderer.fileLoader = textFileLoader; // default: dataURLFileLoader
+
+<DocViewer documents={docs} pluginRenderers={[...DocViewerRenderers, MarkdownRenderer]} />;
 ```
 
-And supply it to `pluginRenderers` inside an `Array`.
+Available loaders: `dataURLFileLoader` (default), `textFileLoader`, `arrayBufferFileLoader`, `binaryStringFileLoader`. A custom loader receives `{ documentURI, signal, headers, requestInit, fileLoaderComplete, onError }`; call `fileLoaderComplete({ result })` when done (or with nothing to skip loading, for example when the renderer streams the file itself) and `onError(error)` on failure.
+
+## Theming and styling
+
+Colours are CSS custom properties on the root element. Set them through the `theme` prop or in your own CSS:
 
 ```tsx
-import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-import "@cyntler/react-doc-viewer/dist/index.css";
-
-<DocViewer
-  pluginRenderers={[MyCustomPNGRenderer]}
-  documents={
-    [
-      // ...
-    ]
-  }
-/>;
-```
-
-### Custom File Loader
-
-If you need to prevent the actual loading of the file by `@cyntler/react-doc-viewer`.<br>
-You can decorate your custom renderer with a callback to do as you wish. e.g. Load the file yourself in an iFrame.
-
-```tsx
-MyCustomPNGRenderer.fileLoader = ({
-  documentURI,
-  signal,
-  fileLoaderComplete,
-}) => {
-  myCustomFileLoaderCode().then(() => {
-    // Whenever you have finished you must call fileLoaderComplete() to remove the loading animation
-    fileLoaderComplete();
-  });
-};
-```
-
-## Theme
-
-You can provide a theme object with one or all of the available properties.
-
-```xml
 <DocViewer
   documents={docs}
   theme={{
@@ -308,267 +368,70 @@ You can provide a theme object with one or all of the available properties.
 />
 ```
 
-## Custom pre-fetch HTTP Verb
-
-Some services (such as AWS) provide URLs that works only for one pre-configured verb.
-By default, `@cyntler/react-doc-viewer` fetches document metadata through a `HEAD` request in order to guess its `Content-Type`.
-If you need to have a specific verb for the pre-fetching, use the `prefetchMethod` option on the DocViewer:
-
-```tsx
-import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-
-<DocViewer prefetchMethod="GET" />;
-```
-
-## Custom Request Headers
-
-Provide request headers, i.e. for authenticating with an API etc.
-
-```tsx
-const headers = {
-  "X-Access-Token": "1234567890",
-  "My-Custom-Header": "my-custom-value",
-};
-
-<DocViewer documents={docs} prefetchMethod="GET" requestHeaders={headers} />;
-```
-
-## Internationalization (i18n)
-
-From **v1.6.0** you can pass the `language` prop to the `DocViewer` component to get translated sentences and words that can be displayed by this library.
-
-```xml
-<DocViewer documents={docs} language="pl" />
-```
-
-The translations are based on the `.json` files that can be found in the `src/locales` directory.
-
-## Styling
-
-Any styling applied to the `<DocViewer>` component, is directly applied to the main `div` container.
-
-### CSS Class
-
-```xml
-<DocViewer documents={docs} className="my-doc-viewer-style" />
-```
-
-### CSS Class Default Override
-
-Each component / div already has a DOM id that can be used to style any part of the document viewer.
-
 ```css
+/* `.rdv.my-viewer` wins over the defaults regardless of stylesheet order. */
+.rdv.my-viewer {
+  --rdv-primary: #5296d8;
+  --rdv-text-primary: #fff;
+}
 #react-doc-viewer #header-bar {
-  background-color: #faf;
+  background: #faf;
 }
 ```
 
-### React Inline
+| Token (`theme` key)                | CSS variable            | Used for                                                        |
+| ---------------------------------- | ----------------------- | --------------------------------------------------------------- |
+| `primary` / `textPrimary`          | `--rdv-primary` / `--rdv-text-primary`     | Header bar, toolbar buttons and their icons, page counter |
+| `secondary` / `textSecondary`      | `--rdv-secondary` / `--rdv-text-secondary` | Previous/next document buttons                      |
+| `tertiary`                         | `--rdv-tertiary`        | PDF toolbar background                                          |
+| `textTertiary`                     | `--rdv-text-tertiary`   | Page labels in continuous-scroll mode, scrollbar thumb, HTML frame border |
+| (CSS only)                         | `--rdv-focus-ring`      | Keyboard focus ring, black by default                           |
 
-```xml
-<DocViewer documents={docs} style={{ width: 500, height: 500 }} />
-```
+Pick `textPrimary` so it is readable on both `primary` and `tertiary`: the page counter sits on the toolbar.
 
-### Styled Components
+- `className` and `style` go to the root element, so `styled(DocViewer)` and CSS modules work. The root sets `display`, `background`, `width` and `height` with a single class; utility frameworks that put their classes in a cascade layer (Tailwind v4) lose to it, so use the `style` prop or size the parent instead.
+- The viewer fills a parent with a fixed height (also as a flex or grid item) and scrolls inside it. Without one it grows with the document; if you then scroll the page and want the PDF toolbar to stick to the page, add `#react-doc-viewer #proxy-renderer { overflow: visible; }`.
+- Every part has a stable element id (`#header-bar`, `#pdf-controls`, `#pdf-pagination`, `#image-renderer`, …) and a `rdv-*` class name for targeted overrides.
+- The default scrollbar styling can be disabled with `theme.disableThemeScrollbar`.
 
-```tsx
-import styled from "styled-components";
-
-// ...
-
-<MyDocViewer documents={docs} />;
-
-// ...
-
-const MyDocViewer = styled(DocViewer)`
-  border-radius: 10px;
-`;
-```
-
-## Using DocViewerRef
-
-Since **v1.13.0** you can control the display of the document with `reference`.
+## Internationalisation
 
 ```tsx
-import DocViewer, { DocViewerRef } from "@cyntler/react-doc-viewer";
-
-export const UsingRef = () => {
-  const docViewerRef = useRef<DocViewerRef>(null);
-
-  return (
-    <>
-      <div>
-        <button onClick={() => docViewerRef?.current?.prev()}>
-          Prev Document By Ref
-        </button>
-        <button onClick={() => docViewerRef?.current?.next()}>
-          Next Document By Ref
-        </button>
-      </div>
-      <DocViewer
-        ref={docViewerRef}
-        documents={docs}
-        config={{ header: { disableHeader: true } }}
-      />
-    </>
-  );
-};
+<DocViewer documents={docs} language="pl" />
 ```
 
-## Config
+Available: `ar`, `de`, `en`, `es`, `fr`, `it`, `ja`, `pl`, `pt`, `ru`, `se`, `sr`, `sr_cyr`, `tr` (see `supportedLanguages`). Arabic switches the viewer to `dir="rtl"`. Missing strings fall back to English. Translations live in `src/locales/*.json`; contributions are welcome.
 
-You can provide a config object, which configures parts of the component as required.
+## Security notes
 
-```tsx
-<DocViewer
-  documents={docs}
-  config={{
-    header: {
-      disableHeader: false,
-      disableFileName: false,
-      retainURLParams: false,
-    },
-    csvDelimiter: ",", // "," as default,
-    pdfZoom: {
-      defaultZoom: 1.1, // 1 as default,
-      zoomJump: 0.2, // 0.1 as default,
-    },
-    pdfVerticalScrollByDefault: true, // false as default
-  }}
-/>
+- **HTML documents** render in an iframe with `sandbox=""` (no scripts, opaque origin). Set `config.html.sandbox` to relax this for trusted content.
+- **Office documents** are shown through Microsoft's viewer, which receives the document URL; use `config.msdoc.enabled = false` to show a download link instead, for private or pre-signed URLs.
+- **Request headers** are sent to every document URL by default (as in 1.x). Restrict them with `config.fetch.sendRequestHeadersTo` when documents can come from third-party hosts. The policy checks the document URL only: if a URL may redirect to another origin, also pass `requestInit={{ redirect: "error" }}`, since browsers forward custom headers on redirects (only `Authorization` is stripped).
+- **PDF links** open in a new tab with `rel="noopener noreferrer"` (`config.pdf.externalLinkTarget`).
+- **Content Security Policy**: the bundled worker is a same-origin static asset, so `worker-src 'self'` is enough. If you point `configurePdfWorker()` or `config.pdf.workerSrc` at another origin, pdf.js starts it through a `blob:` wrapper that imports the file: allow `blob:` in `worker-src` and that origin in `script-src`, and make sure the host sends CORS headers.
+
+## Storybook
+
+```bash
+pnpm install
+pnpm start
 ```
 
-### Overriding Header Component
+The stories under `src/DocViewer.stories.tsx` cover the PDF, image, CSV, text and HTML renderers, theming, localisation, error states and the configuration options.
 
-You can pass a callback function to `config.header.overrideComponent` that returns a React Element. The function's parameters will be populated and usable, this function will also be re-called whenever the mainState updates.
-Parameters include the state object from the main component, and document navigation functions for `previousDocument` and `nextDocument`.
+## Contributing
 
-Example:
+- `pnpm check` — Biome lint + format check (`pnpm check:fix` to apply).
+- `pnpm typecheck` — TypeScript.
+- `pnpm test` — Vitest.
+- `pnpm build` — library build with declaration output and a dist smoke check.
 
-```tsx
-const MyHeader: IHeaderOverride = (state, previousDocument, nextDocument) => {
-  if (!state.currentDocument || state.config?.header?.disableFileName) {
-    return null;
-  }
+Pull requests should keep `pnpm check`, `pnpm test` and `pnpm build` green; CI runs them on Node 22 and 24.
 
-  return (
-    <>
-      <div>{state.currentDocument.uri || ""}</div>
-      <div>
-        <button onClick={previousDocument} disabled={state.currentFileNo === 0}>
-          Previous Document
-        </button>
-        <button
-          onClick={nextDocument}
-          disabled={state.currentFileNo >= state.documents.length - 1}
-        >
-          Next Document
-        </button>
-      </div>
-    </>
-  );
-};
+### Releasing
 
-<DocViewer
-  pluginRenderers={DocViewerRenderers}
-  documents={
-    {
-      // ...
-    }
-  }
-  config={{
-    header: {
-      overrideComponent: MyHeader,
-    },
-  }}
-/>;
-```
+Releases are automatic: bump the version in a pull request, add a CHANGELOG entry, merge into `main`, and the `Release` workflow publishes to npm with provenance, creates the tag and GitHub Release, and deploys Storybook. [RELEASING.md](https://github.com/jdominguezg89/react-doc-viewer/blob/main/RELEASING.md) has the one-time setup, the per-release steps and troubleshooting.
 
-### Overriding Loading Renderer
+## License
 
-You can pass a callback function to `config.loadingRenderer.overrideComponent` that returns a React Element.
-
-Example:
-
-```tsx
-const MyLoadingRenderer = ({ document, fileName }) => {
-  const fileText = fileName || document?.fileType || "";
-
-  if (fileText) {
-    return <div>Loading Renderer ({fileText})...</div>;
-  }
-
-  return <div>Loading Renderer...</div>;
-};
-
-<DocViewer
-  pluginRenderers={DocViewerRenderers}
-  documents={
-    {
-      // ...
-    }
-  }
-  config={{
-    loadingRenderer: {
-      overrideComponent: MyLoadingRenderer,
-    },
-  }}
-/>;
-```
-
-By default, the loading component is rendered if document loading process takes more than 500 ms.
-
-You can change this time value or disable this feature to make the component display immediately:
-
-```tsx
-const MyLoadingRenderer = ({ document, fileName }) => {
-  ...
-};
-
-<DocViewer
-  pluginRenderers={DocViewerRenderers}
-  documents={
-    {
-      // ...
-    }
-  }
-  config={{
-    loadingRenderer: {
-      overrideComponent: MyLoadingRenderer,
-      showLoadingTimeout: false, // false if you want to disable or number to provide your own value (ms)
-    },
-  }}
-/>;
-```
-
-### Overriding No Renderer (Error)
-
-You can pass a callback function to `config.noRenderer.overrideComponent` that returns a React Element.
-
-Example:
-
-```tsx
-const MyNoRenderer = ({ document, fileName }) => {
-  const fileText = fileName || document?.fileType || "";
-
-  if (fileText) {
-    return <div>No Renderer Error! ({fileText})</div>;
-  }
-
-  return <div>No Renderer Error!</div>;
-};
-
-<DocViewer
-  pluginRenderers={DocViewerRenderers}
-  documents={
-    {
-      // ...
-    }
-  }
-  config={{
-    noRenderer: {
-      overrideComponent: MyNoRenderer,
-    },
-  }}
-/>;
-```
+Apache-2.0. Originally created by Matthew Mogford and maintained by Damian Cyntler; see [LICENSE](./LICENSE).

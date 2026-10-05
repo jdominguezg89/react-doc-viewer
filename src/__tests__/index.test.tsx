@@ -1,10 +1,14 @@
 import { render, screen } from "@testing-library/react";
+import csvFile from "../exampleFiles/csv-file.csv?url";
+import gifFile from "../exampleFiles/gif-image.gif?url";
+import pdfFile from "../exampleFiles/pdf-file.pdf?url";
+import pngFile from "../exampleFiles/png-image.png?url";
 import DocViewer from "../index";
 
-import csvFile from "../exampleFiles/csv-file.csv?url";
-import pdfFile from "../exampleFiles/pdf-file.pdf?url";
-import gifFile from "../exampleFiles/gif-image.gif?url";
-import pngFile from "../exampleFiles/png-image.png?url";
+beforeEach(() => {
+  fetchMock.resetMocks();
+  fetchMock.mockResponse("", { headers: { "content-type": "image/png" } });
+});
 
 test("renders component with no documents", () => {
   render(<DocViewer documents={[]} />);
@@ -12,7 +16,7 @@ test("renders component with no documents", () => {
   expect(screen.getByTestId("react-doc-viewer")).toBeDefined();
 });
 
-test("renders component with documents", () => {
+test("renders component with documents", async () => {
   const docs = [
     { uri: pdfFile },
     { uri: pngFile },
@@ -24,20 +28,23 @@ test("renders component with documents", () => {
 
   expect(screen.getByTestId("react-doc-viewer")).toBeDefined();
   expect(screen.getByText(`Document 1 of ${docs.length}`)).toBeDefined();
+  expect(await screen.findByRole("img")).toBeInTheDocument();
 });
 
-test("renders component with unsupported file type", () => {
+test("renders component with unsupported file type", async () => {
   const docs = [{ uri: "", fileType: "application/postscript" }];
   render(<DocViewer documents={docs} />);
 
   expect(screen.getByTestId("react-doc-viewer")).toBeDefined();
 
   expect(
-    screen.getByText("No renderer for file type: application/postscript"),
+    await screen.findByText(
+      "No renderer for file type: application/postscript",
+    ),
   ).toBeInTheDocument();
 });
 
-test("renders doc viewer with initialActiveDocument prop", () => {
+test("renders doc viewer with initialActiveDocument prop", async () => {
   const docs = [{ uri: pdfFile }, { uri: pngFile }];
   render(<DocViewer documents={docs} initialActiveDocument={docs[1]} />);
 
@@ -46,5 +53,5 @@ test("renders doc viewer with initialActiveDocument prop", () => {
   expect(screen.getByTestId("react-doc-viewer")).toBeDefined();
   expect(screen.getByText(`Document 2 of ${docs.length}`)).toBeDefined();
   expect(proxyRenderer).toBeDefined();
-  expect(proxyRenderer.querySelector("img")).toBeDefined();
+  expect(await screen.findByRole("img")).toBeInTheDocument();
 });

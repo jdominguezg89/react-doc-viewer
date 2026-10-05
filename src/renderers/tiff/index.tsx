@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import { DocRenderer } from "../..";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
+import type { DocRenderer } from "../../models";
 import { arrayBufferFileLoader } from "../../utils/fileLoaders";
+import { getFileName } from "../../utils/getFileName";
 import ImageProxyRenderer from "../image";
 import { parseTIFF } from "./tiffToCanvas";
 
@@ -11,33 +11,39 @@ const TIFFRenderer: DocRenderer = (props) => {
     mainState: { currentDocument },
   } = props;
   const { t } = useTranslation();
-
-  const [loadedCanvas, setLoadedCanvas] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [corruptedFile, setCorruptedFile] = useState(false);
 
   useEffect(() => {
-    if (!currentDocument || loadedCanvas) return;
-    const canvas = document.getElementById("tiff-img");
+    const canvas = canvasRef.current;
+    const data = currentDocument?.fileData;
+    if (!canvas || !(data instanceof ArrayBuffer)) return;
 
     try {
-      canvas && parseTIFF(currentDocument.fileData as ArrayBuffer, canvas);
-      setLoadedCanvas(true);
-    } catch (error) {
+      parseTIFF(data, canvas);
+      setCorruptedFile(false);
+    } catch {
       setCorruptedFile(true);
     }
-  }, [currentDocument, loadedCanvas]);
+  }, [currentDocument]);
 
   if (corruptedFile) {
     return (
       <ImageProxyRenderer {...props}>
-        <div>{t("brokenFile")}</div>
+        <div role="alert">{t("brokenFile")}</div>
       </ImageProxyRenderer>
     );
   }
 
   return (
     <ImageProxyRenderer {...props}>
-      <Canvas id="tiff-img" />
+      <canvas
+        ref={canvasRef}
+        id="tiff-img"
+        className="rdv-image-renderer__canvas"
+        role="img"
+        aria-label={getFileName(currentDocument, false) || "TIFF"}
+      />
     </ImageProxyRenderer>
   );
 };
@@ -46,8 +52,3 @@ TIFFRenderer.weight = 0;
 TIFFRenderer.fileLoader = arrayBufferFileLoader;
 
 export default TIFFRenderer;
-
-const Canvas = styled.canvas`
-  max-width: 95%;
-  max-height: 95%;
-`;

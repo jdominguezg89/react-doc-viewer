@@ -1,16 +1,10 @@
-import { IMainState } from "../../../store/mainStateReducer";
+import type { IMainState } from "../../../store/mainStateReducer";
 import {
-  PDFActions as PDFStateActions,
-  SetCurrentPage,
-  SetNumPages,
-  SetPDFPaginated,
-  SetZoomLevel,
+  type PDFActions,
   SET_CURRENT_PAGE,
   SET_NUM_PAGES,
   SET_PDF_PAGINATED,
   SET_ZOOM_LEVEL,
-  SET_CURRENT_MAIN_STATE,
-  SetCurrentMainState,
 } from "./actions";
 
 export type IPDFState = {
@@ -20,8 +14,16 @@ export type IPDFState = {
   paginated: boolean;
   numPages: number;
   currentPage: number;
+  /** The viewer state, provided by PDFProvider on every render. */
   mainState?: IMainState;
 };
+
+export const MIN_ZOOM = 0.25;
+export const MAX_ZOOM = 5;
+
+/** Clamps and rounds a zoom level to avoid float drift. */
+export const clampZoom = (value: number): number =>
+  Math.round(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value)) * 100) / 100;
 
 export const initialPDFState: IPDFState = {
   defaultZoomLevel: 1,
@@ -32,42 +34,19 @@ export const initialPDFState: IPDFState = {
   currentPage: 1,
 };
 
-export type PDFStateReducer = (
-  state: IPDFState,
-  action: PDFStateActions,
-) => IPDFState;
-
-export const reducer: PDFStateReducer = (
-  state = initialPDFState,
-  action: PDFStateActions,
+export const reducer = (
+  state: IPDFState = initialPDFState,
+  action: PDFActions,
 ): IPDFState => {
   switch (action.type) {
-    case SET_ZOOM_LEVEL: {
-      const { value } = action as SetZoomLevel;
-
-      return { ...state, zoomLevel: value };
-    }
-
-    case SET_PDF_PAGINATED: {
-      const { value } = action as SetPDFPaginated;
-      return { ...state, paginated: value };
-    }
-
-    case SET_NUM_PAGES: {
-      const { value } = action as SetNumPages;
-      return { ...state, numPages: value };
-    }
-
-    case SET_CURRENT_PAGE: {
-      const { value } = action as SetCurrentPage;
-      return { ...state, currentPage: value };
-    }
-
-    case SET_CURRENT_MAIN_STATE: {
-      const { value } = action as SetCurrentMainState;
-      return { ...state, mainState: value };
-    }
-
+    case SET_ZOOM_LEVEL:
+      return { ...state, zoomLevel: clampZoom(action.value) };
+    case SET_PDF_PAGINATED:
+      return { ...state, paginated: action.value };
+    case SET_NUM_PAGES:
+      return { ...state, numPages: action.value };
+    case SET_CURRENT_PAGE:
+      return { ...state, currentPage: action.value };
     default:
       return state;
   }

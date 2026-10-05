@@ -1,0 +1,424 @@
+/*
+ * react-doc-viewer base styles.
+ * Theme colours are CSS custom properties on the root element (`.rdv`);
+ * the `theme` prop writes them inline, and consumers may override them in CSS.
+ */
+.rdv {
+  --rdv-primary: #fff;
+  --rdv-secondary: #000;
+  --rdv-tertiary: #ffffff99;
+  --rdv-text-primary: #000;
+  --rdv-text-secondary: #fff;
+  --rdv-text-tertiary: #00000099;
+  /* Focus indicators are drawn on the white document area and on buttons. */
+  --rdv-focus-ring: #000;
+
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  width: 100%;
+  height: 100%;
+  /* Shrink inside a flex or grid parent instead of overflowing it. */
+  min-width: 0;
+  min-height: 0;
+}
+
+/*
+ * The renderer area fills the remaining height and scrolls. When the viewer's
+ * parent has no fixed height, it simply grows with the document.
+ */
+.rdv-proxy-renderer {
+  /* Containing block for the visually hidden status line. */
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.rdv[data-themed-scrollbar="true"] .rdv-proxy-renderer::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.rdv-proxy-renderer::-webkit-scrollbar-thumb {
+  background: var(--rdv-text-tertiary);
+  border-radius: 10px;
+}
+
+.rdv-proxy-renderer::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--rdv-text-tertiary), #000 35%);
+}
+
+.rdv-proxy-renderer:focus-visible {
+  outline: 2px solid var(--rdv-focus-ring);
+  outline-offset: -2px;
+}
+
+.rdv-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.rdv-message {
+  padding: 16px;
+}
+
+/* Buttons ------------------------------------------------------------------ */
+.rdv-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 35px;
+  height: 35px;
+  padding: 0;
+  margin: 0;
+  margin-inline-start: 5px;
+  text-align: center;
+  font-size: 18px;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 35px;
+  background-color: var(--rdv-primary);
+  color: var(--rdv-text-primary);
+  box-shadow: 2px 2px 3px #00000033;
+}
+
+.rdv-button--secondary {
+  background-color: var(--rdv-secondary);
+  color: var(--rdv-text-secondary);
+}
+
+.rdv-button:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Two-tone ring: visible on light and on dark toolbars. */
+.rdv-button:focus-visible,
+.rdv-link-button:focus-visible {
+  outline: 2px solid var(--rdv-focus-ring);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.rdv-link-button {
+  margin: 0;
+}
+
+/* Header ------------------------------------------------------------------- */
+.rdv-header-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  z-index: 1;
+  padding: 0 10px;
+  background-color: var(--rdv-primary);
+  font-size: 16px;
+  min-height: 50px;
+}
+
+.rdv-file-name {
+  /* File names keep their own direction in right-to-left layouts. */
+  unicode-bidi: plaintext;
+  flex: 1;
+  text-align: start;
+  color: var(--rdv-text-primary);
+  font-weight: bold;
+  margin: 0 10px;
+  overflow: hidden;
+}
+
+.rdv-doc-nav {
+  min-width: 150px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 0 10px;
+  color: var(--rdv-text-primary);
+}
+
+.rdv-doc-nav__prev,
+.rdv-doc-nav__next {
+  width: 30px;
+  height: 30px;
+}
+
+.rdv-doc-nav__prev {
+  margin: 0;
+  margin-inline: 10px 5px;
+}
+
+.rdv-doc-nav__next {
+  margin: 0 5px;
+}
+
+/* Loading / no renderer ---------------------------------------------------- */
+.rdv-loading {
+  display: flex;
+  flex: 1;
+  height: 75px;
+  align-items: center;
+  justify-content: center;
+}
+
+.rdv-loading__icon {
+  animation: rdv-spin 4s linear infinite;
+}
+
+@keyframes rdv-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rdv-no-renderer__download {
+  width: auto;
+  min-width: 130px;
+  height: auto;
+  min-height: 30px;
+  margin-block-start: 8px;
+  padding: 0 14px;
+  white-space: nowrap;
+  background-color: var(--rdv-primary);
+}
+
+/* PDF renderer ------------------------------------------------------------- */
+.rdv-pdf-renderer {
+  display: flex;
+  flex-direction: column;
+  /*
+   * Inside the flex scroll container: as tall as its content (the sticky
+   * toolbar must travel the whole document) and as wide as a zoomed page
+   * (the toolbar then stays in view while scrolling sideways).
+   */
+  flex: none;
+  align-self: flex-start;
+  width: max-content;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.rdv-pdf-controls {
+  display: flex;
+  position: sticky;
+  top: 0;
+  inset-inline-start: 0;
+  box-sizing: border-box;
+  /* Visible width of the scroll area, measured in ProxyRenderer. */
+  width: var(--rdv-scrollport-width, 100%);
+  z-index: 1;
+  justify-content: flex-end;
+  padding: 8px;
+  background-color: var(--rdv-tertiary);
+  box-shadow: 0 2px 3px #00000033;
+}
+
+.rdv-pdf-controls__button {
+  width: 30px;
+  height: 30px;
+}
+
+.rdv-pdf-pagination {
+  display: flex;
+  align-items: center;
+}
+
+.rdv-pdf-pagination__prev,
+.rdv-pdf-pagination__next {
+  width: 30px;
+  height: 30px;
+  margin: 0 5px;
+}
+
+.rdv-pdf-pagination__next {
+  margin: 0;
+  margin-inline: 5px 20px;
+}
+
+.rdv-pdf-pagination__info {
+  color: var(--rdv-text-primary);
+  font-size: 14px;
+  text-align: start;
+}
+
+.rdv-pdf-document {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+.rdv-pdf-page--last {
+  margin: 20px 0;
+}
+
+.rdv-pdf-page__tag {
+  padding: 0;
+  padding-block-end: 10px;
+  padding-inline-start: 10px;
+  color: var(--rdv-text-tertiary);
+  font-size: 14px;
+  text-align: start;
+}
+
+/* Other renderers ---------------------------------------------------------- */
+.rdv-html-renderer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0 30px;
+}
+
+.rdv-html-renderer__frame {
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 300px;
+  padding: 15px;
+  margin: 20px 0;
+  border: 1px solid var(--rdv-text-tertiary);
+}
+
+.rdv-msdoc-renderer {
+  display: flex;
+  width: 100%;
+}
+
+.rdv-msdoc-renderer__frame {
+  flex: 1;
+  width: 100%;
+  min-height: min(400px, 100%);
+  border: 0;
+}
+
+.rdv-csv-renderer {
+  width: 100%;
+}
+
+.rdv-csv-renderer__table {
+  width: 100%;
+  text-align: start;
+}
+
+.rdv-csv-renderer__table th,
+.rdv-csv-renderer__table td {
+  padding: 5px 10px;
+  text-align: start;
+  /* Cell content keeps its own direction in right-to-left layouts. */
+  unicode-bidi: plaintext;
+}
+
+.rdv-csv-renderer__table th:empty,
+.rdv-csv-renderer__table td:empty {
+  display: none;
+}
+
+.rdv-txt-renderer {
+  width: 100%;
+  padding: 30px;
+  unicode-bidi: plaintext;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.rdv-image-renderer {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+}
+
+.rdv-image-renderer--checkerboard {
+  background-image:
+    linear-gradient(45deg, #e0e0e0 25%, transparent 25%),
+    linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
+    linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
+  background-size: 20px 20px;
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0;
+}
+
+.rdv-image-renderer__img,
+.rdv-image-renderer__canvas {
+  max-width: 95%;
+  max-height: 95%;
+}
+
+.rdv-video-renderer {
+  width: 100%;
+}
+
+.rdv-video-renderer__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Right-to-left: arrows follow the reading direction. */
+.rdv[dir="rtl"] .rdv-doc-nav svg,
+.rdv[dir="rtl"] .rdv-pdf-pagination svg {
+  scale: -1 1;
+}
+
+/* Responsive --------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .rdv-button {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+  }
+
+  .rdv-header-bar {
+    min-height: 30px;
+    padding: 5px;
+    font-size: 10px;
+  }
+
+  .rdv-doc-nav__prev,
+  .rdv-doc-nav__next,
+  .rdv-pdf-controls__button,
+  .rdv-pdf-pagination__prev,
+  .rdv-pdf-pagination__next {
+    width: 25px;
+    height: 25px;
+  }
+
+  .rdv-no-renderer__download {
+    min-width: 125px;
+    min-height: 25px;
+  }
+
+  .rdv-pdf-controls {
+    padding: 6px;
+  }
+
+  .rdv-pdf-pagination__info,
+  .rdv-pdf-page__tag {
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rdv-loading__icon {
+    animation: none;
+  }
+}

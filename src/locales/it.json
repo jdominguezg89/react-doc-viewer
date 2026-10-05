@@ -3,8 +3,15 @@
   "noRendererMessage": "Nessun renderer per il tipo di file: {{{ fileType }}}",
   "downloadButtonLabel": "Scarica file",
   "brokenFile": "Il tuo file è danneggiato. Controllalo sul tuo computer.",
-  "msgPluginRecipients": "Destinatari",
-  "msgPluginSender": "Mittente",
   "pdfPluginLoading": "Caricamento in corso...",
-  "pdfPluginPageNumber": "Pagina {{ currentPage }}/{{ allPagesCount }}"
+  "pdfPluginPageNumber": "Pagina {{ currentPage }}/{{ allPagesCount }}",
+  "loadErrorMessage": "Impossibile caricare il documento.",
+  "pdfZoomInLabel": "Ingrandisci",
+  "pdfZoomOutLabel": "Riduci",
+  "pdfZoomResetLabel": "Ripristina il livello di zoom predefinito",
+  "pdfNextPageLabel": "Pagina successiva",
+  "pdfPreviousPageLabel": "Pagina precedente",
+  "pdfTogglePaginationLabel": "Scorrimento continuo",
+  "previousDocumentLabel": "Documento precedente",
+  "nextDocumentLabel": "Documento successivo"
 }

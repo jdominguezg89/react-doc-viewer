@@ -1,9 +1,5 @@
-"use client";
-
-import { FC, useContext } from "react";
-import styled from "styled-components";
+import { type FC, useContext } from "react";
 import { DocViewerContext } from "../store/DocViewerProvider";
-import { IStyledProps } from "..";
 import { getFileName } from "../utils/getFileName";
 
 export const FileName: FC = () => {
@@ -19,17 +15,8 @@ export const FileName: FC = () => {
   );
 
   return (
-    <Container id="file-name" data-testid="file-name">
+    <div id="file-name" data-testid="file-name" className="rdv-file-name">
       {fileName}
-    </Container>
+    </div>
   );
 };
-
-const Container = styled.div`
-  flex: 1;
-  text-align: left;
-  color: ${(props: IStyledProps) => props.theme.textPrimary};
-  font-weight: bold;
-  margin: 0 10px;
-  overflow: hidden;
-`;

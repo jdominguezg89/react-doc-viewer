@@ -1,16 +1,17 @@
-import en from "./locales/en.json";
-import pl from "./locales/pl.json";
-import es from "./locales/es.json";
-import de from "./locales/de.json";
-import it from "./locales/it.json";
-import pt from "./locales/pt.json";
-import fr from "./locales/fr.json";
 import ar from "./locales/ar.json";
-import sr from "./locales/sr.json";
-import sr_cyr from "./locales/sr_cyr.json";
+import de from "./locales/de.json";
+import en from "./locales/en.json";
+import es from "./locales/es.json";
+import fr from "./locales/fr.json";
+import it from "./locales/it.json";
 import ja from "./locales/ja.json";
+import pl from "./locales/pl.json";
+import pt from "./locales/pt.json";
 import ru from "./locales/ru.json";
 import se from "./locales/se.json";
+import sr from "./locales/sr.json";
+import sr_cyr from "./locales/sr_cyr.json";
+import tr from "./locales/tr.json";
 
 export const locales = {
   en,
@@ -26,6 +27,7 @@ export const locales = {
   ja,
   ru,
   se,
+  tr,
 };
 
 export const supportedLanguages = Object.keys(locales);
@@ -33,3 +35,16 @@ export const supportedLanguages = Object.keys(locales);
 export type AvailableLanguages = keyof typeof locales;
 
 export const defaultLanguage: AvailableLanguages = "en";
+
+/** BCP 47 tags for locale keys that are not valid language tags themselves. */
+const languageTags: Partial<Record<AvailableLanguages, string>> = {
+  se: "sv",
+  sr: "sr-Latn",
+  sr_cyr: "sr-Cyrl",
+};
+
+export const languageTag = (language: AvailableLanguages): string =>
+  languageTags[language] ?? language;
+
+/** Languages rendered right-to-left. */
+export const rtlLanguages: AvailableLanguages[] = ["ar"];

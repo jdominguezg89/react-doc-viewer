@@ -3,8 +3,15 @@
   "noRendererMessage": "Nenhum renderizador para o tipo de arquivo: {{{ fileType }}}",
   "downloadButtonLabel": "Baixar arquivo",
   "brokenFile": "Seu arquivo está quebrado. Por favor, verifique-o em sua máquina.",
-  "msgPluginRecipients": "Destinatários",
-  "msgPluginSender": "Remetente",
   "pdfPluginLoading": "Carregando...",
-  "pdfPluginPageNumber": "Página {{ currentPage }}/{{ allPagesCount }}"
+  "pdfPluginPageNumber": "Página {{ currentPage }}/{{ allPagesCount }}",
+  "loadErrorMessage": "Não foi possível carregar o documento.",
+  "pdfZoomInLabel": "Ampliar",
+  "pdfZoomOutLabel": "Reduzir",
+  "pdfZoomResetLabel": "Repor o nível de zoom predefinido",
+  "pdfNextPageLabel": "Página seguinte",
+  "pdfPreviousPageLabel": "Página anterior",
+  "pdfTogglePaginationLabel": "Rolagem contínua",
+  "previousDocumentLabel": "Documento anterior",
+  "nextDocumentLabel": "Documento seguinte"
 }

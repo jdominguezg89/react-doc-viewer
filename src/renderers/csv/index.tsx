@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
 import papaparse from "papaparse";
-import { DocRenderer } from "../..";
+import { useEffect, useState } from "react";
+import type { DocRenderer } from "../..";
 import { textFileLoader } from "../../utils/fileLoaders";
 
 const CSVRenderer: DocRenderer = ({
@@ -11,13 +10,16 @@ const CSVRenderer: DocRenderer = ({
 
   useEffect(() => {
     if (currentDocument?.fileData) {
-      const parseResult = papaparse.parse(currentDocument.fileData as string, {
-        delimiter: config?.csvDelimiter ?? ",",
-      });
+      const parseResult = papaparse.parse<string[]>(
+        currentDocument.fileData as string,
+        {
+          delimiter: config?.csvDelimiter ?? ",",
+          skipEmptyLines: true,
+        },
+      );
 
-      if (!parseResult.errors?.length && parseResult.data) {
-        setRows(parseResult.data as string[][]);
-      }
+      // Show whatever parsed; papaparse reports recoverable issues as errors.
+      setRows(parseResult.data ?? []);
     }
   }, [currentDocument, config?.csvDelimiter]);
 
@@ -26,26 +28,31 @@ const CSVRenderer: DocRenderer = ({
   }
 
   return (
-    <Container>
-      <Table>
+    <div className="rdv-csv-renderer">
+      <table className="rdv-csv-renderer__table">
         <thead>
           <tr>
-            {rows[0].map((column) => (
-              <th key={column}>{column}</th>
+            {rows[0].map((column, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: columns have no identity beyond their position
+              <th key={index} scope="col">
+                {column}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {rows.slice(1, rows.length).map((row) => (
-            <tr key={row.join("")}>
-              {row.map((column) => (
-                <td key={column}>{column}</td>
+          {rows.slice(1).map((row, rowIndex) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: rows have no identity beyond their position
+            <tr key={rowIndex}>
+              {row.map((column, columnIndex) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: cells have no identity beyond their position
+                <td key={columnIndex}>{column}</td>
               ))}
             </tr>
           ))}
         </tbody>
-      </Table>
-    </Container>
+      </table>
+    </div>
   );
 };
 
@@ -54,21 +61,3 @@ export default CSVRenderer;
 CSVRenderer.fileTypes = ["csv", "text/csv"];
 CSVRenderer.weight = 0;
 CSVRenderer.fileLoader = textFileLoader;
-
-const Container = styled.div`
-  width: 100%;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  text-align: left;
-
-  th,
-  td {
-    padding: 5px 10px;
-
-    &:empty {
-      display: none;
-    }
-  }
-`;

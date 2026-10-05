@@ -1,11 +1,9 @@
-import React, { FC, useContext } from "react";
-import styled from "styled-components";
-import { Button } from "../../../components/common";
-import { IStyledProps } from "../../..";
+import { type FC, useContext } from "react";
+import { Button } from "../../../components/Button";
+import { useTranslation } from "../../../hooks/useTranslation";
 import { PDFContext } from "../state";
 import { setCurrentPage } from "../state/actions";
 import { NextPDFNavIcon, PrevPDFNavIcon } from "./icons";
-import { useTranslation } from "../../../hooks/useTranslation";
 
 const PDFPagination: FC = () => {
   const {
@@ -15,60 +13,41 @@ const PDFPagination: FC = () => {
   const { t } = useTranslation();
 
   return (
-    <Container id="pdf-pagination">
-      <PageNavButtonLeft
+    <div id="pdf-pagination" className="rdv-pdf-pagination">
+      <Button
         id="pdf-pagination-prev"
+        className="rdv-pdf-pagination__prev"
+        aria-label={t("pdfPreviousPageLabel")}
+        title={t("pdfPreviousPageLabel")}
         onClick={() => dispatch(setCurrentPage(currentPage - 1))}
         disabled={currentPage === 1}
       >
-        <PrevPDFNavIcon color="#000" size="50%" />
-      </PageNavButtonLeft>
+        <PrevPDFNavIcon size="50%" />
+      </Button>
 
-      <PageTag id="pdf-pagination-info">
+      <div
+        id="pdf-pagination-info"
+        className="rdv-pdf-pagination__info"
+        aria-live="polite"
+      >
         {t("pdfPluginPageNumber", {
           currentPage,
           allPagesCount: numPages,
         })}
-      </PageTag>
+      </div>
 
-      <PageNavButtonRight
+      <Button
         id="pdf-pagination-next"
+        className="rdv-pdf-pagination__next"
+        aria-label={t("pdfNextPageLabel")}
+        title={t("pdfNextPageLabel")}
         onClick={() => dispatch(setCurrentPage(currentPage + 1))}
         disabled={currentPage >= numPages}
       >
-        <NextPDFNavIcon color="#000" size="50%" />
-      </PageNavButtonRight>
-    </Container>
+        <NextPDFNavIcon size="50%" />
+      </Button>
+    </div>
   );
 };
 
 export default PDFPagination;
-
-const Container = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const PageNavButtonLeft = styled(Button)`
-  width: 30px;
-  height: 30px;
-  margin: 0 5px;
-
-  @media (max-width: 768px) {
-    width: 25px;
-    height: 25px;
-  }
-`;
-const PageNavButtonRight = styled(PageNavButtonLeft)`
-  margin: 0 20px 0 5px;
-`;
-
-const PageTag = styled.div`
-  color: ${(props: IStyledProps) => props.theme.textPrimary};
-  font-size: 14px;
-  text-align: left;
-
-  @media (max-width: 768px) {
-    font-size: 10px;
-  }
-`;

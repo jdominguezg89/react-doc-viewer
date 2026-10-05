@@ -1,18 +1,26 @@
-import { Dispatch, useContext, useEffect } from "react";
-import { DocViewerContext } from "../store/DocViewerProvider";
+import { type Dispatch, useContext, useEffect, useRef } from "react";
+import type { DocRenderer } from "../models";
 import {
-  MainStateActions,
+  type MainStateActions,
+  patchCurrentDocument,
+  setDocumentError,
   setDocumentLoading,
-  updateCurrentDocument,
 } from "../store/actions";
-import { IMainState } from "../store/mainStateReducer";
-import { DocRenderer } from "..";
+import { DocViewerContext } from "../store/DocViewerProvider";
+import type { IMainState } from "../store/mainStateReducer";
 import {
   defaultFileLoader,
-  FileLoaderComplete,
-  FileLoaderFuncProps,
+  type FileLoaderComplete,
+  type FileLoaderFuncProps,
 } from "../utils/fileLoaders";
-import { useRendererSelector } from "./useRendererSelector";
+import {
+  normalizeFileType,
+  resolveFileTypeForRenderers,
+  UNKNOWN_FILE_TYPE,
+} from "../utils/fileType";
+import { shouldSendRequestHeaders } from "../utils/requestPolicy";
+import { toError } from "../utils/toError";
+import { selectRenderer, useRendererSelector } from "./useRendererSelector";
 
 /**
  * Custom Hook for loading the current document into context
@@ -23,92 +31,152 @@ export const useDocumentLoader = (): {
   CurrentRenderer: DocRenderer | null | undefined;
 } => {
   const { state, dispatch } = useContext(DocViewerContext);
-  const { currentFileNo, currentDocument, prefetchMethod } = state;
+  const { currentDocument } = state;
+  const loadId = state.loadId ?? 0;
+
+  // Effects read callbacks, headers and config from here so they always see
+  // the latest props without re-running when those change.
+  const latest = useRef(state);
+  latest.current = state;
+
+  const notifiedLoadId = useRef(-1);
 
   const { CurrentRenderer } = useRendererSelector();
 
+  const hasDocument = currentDocument !== undefined;
   const documentURI = currentDocument?.uri || "";
+  // An empty type (e.g. `fileType: file.type` for an unrecognised File) is
+  // treated as unknown, so the probe still runs.
+  const hasKnownType = normalizeFileType(currentDocument?.fileType) !== "";
 
-  useEffect(
-    () => {
-      if (!currentDocument || currentDocument.fileType !== undefined) return;
-
-      const controller = new AbortController();
-      const { signal } = controller;
-
-      fetch(documentURI, {
-        method:
-          prefetchMethod || documentURI.startsWith("blob:") ? "GET" : "HEAD",
-        signal,
-        headers: state?.requestHeaders,
-      })
-        .then((response) => {
-          const contentTypeRaw = response.headers.get("content-type");
-          const contentTypes = contentTypeRaw?.split(";") || [];
-          const contentType = contentTypes.length ? contentTypes[0] : undefined;
-
-          dispatch(
-            updateCurrentDocument({
-              ...currentDocument,
-              fileType: contentType || undefined,
-            }),
-          );
-        })
-        .catch((error) => {
-          if (error?.name !== "AbortError") {
-            throw error;
-          }
-        });
-
-      return () => {
-        controller.abort();
-      };
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentFileNo, documentURI, currentDocument],
-  );
-
+  // Step 1: discover the file type (unless the consumer provided one).
   useEffect(() => {
-    if (!currentDocument || CurrentRenderer === undefined) return;
+    if (!hasDocument || hasKnownType) return;
+
+    if (!documentURI) {
+      // Nothing to probe: fall through to a renderer registered for unknown
+      // files, or to the "no renderer" state.
+      dispatch(patchCurrentDocument(loadId, { fileType: UNKNOWN_FILE_TYPE }));
+      return;
+    }
 
     const controller = new AbortController();
     const { signal } = controller;
+    const { prefetchMethod, requestHeaders, requestInit, config } =
+      latest.current;
+    const method =
+      prefetchMethod ?? (documentURI.startsWith("blob:") ? "GET" : "HEAD");
+
+    fetch(documentURI, {
+      ...requestInit,
+      method,
+      signal,
+      headers: shouldSendRequestHeaders(documentURI, config)
+        ? requestHeaders
+        : undefined,
+    })
+      .then((response) => {
+        if (signal.aborted) return;
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch document (${response.status} ${response.statusText})`.trim(),
+          );
+        }
+        const renderers = latest.current.pluginRenderers;
+        const fileType = resolveFileTypeForRenderers(
+          response.headers.get("content-type"),
+          documentURI,
+          (type) => Boolean(selectRenderer(type, renderers)),
+        );
+        dispatch(patchCurrentDocument(loadId, { fileType }));
+      })
+      .catch((reason) => {
+        if (signal.aborted) return;
+        const error = toError(reason);
+        if (error.name === "AbortError") return;
+        dispatch(setDocumentError(error, loadId));
+        if ((latest.current.loadId ?? 0) === loadId) {
+          latest.current.onError?.(error, latest.current.currentDocument);
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, [hasDocument, hasKnownType, documentURI, loadId, dispatch]);
+
+  // Step 2: load the document data with the renderer's loader.
+  useEffect(() => {
+    if (!hasDocument || CurrentRenderer === undefined) return;
+
+    if (CurrentRenderer === null || !documentURI) {
+      // Nothing to render, or nothing to fetch (inline fileData only).
+      dispatch(setDocumentLoading(false, loadId));
+      // Inline data needs no request: the document is ready as it is.
+      const ready = latest.current.currentDocument;
+      if (
+        CurrentRenderer &&
+        ready?.fileData !== undefined &&
+        notifiedLoadId.current !== loadId
+      ) {
+        notifiedLoadId.current = loadId;
+        latest.current.onDocumentLoad?.(ready);
+      }
+      return;
+    }
+
+    const controller = new AbortController();
+    const { signal } = controller;
+    const { requestHeaders, requestInit, config } = latest.current;
 
     const fileLoaderComplete: FileLoaderComplete = (fileReader) => {
-      if (!currentDocument || !fileReader) {
-        dispatch(setDocumentLoading(false));
-        return;
+      if (signal.aborted) return;
+      const result = fileReader?.result;
+      const patch =
+        result !== null && result !== undefined ? { fileData: result } : {};
+      dispatch(patchCurrentDocument(loadId, patch));
+      dispatch(setDocumentLoading(false, loadId));
+      const loaded = latest.current.currentDocument;
+      // Once per load: StrictMode runs this effect twice on mount, and a
+      // synchronous loader would otherwise report the document twice.
+      if (
+        loaded &&
+        (latest.current.loadId ?? 0) === loadId &&
+        notifiedLoadId.current !== loadId
+      ) {
+        notifiedLoadId.current = loadId;
+        latest.current.onDocumentLoad?.({ ...loaded, ...patch });
       }
-
-      const updatedDocument = { ...currentDocument };
-      if (fileReader.result !== null) {
-        updatedDocument.fileData = fileReader.result;
-      }
-
-      dispatch(updateCurrentDocument(updatedDocument));
-      dispatch(setDocumentLoading(false));
     };
 
     const loaderFunctionProps: FileLoaderFuncProps = {
       documentURI,
       signal,
       fileLoaderComplete,
-      headers: state?.requestHeaders,
+      onError: (error) => {
+        if (signal.aborted) return;
+        dispatch(setDocumentError(error, loadId));
+        if ((latest.current.loadId ?? 0) === loadId) {
+          latest.current.onError?.(error, latest.current.currentDocument);
+        }
+      },
+      headers: shouldSendRequestHeaders(documentURI, config)
+        ? requestHeaders
+        : undefined,
+      requestInit,
     };
 
-    if (CurrentRenderer === null) {
-      dispatch(setDocumentLoading(false));
-    } else if (CurrentRenderer.fileLoader !== undefined) {
-      CurrentRenderer.fileLoader?.(loaderFunctionProps);
+    if (CurrentRenderer.fileLoader === null) {
+      // No loader: nothing to fetch, the renderer works from the URI.
+      fileLoaderComplete();
     } else {
-      defaultFileLoader(loaderFunctionProps);
+      (CurrentRenderer.fileLoader ?? defaultFileLoader)(loaderFunctionProps);
     }
 
     return () => {
       controller.abort();
     };
-    /* eslint-disable react-hooks/exhaustive-deps */
-  }, [CurrentRenderer, currentFileNo]);
+  }, [hasDocument, CurrentRenderer, documentURI, loadId, dispatch]);
 
   return { state, dispatch, CurrentRenderer };
 };

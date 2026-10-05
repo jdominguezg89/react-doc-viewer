@@ -1,8 +1,7 @@
-import React, { FC, useContext } from "react";
+import { type FC, useContext } from "react";
 import { Page } from "react-pdf";
-import styled from "styled-components";
-import { IStyledProps } from "../../../..";
 import { useTranslation } from "../../../../hooks/useTranslation";
+import { cx } from "../../../../utils/cx";
 import { PDFContext } from "../../state";
 
 interface Props {
@@ -19,44 +18,35 @@ const PDFSinglePage: FC<Props> = ({ pageNum }) => {
 
   const _pageNum = pageNum ?? currentPage;
 
+  // Fit the page to the container width (minus padding); fall back to
+  // react-pdf's natural size when the container has not been measured yet.
+  const measuredWidth = (rendererRect?.width ?? 0) - 100;
+  const pageWidth = measuredWidth > 0 ? measuredWidth : undefined;
+
   return (
-    <PageWrapper id="pdf-page-wrapper" $lastPage={_pageNum >= numPages}>
+    <div
+      id="pdf-page-wrapper"
+      className={cx(
+        "rdv-pdf-page",
+        _pageNum >= numPages && "rdv-pdf-page--last",
+      )}
+    >
       {!paginated && (
-        <PageTag id="pdf-page-info">
+        <div id="pdf-page-info" className="rdv-pdf-page__tag">
           {t("pdfPluginPageNumber", {
             currentPage: _pageNum,
             allPagesCount: numPages,
           })}
-        </PageTag>
+        </div>
       )}
       <Page
-        pageNumber={_pageNum || currentPage}
+        pageNumber={_pageNum}
         scale={zoomLevel}
-        height={(rendererRect?.height ?? 100) - 100}
-        width={(rendererRect?.width ?? 100) - 100}
+        width={pageWidth}
         loading={t("pdfPluginLoading")}
       />
-    </PageWrapper>
+    </div>
   );
 };
 
 export default PDFSinglePage;
-
-interface PageWrapperProps {
-  $lastPage: boolean;
-}
-
-const PageWrapper = styled.div<PageWrapperProps>`
-  margin: ${(props) => (props.$lastPage ? "20px 0" : undefined)};
-`;
-
-const PageTag = styled.div`
-  padding: 0 0 10px 10px;
-  color: ${(props: IStyledProps) => props.theme.textTertiary};
-  font-size: 14px;
-  text-align: left;
-
-  @media (max-width: 768px) {
-    font-size: 10px;
-  }
-`;

@@ -1,10 +1,9 @@
-import React, { FC, useContext } from "react";
-import styled from "styled-components";
-import { Button, LinkButton } from "../../../components/common";
-import { IStyledProps } from "../../..";
+import { type FC, useContext } from "react";
+import { Button, LinkButton } from "../../../components/Button";
+import { useTranslation } from "../../../hooks/useTranslation";
+import { getFileName } from "../../../utils/getFileName";
 import { PDFContext } from "../state";
 import { setPDFPaginated, setZoomLevel } from "../state/actions";
-import { useTranslation } from "../../../hooks/useTranslation";
 import {
   DownloadPDFIcon,
   ResetZoomPDFIcon,
@@ -31,90 +30,67 @@ const PDFControls: FC = () => {
   const currentDocument = mainState?.currentDocument || null;
 
   return (
-    <Container id="pdf-controls">
+    <div id="pdf-controls" className="rdv-pdf-controls">
       {paginated && numPages > 1 && <PDFPagination />}
 
       {currentDocument?.fileData && (
-        <DownloadButton
+        <LinkButton
           id="pdf-download"
+          className="rdv-pdf-controls__button"
           href={currentDocument?.fileData as string}
-          download={currentDocument?.fileName || currentDocument?.uri}
+          download={getFileName(currentDocument ?? undefined, false) || true}
+          aria-label={t("downloadButtonLabel")}
           title={t("downloadButtonLabel")}
         >
-          <DownloadPDFIcon color="#000" size="75%" />
-        </DownloadButton>
+          <DownloadPDFIcon size="75%" />
+        </LinkButton>
       )}
 
-      <ControlButton
+      <Button
         id="pdf-zoom-out"
-        onMouseDown={() => dispatch(setZoomLevel(zoomLevel - zoomJump))}
+        className="rdv-pdf-controls__button"
+        aria-label={t("pdfZoomOutLabel")}
+        title={t("pdfZoomOutLabel")}
+        onClick={() => dispatch(setZoomLevel(zoomLevel - zoomJump))}
       >
-        <ZoomOutPDFIcon color="#000" size="80%" />
-      </ControlButton>
+        <ZoomOutPDFIcon size="80%" />
+      </Button>
 
-      <ControlButton
+      <Button
         id="pdf-zoom-in"
-        onMouseDown={() => dispatch(setZoomLevel(zoomLevel + zoomJump))}
+        className="rdv-pdf-controls__button"
+        aria-label={t("pdfZoomInLabel")}
+        title={t("pdfZoomInLabel")}
+        onClick={() => dispatch(setZoomLevel(zoomLevel + zoomJump))}
       >
-        <ZoomInPDFIcon color="#000" size="80%" />
-      </ControlButton>
+        <ZoomInPDFIcon size="80%" />
+      </Button>
 
-      <ControlButton
+      <Button
         id="pdf-zoom-reset"
-        onMouseDown={() => dispatch(setZoomLevel(defaultZoomLevel))}
-        disabled={zoomLevel === defaultZoomLevel}
+        className="rdv-pdf-controls__button"
+        aria-label={t("pdfZoomResetLabel")}
+        title={t("pdfZoomResetLabel")}
+        onClick={() => dispatch(setZoomLevel(defaultZoomLevel))}
+        disabled={Math.abs(zoomLevel - defaultZoomLevel) < 0.001}
       >
-        <ResetZoomPDFIcon color="#000" size="70%" />
-      </ControlButton>
+        <ResetZoomPDFIcon size="70%" />
+      </Button>
 
       {numPages > 1 && (
-        <ControlButton
+        <Button
           id="pdf-toggle-pagination"
-          onMouseDown={() => dispatch(setPDFPaginated(!paginated))}
+          className="rdv-pdf-controls__button"
+          aria-label={t("pdfTogglePaginationLabel")}
+          title={t("pdfTogglePaginationLabel")}
+          aria-pressed={!paginated}
+          onClick={() => dispatch(setPDFPaginated(!paginated))}
         >
-          <TogglePaginationPDFIcon
-            color="#000"
-            size="70%"
-            reverse={paginated}
-          />
-        </ControlButton>
+          <TogglePaginationPDFIcon size="70%" reverse={paginated} />
+        </Button>
       )}
-    </Container>
+    </div>
   );
 };
 
 export default PDFControls;
-
-const Container = styled.div`
-  display: flex;
-  position: sticky;
-  top: 0;
-  left: 0;
-  z-index: 1;
-  justify-content: flex-end;
-  padding: 8px;
-  background-color: ${(props: IStyledProps) => props.theme.tertiary};
-  box-shadow: 0px 2px 3px #00000033;
-
-  @media (max-width: 768px) {
-    padding: 6px;
-  }
-`;
-
-const ControlButton = styled(Button)`
-  width: 30px;
-  height: 30px;
-  @media (max-width: 768px) {
-    width: 25px;
-    height: 25px;
-  }
-`;
-
-const DownloadButton = styled(LinkButton)`
-  width: 30px;
-  height: 30px;
-  @media (max-width: 768px) {
-    width: 25px;
-    height: 25px;
-  }
-`;

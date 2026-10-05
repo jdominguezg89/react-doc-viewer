@@ -1,115 +1,98 @@
 {
-  "name": "@cyntler/react-doc-viewer",
-  "version": "1.17.0",
-  "description": "File viewer for React.",
-  "author": "Matthew Mogford / Damian Cyntler",
+  "name": "@jdominguezg89/react-doc-viewer",
+  "version": "2.0.0",
+  "description": "File viewer for React: PDF, images, CSV, text, HTML, video and Office documents.",
+  "author": "jdominguezg89 (https://github.com/jdominguezg89)",
+  "contributors": [
+    "Matthew Mogford",
+    "Damian Cyntler"
+  ],
   "type": "module",
   "keywords": [
-    "reactjs",
-    "react-library",
+    "react",
+    "react-19",
     "file-viewer",
-    "doc-viewer"
+    "doc-viewer",
+    "pdf-viewer",
+    "document-viewer",
+    "nextjs"
   ],
-  "license": "Apache License 2.0",
-  "homepage": "https://cyntler.github.io/react-doc-viewer",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/jdominguezg89/react-doc-viewer#readme",
   "repository": {
-    "url": "https://github.com/cyntler/react-doc-viewer"
+    "type": "git",
+    "url": "git+https://github.com/jdominguezg89/react-doc-viewer.git"
   },
   "files": [
-    "dist/**"
+    "dist",
+    "MIGRATION.md",
+    "CHANGELOG.md"
   ],
   "types": "./dist/index.d.ts",
-  "main": "./dist/react-doc-viewer.cjs",
-  "module": "./dist/react-doc-viewer.js",
+  "main": "./dist/index.js",
   "exports": {
     ".": {
-      "import": "./dist/react-doc-viewer.js",
-      "require": "./dist/react-doc-viewer.cjs",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./dist/index.css": {
-      "import": "./dist/index.css",
-      "require": "./dist/index.css"
-    }
+      "types": "./dist/index.css.d.ts",
+      "default": "./dist/index.css"
+    },
+    "./dist/pdf.worker.min.mjs": "./dist/pdf.worker.min.mjs",
+    "./package.json": "./package.json"
   },
   "scripts": {
     "start": "storybook dev -p 6006",
-    "build": "rm -rf dist && tsc && vite build",
+    "build": "rm -rf dist && tsc && vite build && tsc -p tsconfig.build.json && node scripts/fix-dts.mjs && node scripts/verify-dist.mjs",
+    "typecheck": "tsc",
     "test": "vitest run",
-    "lint": "eslint ./src --ext .ts,.tsx",
-    "prettier:check": "prettier --check .",
-    "prettier:fix": "prettier --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
     "storybook:build": "rm -rf storybook-static && storybook build",
-    "deploy": "npm run storybook:build && gh-pages --nojekyll -d storybook-static --message 'feat: storybook deploy'",
-    "prerelease": "git checkout main && git pull && npm run prettier:check && npm run lint && npm run test && npm run build && node ./scripts/copy-worker.mjs && cd use-cases/nextjs && npm i && npm run build",
-    "release": "release-it && npm run deploy",
-    "build-readme-toc": "npx doctoc README.md --title '## Table of Contents'",
-    "prepublish": "npm run build-readme-toc"
+    "example:nextjs:build": "pnpm build && pnpm --filter react-doc-viewer-nextjs-example build",
+    "prepack": "pnpm run build",
+    "sync:pdfjs": "node scripts/sync-pdfjs.mjs"
   },
   "dependencies": {
-    "@types/mustache": "^4.2.5",
-    "@types/papaparse": "^5.3.14",
-    "ajv": "^7.2.4",
-    "core-js": "^3.37.1",
-    "mustache": "^4.2.0",
-    "papaparse": "^5.4.1",
-    "react-pdf": "^9.0.0",
-    "styled-components": "^6.1.11"
+    "papaparse": "^5.7.0",
+    "pdfjs-dist": "6.3.289",
+    "react-pdf": "11.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-dsv": "^3.0.4",
-    "@storybook/addon-essentials": "^8.1.5",
-    "@storybook/addon-interactions": "^8.1.5",
-    "@storybook/addon-links": "^8.1.5",
-    "@storybook/blocks": "^8.1.5",
-    "@storybook/react": "^8.1.5",
-    "@storybook/react-vite": "^8.1.5",
-    "@storybook/test": "^8.1.5",
-    "@testing-library/jest-dom": "^6.4.5",
-    "@testing-library/react": "^15.0.7",
-    "@testing-library/user-event": "^14.5.2",
-    "@types/node": "^20.12.13",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@types/react-router-dom": "^5.3.3",
-    "@types/styled-components": "^5.1.34",
-    "@typescript-eslint/eslint-plugin": "^7.11.0",
-    "@typescript-eslint/parser": "^7.11.0",
-    "babel-loader": "^9.1.3",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react": "^7.34.2",
-    "eslint-plugin-react-hooks": "^4.6.2",
-    "eslint-plugin-storybook": "^0.8.0",
-    "file-loader": "^6.2.0",
-    "gh-pages": "^6.1.1",
-    "happy-dom": "^14.12.0",
-    "prettier": "^3.2.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "release-it": "^17.3.0",
-    "storybook": "^8.1.5",
-    "typescript": "^5.4.5",
-    "vite": "^5.2.12",
-    "vite-plugin-dts": "^3.9.1",
-    "vite-plugin-node-polyfills": "^0.22.0",
-    "vitest": "^1.6.0",
-    "vitest-fetch-mock": "^0.2.2",
-    "webpack": "^5.91.0"
+    "@biomejs/biome": "2.5.15",
+    "@storybook/react-vite": "^10.6.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^26.6.4",
+    "@types/papaparse": "^5.5.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "happy-dom": "^20.14.5",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "storybook": "^10.6.1",
+    "typescript": "7.0.2",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3",
+    "vitest-fetch-mock": "^0.4.5"
   },
   "peerDependencies": {
-    "react": ">=17.0.0",
-    "react-dom": ">=17.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "packageManager": "pnpm@12.9.1+sha512.06b055fff5cd20dc12781de173ced3310ce0951bf2ec620211a16045d5444d5c93a663210764ef29a653a610459ba0368f0e74f84d80c54723cf95aae7bc0d6d",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "bugs": {
+    "url": "https://github.com/jdominguezg89/react-doc-viewer/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
