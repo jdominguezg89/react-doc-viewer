@@ -1,0 +1,32 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["before 8am on monday"],
+  "timezone": "Europe/Stockholm",
+  "minimumReleaseAge": "3 days",
+  "prConcurrentLimit": 5,
+  "packageRules": [
+    {
+      "description": "Must match react-pdf's pin; run `pnpm sync:pdfjs` instead.",
+      "matchPackageNames": ["pdfjs-dist"],
+      "enabled": false
+    },
+    {
+      "description": "One PR for all dev tooling minor and patch updates.",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "dev dependencies"
+    },
+    {
+      "matchPackageNames": ["storybook", "@storybook/**"],
+      "groupName": "storybook"
+    },
+    {
+      "description": "The Next.js example is not published; keep its updates together.",
+      "matchFileNames": ["use-cases/**"],
+      "matchPackageNames": ["next"],
+      "groupName": "nextjs example",
+      "labels": ["example"]
+    }
+  ]
+}
