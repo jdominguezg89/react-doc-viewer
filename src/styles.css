@@ -36,6 +36,17 @@
   overflow-y: auto;
 }
 
+/*
+ * Whatever is rendered inside (a renderer, or a loading / error / no-renderer
+ * override) is laid out like a block, as in 1.x: full width, as tall as its
+ * content. Built-in renderers that fill the available height opt back in
+ * below with `align-self: stretch`.
+ */
+.rdv-proxy-renderer > * {
+  align-self: flex-start;
+  width: 100%;
+}
+
 .rdv[data-themed-scrollbar="true"] .rdv-proxy-renderer::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -164,6 +175,7 @@
 
 /* Loading / no renderer ---------------------------------------------------- */
 .rdv-loading {
+  align-self: stretch;
   display: flex;
   flex: 1;
   height: 75px;
@@ -275,6 +287,7 @@
 
 /* Other renderers ---------------------------------------------------------- */
 .rdv-html-renderer {
+  align-self: stretch;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -291,6 +304,7 @@
 }
 
 .rdv-msdoc-renderer {
+  align-self: stretch;
   display: flex;
   width: 100%;
 }
@@ -333,6 +347,7 @@
 }
 
 .rdv-image-renderer {
+  align-self: stretch;
   display: flex;
   flex: 1;
   align-items: center;
@@ -363,6 +378,7 @@
 }
 
 .rdv-video-renderer {
+  align-self: stretch;
   width: 100%;
 }
 

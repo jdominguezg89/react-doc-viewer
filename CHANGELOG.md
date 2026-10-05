@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.0.2]
+
+### Fixed
+
+- Custom renderers (and loading / error / no-renderer overrides) were stretched to the full height of the viewer, because the renderer area became a flex container in 2.0.0. They are laid out like a block again, as in 1.x: full width, as tall as their content. Visible, for example, as a hover mask covering the whole viewer below a small image.
+
 ## [2.0.1]
 
 No code changes. First release published from GitHub Actions with npm provenance.
