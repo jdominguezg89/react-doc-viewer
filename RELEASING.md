@@ -14,10 +14,10 @@ Do these once per repository / npm package. Until they are done the workflow can
 
 ### GitHub
 
-1. **Enable Actions on the fork**: Actions tab → "I understand my workflows, go ahead and enable them". Forks start with workflows disabled.
+1. **Actions**: Settings → Actions → General → allow actions, with read-only default workflow permissions.
 2. **Pages**: Settings → Pages → Build and deployment → Source: **GitHub Actions**. This also creates the `github-pages` environment; keep its deployment branch rule on `main`.
-3. **Protect `main`**: Settings → Rules → new branch ruleset for `main`: require a pull request and the status checks `check (22)` and `check (24)` (from `ci.yml`). The release workflow does not wait for CI, so this is what keeps a red commit from being published.
-4. **Issues**: Settings → General → Features → Issues (`bugs.url` in `package.json` points there; forks have Issues off by default).
+3. **Protect `main`**: Settings → Rules → new branch ruleset for `main`: require a pull request and the status checks `Lint, test and build (Node 22)` and `Lint, test and build (Node 24)` (from `ci.yml`). The release workflow does not wait for CI, so this is what keeps a red commit from being published.
+4. **Issues**: Settings → General → Features → Issues (`bugs.url` in `package.json` points there).
 
 ### npm
 
@@ -71,7 +71,7 @@ Merges that do not change the version publish nothing. To redeploy Storybook onl
 
 | Symptom | Cause and fix |
 | ------- | ------------- |
-| The workflow never starts | Actions are disabled on the fork, or the run was started from a branch other than `main` (every job is skipped). |
+| The workflow never starts | Actions are disabled, or the run was started from a branch other than `main` (every job is skipped). |
 | `ENEEDAUTH`, or `E404 Not Found - PUT https://registry.npmjs.org/@jdominguezg89%2freact-doc-viewer` | The Trusted Publisher does not match: check user, repository, `release.yml`, empty environment, and that **npm publish** is an allowed action. Also happens when the package does not exist yet (first publish is manual). |
 | `E403 ... cannot publish over the previously published versions` | The version is already on npm. Use **Re-run all jobs** so the detection runs again, not "Re-run failed jobs". |
 | `E422` mentioning `repository.url` | `repository.url` in `package.json` must be exactly this GitHub repository (provenance check). |
