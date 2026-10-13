@@ -1,0 +1,29 @@
+name: Release PR
+
+# Keeps a single "Release PR" open that bumps package.json and writes the
+# CHANGELOG entry from the conventional commits merged into main
+# (fix: -> patch, feat: -> minor, "!" -> major; chore/docs/ci -> no release).
+# Merging that PR puts a new version on main, which release.yml publishes.
+# See RELEASING.md.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          # A token of a user, so CI runs on the Release PR (the default
+          # GITHUB_TOKEN cannot trigger workflows on pull requests it opens).
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

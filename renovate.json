@@ -12,6 +12,12 @@
       "enabled": false
     },
     {
+      "description": "Runtime dependencies ship to consumers: release a patch for them.",
+      "matchFileNames": ["package.json"],
+      "matchDepTypes": ["dependencies"],
+      "semanticCommitType": "fix"
+    },
+    {
       "description": "One PR for all dev tooling minor and patch updates.",
       "matchDepTypes": ["devDependencies"],
       "matchUpdateTypes": ["minor", "patch"],
