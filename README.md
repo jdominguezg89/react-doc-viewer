@@ -435,7 +435,7 @@ Pull requests should keep `pnpm check`, `pnpm test` and `pnpm build` green; CI r
 
 ### Releasing
 
-Releases are automatic: bump the version in a pull request, add a CHANGELOG entry, merge into `main`, and the `Release` workflow publishes to npm with provenance, creates the tag and GitHub Release, and deploys Storybook. [RELEASING.md](https://github.com/jdominguezg89/react-doc-viewer/blob/main/RELEASING.md) has the one-time setup, the per-release steps and troubleshooting.
+Releases are automatic. Commits merged into `main` with `fix:` or `feat:` titles feed a "Release PR" that bumps the version and the CHANGELOG; merging that pull request publishes to npm with provenance, creates the tag and GitHub Release, and deploys Storybook. [RELEASING.md](https://github.com/jdominguezg89/react-doc-viewer/blob/main/RELEASING.md) has the one-time setup, the per-release steps and troubleshooting.
 
 ## License
 

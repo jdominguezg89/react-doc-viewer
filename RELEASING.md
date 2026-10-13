@@ -19,6 +19,16 @@ Do these once per repository / npm package. Until they are done the workflow can
 3. **Protect `main`**: Settings → Rules → new branch ruleset for `main`: require a pull request and the status checks `Lint, test and build (Node 22)` and `Lint, test and build (Node 24)` (from `ci.yml`). The release workflow does not wait for CI, so this is what keeps a red commit from being published.
 4. **Issues**: Settings → General → Features → Issues (`bugs.url` in `package.json` points there).
 
+### release-please token
+
+The `Release PR` workflow opens pull requests. Pull requests opened with the default `GITHUB_TOKEN` do not trigger CI, and the `main` ruleset requires CI, so the workflow uses a token of your own:
+
+1. GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Repository access: only `react-doc-viewer`. Permissions: **Contents: Read and write**, **Pull requests: Read and write**. Pick an expiration and note it down.
+2. Repository → Settings → Secrets and variables → Actions → New repository secret: name `RELEASE_PLEASE_TOKEN`, value the token.
+3. Repository → Settings → Actions → General → Workflow permissions: tick **Allow GitHub Actions to create and approve pull requests**.
+
+When the token expires, the `Release PR` workflow fails with a 401 until the secret is replaced.
+
 ### npm
 
 1. The `@jdominguezg89` scope must be your npm user name or an npm organisation you own. Enable 2FA on the account.
@@ -51,21 +61,35 @@ Do these once per repository / npm package. Until they are done the workflow can
 
 ## Cutting a release
 
-1. In the pull request, bump the version: `pnpm version patch|minor|major --no-git-tag-version`.
-2. Add the CHANGELOG entry for that version.
-3. If `react-pdf` was upgraded, run `pnpm sync:pdfjs` (the build fails when `pdfjs-dist` diverges).
-4. Merge into `main`. Nothing else is needed: no tag, no `npm publish`.
-5. Check the `Release` run, then:
+Versions are decided from the commit messages on `main` (Conventional Commits). Use "Squash and merge" so the pull request title becomes the commit message.
+
+| Commit / PR title | Effect |
+| --- | --- |
+| `fix: ...` | patch release (2.0.x) |
+| `feat: ...` | minor release (2.x.0) |
+| `feat!: ...` or a `BREAKING CHANGE:` footer | major release |
+| `chore:`, `docs:`, `ci:`, `test:`, `refactor:` | no release |
+
+Renovate follows the same rule: its PRs are `chore(deps)` and release nothing, except updates of the runtime dependencies (`react-pdf`, `pdfjs-dist`, `papaparse`), which it titles `fix(deps)` so a patch goes out.
+
+The flow:
+
+1. Merge pull requests into `main` as usual. Nothing is published yet.
+2. The `Release PR` workflow keeps one pull request open, "chore: release X.Y.Z", with the version bump in `package.json` and the CHANGELOG entry generated from the merged commits. It updates itself after every merge.
+3. When you want the version out, merge that pull request. The `Release` workflow publishes it to npm with provenance, creates the tag and GitHub Release, and redeploys Storybook.
+4. Check:
 
    ```bash
    npm view @jdominguezg89/react-doc-viewer version dist-tags
    ```
 
-   The npm page should show the provenance badge; the GitHub Release and https://jdominguezg89.github.io/react-doc-viewer/ should be updated.
+To force a specific version, add a footer `Release-As: 3.0.0` to a commit message (an empty `chore: release 3.0.0` commit with that footer works).
 
-Pre-releases: a version such as `2.1.0-beta.0` (`pnpm version prerelease --preid beta --no-git-tag-version`) is published under the `beta` dist-tag, not `latest`, and marked as a pre-release on GitHub. A version without a named identifier (`2.0.1-0`) goes to the `next` dist-tag.
+If `react-pdf` was upgraded, run `pnpm sync:pdfjs` on that branch; the build fails when `pdfjs-dist` diverges.
 
-Merges that do not change the version publish nothing. To redeploy Storybook only, run the workflow manually on `main` with "Redeploy Storybook" ticked.
+Pre-releases: edit the Release PR's version to e.g. `2.1.0-beta.0`; it is published under the `beta` dist-tag, not `latest`, and marked as a pre-release on GitHub. A version without a named identifier (`2.0.1-0`) goes to the `next` dist-tag.
+
+To redeploy Storybook only, run the `Release` workflow manually on `main` with "Redeploy Storybook" ticked.
 
 ## Troubleshooting
 
@@ -77,6 +101,8 @@ Merges that do not change the version publish nothing. To redeploy Storybook onl
 | `E422` mentioning `repository.url` | `repository.url` in `package.json` must be exactly this GitHub repository (provenance check). |
 | `Failed to create deployment (status: 404) ... Ensure GitHub Pages has been enabled` | Pages source is not set to "GitHub Actions". Fix it, then "Re-run failed jobs". |
 | Storybook job rejected by the environment | The `github-pages` environment must allow deployments from `main`. |
+| `Release PR` workflow fails with 401 / "Resource not accessible" | The `RELEASE_PLEASE_TOKEN` secret is missing, expired, or lacks Contents + Pull requests write; or "Allow GitHub Actions to create and approve pull requests" is off. |
+| No Release PR appears after merging | Only `fix:`/`feat:` commits produce one; `chore:`/`docs:` do not. Check the squash commit title on `main`. |
 | Publish worked, tag/Release step failed | "Re-run failed jobs": the release job only creates what is missing. |
 | A bad version went out | `npm deprecate @jdominguezg89/react-doc-viewer@X.Y.Z "reason"` and release a fix. Avoid `npm unpublish`. |
 
