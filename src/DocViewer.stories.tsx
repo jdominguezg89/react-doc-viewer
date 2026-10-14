@@ -11,6 +11,8 @@ import epsFile from "./exampleFiles/eps-file.eps?url";
 import gifFile from "./exampleFiles/gif-image.gif?url";
 import htmlFile from "./exampleFiles/html-file.html?url";
 import pdfFile from "./exampleFiles/pdf-file.pdf?url";
+import pdfJbig2File from "./exampleFiles/pdf-jbig2-file.pdf?url";
+import pdfJpxFile from "./exampleFiles/pdf-jpx-file.pdf?url";
 import pdfMultiplePagesFile from "./exampleFiles/pdf-multiple-pages-file.pdf?url";
 import pngFile from "./exampleFiles/png-image.png?url";
 import txtFile from "./exampleFiles/txt-file.txt?url";
@@ -52,6 +54,26 @@ export const Pdf: Story = {
     documents: [{ uri: pdfMultiplePagesFile }],
     config: { pdfZoom: { defaultZoom: 1.1, zoomJump: 0.2 } },
   },
+};
+
+/**
+ * A one-page PDF whose only content is a JBIG2 image (a hand-coded MMR
+ * generic region: a black band on white). pdf.js decodes JBIG2 and JPEG 2000
+ * with wasm modules that ship inside this package; if that wiring breaks, the
+ * band disappears and the console shows "JBig2 failed to initialize".
+ */
+export const PdfScannedJbig2: Story = {
+  name: "PDF, scanned (JBIG2 image)",
+  args: { documents: [{ uri: pdfJbig2File }] },
+};
+
+/**
+ * Same check for JPEG 2000: a one-page PDF with a single `/JPXDecode` image
+ * (left half red, right half blue), decoded by the bundled `openjpeg.wasm`.
+ */
+export const PdfScannedJpx: Story = {
+  name: "PDF, scanned (JPEG 2000 image)",
+  args: { documents: [{ uri: pdfJpxFile }] },
 };
 
 export const PdfContinuousScroll: Story = {

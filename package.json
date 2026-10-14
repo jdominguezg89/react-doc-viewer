@@ -41,6 +41,8 @@
       "default": "./dist/index.css"
     },
     "./dist/pdf.worker.min.mjs": "./dist/pdf.worker.min.mjs",
+    "./dist/jbig2.wasm": "./dist/jbig2.wasm",
+    "./dist/openjpeg.wasm": "./dist/openjpeg.wasm",
     "./package.json": "./package.json"
   },
   "scripts": {

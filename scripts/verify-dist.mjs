@@ -56,6 +56,21 @@ assert(
   existsSync(workerFile) && statSync(workerFile).size > 500_000,
   "dist/pdf.worker.min.mjs is missing or truncated",
 );
+// The JBIG2 / JPEG 2000 decoders ship with the package (scanned PDFs).
+for (const [wasm, minSize] of [
+  ["jbig2.wasm", 50_000],
+  ["openjpeg.wasm", 150_000],
+]) {
+  const file = join(distDir, wasm);
+  assert(
+    existsSync(file) && statSync(file).size > minSize,
+    `dist/${wasm} is missing or truncated`,
+  );
+  assert(
+    allJs.includes(`new URL("./${wasm}", import.meta.url)`),
+    `the relative URL of ${wasm} is missing from dist`,
+  );
+}
 assert(
   existsSync(join(distDir, "index.css.d.ts")),
   "dist/index.css.d.ts is missing",

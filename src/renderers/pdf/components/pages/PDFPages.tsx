@@ -1,7 +1,8 @@
-import { type FC, useContext, useEffect, useState } from "react";
+import { type FC, useContext, useEffect, useMemo, useState } from "react";
 import { Document } from "react-pdf";
 import { useTranslation } from "../../../../hooks/useTranslation";
 import type { PdfDocumentOptions } from "../../../../models";
+import { resolvePdfDocumentOptions } from "../../documentOptions";
 import { PDFContext } from "../../state";
 import { setCurrentPage, setNumPages } from "../../state/actions";
 import { initialPDFState } from "../../state/reducer";
@@ -68,6 +69,10 @@ const PDFPages: FC = () => {
   if (!sameOptions(options, pdfConfig?.documentOptions)) {
     setOptions(pdfConfig?.documentOptions);
   }
+  const documentOptions = useMemo(
+    () => resolvePdfDocumentOptions(options),
+    [options],
+  );
 
   // Reset the page state when the file itself changes. Keyed on the data
   // react-pdf loads, not on the document object: that object is replaced
@@ -85,7 +90,7 @@ const PDFPages: FC = () => {
     <Document
       className="rdv-pdf-document"
       file={currentDocument.fileData}
-      options={options}
+      options={documentOptions}
       suspense={false}
       externalLinkTarget={pdfConfig?.externalLinkTarget ?? "_blank"}
       externalLinkRel="noopener noreferrer"

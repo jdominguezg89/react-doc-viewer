@@ -5,6 +5,7 @@ import DocViewer, {
   getDefaultPdfWorkerSource,
 } from "../../index";
 import { mockDocumentRoutes } from "../../test/helpers";
+import { BundledBinaryDataFactory } from "./binaryData";
 
 const { pdfjsMock, seenOptions } = vi.hoisted(() => ({
   pdfjsMock: { GlobalWorkerOptions: { workerSrc: "" }, version: "0.0.0-test" },
@@ -189,5 +190,24 @@ describe("PDF renderer", () => {
     rerender(<Host cMapUrl="/other/" n={4} />);
     expect(new Set(seenOptions).size).toBe(2);
     expect(seenOptions.at(-1)).toMatchObject({ cMapUrl: "/other/" });
+  });
+
+  it("hands pdf.js the bundled wasm decoders through a BinaryDataFactory", async () => {
+    render(<DocViewer documents={[{ uri: "https://x.test/doc.pdf" }]} />);
+    await screen.findByText("Page 1/3");
+    const options = seenOptions.at(-1) as { BinaryDataFactory?: unknown };
+    expect(options.BinaryDataFactory).toBe(BundledBinaryDataFactory);
+    expect(options).not.toHaveProperty("wasmUrl");
+  });
+
+  it("keeps pdf.js's own fetching when the consumer hosts the wasm files", async () => {
+    render(
+      <DocViewer
+        documents={[{ uri: "https://x.test/doc.pdf" }]}
+        config={{ pdf: { documentOptions: { wasmUrl: "/pdfjs/wasm/" } } }}
+      />,
+    );
+    await screen.findByText("Page 1/3");
+    expect(seenOptions.at(-1)).toEqual({ wasmUrl: "/pdfjs/wasm/" });
   });
 });

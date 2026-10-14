@@ -24,57 +24,70 @@ const isExternal = (id: string) =>
   !id.endsWith(".css") &&
   externalPackages.some((name) => id === name || id.startsWith(`${name}/`));
 
-const WORKER_SOURCE_LITERAL =
-  'new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url)';
-const WORKER_DIST_FILE = "pdf.worker.min.mjs";
-const WORKER_DIST_LITERAL = `new URL("./${WORKER_DIST_FILE}", import.meta.url)`;
-const WORKER_URL_PLACEHOLDER = "__RDV_PDF_WORKER_URL__";
+/**
+ * pdf.js files the package ships next to its chunks: the worker and the wasm
+ * image decoders. The source refers to each one through the `pdfjs-dist`
+ * package (`new URL("pdfjs-dist/<path>", import.meta.url)`), which is what
+ * Vite needs for dev, tests and Storybook.
+ */
+const SHIPPED_PDFJS_FILES = [
+  "build/pdf.worker.min.mjs",
+  "wasm/jbig2.wasm",
+  "wasm/openjpeg.wasm",
+].map((path) => {
+  const file = path.slice(path.lastIndexOf("/") + 1);
+  return {
+    specifier: `pdfjs-dist/${path}`,
+    file,
+    sourceLiteral: `new URL("pdfjs-dist/${path}", import.meta.url)`,
+    distLiteral: `new URL("./${file}", import.meta.url)`,
+    placeholder: `__RDV_PDFJS_${file.replace(/\W/g, "_").toUpperCase()}__`,
+  };
+});
 
 /**
- * Library build only. The source refers to the worker through the
- * `pdfjs-dist` package, which is what Vite needs for dev, tests and Storybook.
- * A published package cannot keep that form: Vite's dependency optimizer in a
- * consumer's dev server rewrites a bare specifier inside `new URL()` to a
- * path that does not exist, and library mode would inline the 1 MB worker as
- * a data: URL. So the build ships the worker next to the chunks and points
- * the emitted code at it with a plain relative URL, which Vite 8, webpack 5,
- * Turbopack, Parcel and Rollup resolve the same way. (The esbuild-based
- * optimizer of Vite 6/7 dev servers does not; the README documents the
- * workaround.)
+ * Library build only. A published package cannot keep the `pdfjs-dist`
+ * specifier inside `new URL()`: Vite's dependency optimizer in a consumer's
+ * dev server rewrites it to a path that does not exist, and library mode
+ * would inline the 1 MB worker as a data: URL. So the build copies each file
+ * next to the chunks and points the emitted code at it with a plain relative
+ * URL, which Vite 8, webpack 5, Turbopack, Parcel and Rollup resolve the same
+ * way. (The esbuild-based optimizer of Vite 6/7 dev servers does not; the
+ * README documents the workaround.)
  */
-const shipPdfWorker = (): Plugin => ({
-  name: "rdv:ship-pdf-worker",
+const shipPdfjsFiles = (): Plugin => ({
+  name: "rdv:ship-pdfjs-files",
   // Not for app builds that reuse this config (Storybook strips `build.lib`).
   apply: (config, env) => env.command === "build" && Boolean(config.build?.lib),
   enforce: "pre",
   transform(code, id) {
-    if (!/[\\/]renderers[\\/]pdf[\\/]worker\./.test(id)) return null;
-    if (!code.includes(WORKER_SOURCE_LITERAL)) return null;
-    return {
-      code: code.replaceAll(WORKER_SOURCE_LITERAL, WORKER_URL_PLACEHOLDER),
-      map: null,
-    };
+    if (!/[\\/]renderers[\\/]pdf[\\/]/.test(id)) return null;
+    let next = code;
+    for (const { sourceLiteral, placeholder } of SHIPPED_PDFJS_FILES) {
+      next = next.replaceAll(sourceLiteral, placeholder);
+    }
+    return next === code ? null : { code: next, map: null };
   },
   renderChunk(code) {
-    if (!code.includes(WORKER_URL_PLACEHOLDER)) return null;
-    return {
-      code: code.replaceAll(WORKER_URL_PLACEHOLDER, WORKER_DIST_LITERAL),
-      map: null,
-    };
+    let next = code;
+    for (const { placeholder, distLiteral } of SHIPPED_PDFJS_FILES) {
+      next = next.replaceAll(placeholder, distLiteral);
+    }
+    return next === code ? null : { code: next, map: null };
   },
   generateBundle() {
-    this.emitFile({
-      type: "asset",
-      fileName: WORKER_DIST_FILE,
-      source: readFileSync(
-        require.resolve("pdfjs-dist/build/pdf.worker.min.mjs"),
-      ),
-    });
+    for (const { specifier, file } of SHIPPED_PDFJS_FILES) {
+      this.emitFile({
+        type: "asset",
+        fileName: file,
+        source: readFileSync(require.resolve(specifier)),
+      });
+    }
   },
 });
 
 export default defineConfig({
-  plugins: [shipPdfWorker()],
+  plugins: [shipPdfjsFiles()],
   build: {
     lib: {
       entry: "./src/index.tsx",
