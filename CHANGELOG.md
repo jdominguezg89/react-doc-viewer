@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.0.3](https://github.com/jdominguezg89/react-doc-viewer/compare/v2.0.2...v2.0.3) (2026-10-14)
+
+
+### Fixed
+
+* **pdf:** ship the JBIG2 and JPEG 2000 decoders so scanned PDFs render ([#11](https://github.com/jdominguezg89/react-doc-viewer/issues/11)) ([f0e9b50](https://github.com/jdominguezg89/react-doc-viewer/commit/f0e9b505c430525b57bcdbe8a1dee6f6dc9576b7))
+
 ## [2.0.2]
 
 ### Fixed
