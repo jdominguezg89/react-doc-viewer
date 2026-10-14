@@ -66,9 +66,11 @@ export interface IPdfConfig {
   workerSrc?: string | URL;
   /**
    * Extra options passed to pdf.js `getDocument` (for example `cMapUrl`,
-   * `standardFontDataUrl`, `wasmUrl`). The PDF itself is downloaded by the
-   * viewer, so use `requestHeaders` / `requestInit` for credentials.
-   * Keep the object reference stable to avoid reloading the document.
+   * `standardFontDataUrl`). The JBIG2 / JPEG 2000 decoders ship with the
+   * package; set `wasmUrl` only to serve the pdf.js wasm files yourself.
+   * The PDF itself is downloaded by the viewer, so use `requestHeaders` /
+   * `requestInit` for credentials. Keep the object reference stable to avoid
+   * reloading the document.
    */
   documentOptions?: PdfDocumentOptions;
   /** Target for links inside the PDF. Defaults to `_blank`. */

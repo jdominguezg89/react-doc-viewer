@@ -150,7 +150,15 @@ configurePdfWorker("/static/pdf.worker.min.mjs");
 
 `getDefaultPdfWorkerSource()` returns the bundled worker URL if you need it (for example to copy it into a CSP allow-list). The file is also exported as `@jdominguezg89/react-doc-viewer/dist/pdf.worker.min.mjs`, so you can copy it to a static directory or import its URL.
 
-**Vite 6/7 dev server.** The dependency optimizer in Vite 6 and 7 cannot follow the worker URL inside a pre-bundled package (symptom: "Setting up fake worker failed" in the console and a "file is broken" message for a valid PDF). Production builds are not affected, and Vite 8 is not affected at all. Hand the worker to the viewer yourself, once, at startup:
+**Vite 6/7 dev server.** The dependency optimizer in Vite 6 and 7 cannot follow the worker URL inside a pre-bundled package (symptom: "Setting up fake worker failed" in the console and a "file is broken" message for a valid PDF). Production builds are not affected, and Vite 8 is not affected at all. The same applies to the bundled JBIG2 / JPEG 2000 decoders (scanned PDFs stay blank in dev). The simplest fix is to leave the package out of the optimizer in `vite.config.ts`:
+
+```ts
+export default defineConfig({
+  optimizeDeps: { exclude: ["@jdominguezg89/react-doc-viewer"] },
+});
+```
+
+Or hand the worker to the viewer yourself, once, at startup (and point `config.pdf.documentOptions.wasmUrl` at a copy of pdf.js's `wasm/` directory if you need scanned PDFs in dev):
 
 ```ts
 import { configurePdfWorker } from "@jdominguezg89/react-doc-viewer";
@@ -158,6 +166,10 @@ import workerUrl from "@jdominguezg89/react-doc-viewer/dist/pdf.worker.min.mjs?u
 
 configurePdfWorker(workerUrl);
 ```
+
+**Scanned PDFs (JBIG2 / JPEG 2000).** pdf.js 5+ decodes those images with WebAssembly modules it fetches at run time; without them a scanned page renders blank and the console shows "JBig2 failed to initialize" / "Ensure that the `wasmUrl` API parameter is provided". The two decoders (`jbig2.wasm`, `openjpeg.wasm`, about 350 kB) ship inside this package and reach the browser as local static assets, like the worker: nothing to host, no CDN. If you prefer to serve pdf.js's own `wasm/` directory (this also enables ICC colour management, which needs `qcms_bg.wasm` and `iccUrl`), set `wasmUrl` and the package steps aside.
+
+**CMaps and standard fonts** (CJK text, documents that do not embed the 14 standard fonts) are opt-in, as in pdf.js: copy the `cmaps/` and `standard_fonts/` directories of the `pdfjs-dist` package to your static assets and point `cMapUrl` / `standardFontDataUrl` at them.
 
 Other pdf.js settings live under `config.pdf`:
 
@@ -170,7 +182,6 @@ Other pdf.js settings live under `config.pdf`:
       documentOptions: {
         cMapUrl: "/pdfjs/cmaps/",
         standardFontDataUrl: "/pdfjs/standard_fonts/",
-        wasmUrl: "/pdfjs/wasm/",
       },
       externalLinkTarget: "_blank", // default
       onLoadError: (error) => console.error(error),
@@ -180,8 +191,6 @@ Other pdf.js settings live under `config.pdf`:
   }}
 />
 ```
-
-The cMap, font and wasm directories are in the `pdfjs-dist` package (`cmaps/`, `standard_fonts/`, `wasm/`); copy them to your static assets if your documents need them.
 
 The PDF file itself is downloaded by the viewer, not by pdf.js. Use the `requestInit` prop (for example `requestInit={{ credentials: "include" }}`) and `requestHeaders` for cookies and auth headers; `httpHeaders` and `withCredentials` in `documentOptions` have no effect.
 
@@ -413,7 +422,7 @@ Available: `ar`, `de`, `en`, `es`, `fr`, `it`, `ja`, `pl`, `pt`, `ru`, `se`, `sr
 - **Office documents** are shown through Microsoft's viewer, which receives the document URL; use `config.msdoc.enabled = false` to show a download link instead, for private or pre-signed URLs.
 - **Request headers** are sent to every document URL by default (as in 1.x). Restrict them with `config.fetch.sendRequestHeadersTo` when documents can come from third-party hosts. The policy checks the document URL only: if a URL may redirect to another origin, also pass `requestInit={{ redirect: "error" }}`, since browsers forward custom headers on redirects (only `Authorization` is stripped).
 - **PDF links** open in a new tab with `rel="noopener noreferrer"` (`config.pdf.externalLinkTarget`).
-- **Content Security Policy**: the bundled worker is a same-origin static asset, so `worker-src 'self'` is enough. If you point `configurePdfWorker()` or `config.pdf.workerSrc` at another origin, pdf.js starts it through a `blob:` wrapper that imports the file: allow `blob:` in `worker-src` and that origin in `script-src`, and make sure the host sends CORS headers.
+- **Content Security Policy**: the bundled worker is a same-origin static asset, so `worker-src 'self'` is enough. The JBIG2 / JPEG 2000 decoders are same-origin static assets too, but compiling WebAssembly needs `'wasm-unsafe-eval'` in `script-src` (pdf.js has no JavaScript fallback for them). Nothing is loaded from a CDN. If you point `configurePdfWorker()` or `config.pdf.workerSrc` at another origin, pdf.js starts it through a `blob:` wrapper that imports the file: allow `blob:` in `worker-src` and that origin in `script-src`, and make sure the host sends CORS headers.
 
 ## Storybook
 
