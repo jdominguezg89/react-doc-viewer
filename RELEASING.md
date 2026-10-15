@@ -75,7 +75,7 @@ Renovate follows the same rule: its PRs are `chore(deps)` and release nothing, e
 The flow:
 
 1. Merge pull requests into `main` as usual. Nothing is published yet.
-2. The `Release PR` workflow keeps one pull request open, "chore: release X.Y.Z", with the version bump in `package.json` and the CHANGELOG entry generated from the merged commits. It updates itself after every merge.
+2. Once the `Release` workflow has finished for that push, the `Release PR` workflow keeps one pull request open, "chore: release X.Y.Z", with the version bump in `package.json` and the CHANGELOG entry generated from the merged commits. It updates itself after every merge.
 3. When you want the version out, merge that pull request. The `Release` workflow publishes it to npm with provenance, creates the tag and GitHub Release, and redeploys Storybook.
 4. Check:
 
@@ -103,6 +103,7 @@ To redeploy Storybook only, run the `Release` workflow manually on `main` with "
 | Storybook job rejected by the environment | The `github-pages` environment must allow deployments from `main`. |
 | `Release PR` workflow fails with 401 / "Resource not accessible" | The `RELEASE_PLEASE_TOKEN` secret is missing, expired, or lacks Contents + Pull requests write; or "Allow GitHub Actions to create and approve pull requests" is off. |
 | No Release PR appears after merging | Only `fix:`/`feat:` commits produce one; `chore:`/`docs:` do not. Check the squash commit title on `main`. |
+| The Release PR proposes a far too big version (for example 2.1.0 listing years-old features) | release-please did not find the latest GitHub Release and walked the whole history. Close that PR without merging; the next run proposes the right version. Happens when it runs alongside `Release` instead of after it. |
 | `Release PR` log says `There are untagged, merged release PRs outstanding - aborting` | The last merged "chore: release X.Y.Z" PR still has the label `autorelease: pending` (the `Release` workflow normally swaps it for `autorelease: tagged` after creating the GitHub Release). Swap the labels on that PR by hand, then run the `Release PR` workflow from the Actions tab. |
 | Publish worked, tag/Release step failed | "Re-run failed jobs": the release job only creates what is missing. |
 | A bad version went out | `npm deprecate @jdominguezg89/react-doc-viewer@X.Y.Z "reason"` and release a fix. Avoid `npm unpublish`. |
