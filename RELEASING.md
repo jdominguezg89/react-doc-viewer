@@ -103,6 +103,7 @@ To redeploy Storybook only, run the `Release` workflow manually on `main` with "
 | Storybook job rejected by the environment | The `github-pages` environment must allow deployments from `main`. |
 | `Release PR` workflow fails with 401 / "Resource not accessible" | The `RELEASE_PLEASE_TOKEN` secret is missing, expired, or lacks Contents + Pull requests write; or "Allow GitHub Actions to create and approve pull requests" is off. |
 | No Release PR appears after merging | Only `fix:`/`feat:` commits produce one; `chore:`/`docs:` do not. Check the squash commit title on `main`. |
+| `Release PR` log says `There are untagged, merged release PRs outstanding - aborting` | The last merged "chore: release X.Y.Z" PR still has the label `autorelease: pending` (the `Release` workflow normally swaps it for `autorelease: tagged` after creating the GitHub Release). Swap the labels on that PR by hand, then run the `Release PR` workflow from the Actions tab. |
 | Publish worked, tag/Release step failed | "Re-run failed jobs": the release job only creates what is missing. |
 | A bad version went out | `npm deprecate @jdominguezg89/react-doc-viewer@X.Y.Z "reason"` and release a fix. Avoid `npm unpublish`. |
 
