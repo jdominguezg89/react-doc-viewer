@@ -122,6 +122,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # tag + GitHub Release
+      pull-requests: write # relabel the merged Release PR
     steps:
       - name: Tag and GitHub Release
         env:
@@ -137,6 +138,25 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "v$VERSION" \
             "${FLAGS[@]}"
+
+      # release-please refuses to open the next Release PR while a merged one
+      # still carries "autorelease: pending". It would relabel it itself when
+      # creating the GitHub Release, but this job does that (see
+      # skip-github-release in release-please-config.json), so mark it here.
+      - name: Mark the merged Release PR as tagged
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh label create "autorelease: tagged" --repo "$GITHUB_REPOSITORY" \
+            --color 0E8A16 --description "release-please: release created" --force
+          gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
+            --jq '.[] | select(.labels[].name == "autorelease: pending") | .number' |
+          while read -r PR; do
+            echo "Release PR #$PR -> autorelease: tagged"
+            gh pr edit "$PR" --repo "$GITHUB_REPOSITORY" \
+              --remove-label "autorelease: pending" --add-label "autorelease: tagged"
+          done
 
   storybook:
     needs: [detect, release]

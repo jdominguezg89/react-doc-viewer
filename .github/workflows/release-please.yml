@@ -9,6 +9,8 @@ name: Release PR
 on:
   push:
     branches: [main]
+  # Manual run, for example after relabelling a Release PR by hand.
+  workflow_dispatch:
 
 permissions:
   contents: read
