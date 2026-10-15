@@ -134,9 +134,21 @@ export const ProxyRenderer: FC = () => {
       window.addEventListener("resize", measure);
       return () => window.removeEventListener("resize", measure);
     }
-    const observer = new ResizeObserver(measure);
+    // Measuring changes layout (the toolbar width, then a re-render). Done
+    // inside the observer callback that counts as another resize in the
+    // same frame, and the browser reports "ResizeObserver loop completed
+    // with undelivered notifications" (harmless, but it lands in error
+    // monitoring). Deferring to the next frame keeps the loop clean.
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    });
     observer.observe(node);
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }, [dispatch]);
 
   const fileName = getFileName(
