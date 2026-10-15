@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.0.4](https://github.com/jdominguezg89/react-doc-viewer/compare/v2.0.3...v2.0.4) (2026-10-15)
+
+
+### Fixed
+
+* stop "ResizeObserver loop completed with undelivered notifications" errors ([#15](https://github.com/jdominguezg89/react-doc-viewer/issues/15)) ([dac7edd](https://github.com/jdominguezg89/react-doc-viewer/commit/dac7edd977bb20cb60cdf81e62116a19719ecf84))
+
 ## [2.0.3](https://github.com/jdominguezg89/react-doc-viewer/compare/v2.0.2...v2.0.3) (2026-10-14)
 
 
