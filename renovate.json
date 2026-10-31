@@ -33,6 +33,23 @@
       "matchPackageNames": ["next"],
       "groupName": "nextjs example",
       "labels": ["example"]
+    },
+    {
+      "description": "Biome and its biome.json schema URL must move together, in one PR for every update type.",
+      "matchPackageNames": ["@biomejs/biome"],
+      "groupName": "biome"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Keep the $schema URL in biome.json on the installed Biome version (Biome rejects a mismatch).",
+      "managerFilePatterns": ["/^biome\\.json$/"],
+      "matchStrings": [
+        "\"\\$schema\":\\s*\"https://biomejs\\.dev/schemas/(?<currentValue>[^/]+)/schema\\.json\""
+      ],
+      "depNameTemplate": "@biomejs/biome",
+      "datasourceTemplate": "npm"
     }
   ]
 }
