@@ -31,7 +31,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@v5
         with:
           # A token of a user, so CI runs on the Release PR (the default
           # GITHUB_TOKEN cannot trigger workflows on pull requests it opens).
