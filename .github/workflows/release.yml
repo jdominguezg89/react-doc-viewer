@@ -92,7 +92,7 @@ jobs:
       id-token: write # npm Trusted Publishing (OIDC) + provenance
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6.1.0
+      - uses: pnpm/action-setup@v6.1.1
       # Node 24 ships npm >= 11.5.1, which Trusted Publishing needs. No
       # dependency cache in the job that holds the publishing identity.
       - uses: actions/setup-node@v7
@@ -175,7 +175,7 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6.1.0
+      - uses: pnpm/action-setup@v6.1.1
       - uses: actions/setup-node@v7
         with:
           node-version: 26
