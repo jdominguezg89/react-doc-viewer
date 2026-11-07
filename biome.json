@@ -21,6 +21,11 @@
       "semicolons": "always"
     }
   },
+  "markdown": {
+    "formatter": {
+      "enabled": false
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -46,6 +51,16 @@
       "includes": ["src/renderers/tiff/tiffToCanvas.ts"],
       "linter": {
         "enabled": false
+      }
+    },
+    {
+      "includes": ["src/**/*.test.tsx", "src/__tests__/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noComponentHookFactories": "off"
+          }
+        }
       }
     }
   ]
