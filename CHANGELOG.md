@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.0.5](https://github.com/jdominguezg89/react-doc-viewer/compare/v2.0.4...v2.0.5) (2026-11-17)
+
+
+### Fixed
+
+* **deps:** update dependency papaparse to v5.7.1 ([#44](https://github.com/jdominguezg89/react-doc-viewer/issues/44)) ([f428767](https://github.com/jdominguezg89/react-doc-viewer/commit/f4287672d7a1ec010acaa4304fdb803a4db5f022))
+
 ## [2.0.4](https://github.com/jdominguezg89/react-doc-viewer/compare/v2.0.3...v2.0.4) (2026-10-15)
 
 
