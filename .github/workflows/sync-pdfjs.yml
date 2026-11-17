@@ -1,0 +1,58 @@
+name: Sync pdfjs-dist
+
+# react-pdf pins an exact pdfjs-dist version and this package must ship the
+# same one (scripts/verify-dist.mjs fails the build otherwise). Renovate
+# cannot follow that pin, so pdfjs-dist is disabled there; when a Renovate
+# PR upgrades react-pdf, this job runs `pnpm sync:pdfjs`, updates the
+# lockfile and pushes the result to the same PR.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths: [package.json, pnpm-lock.yaml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-pdfjs-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    # Only Renovate branches of this repository: forks get no secrets, and
+    # no human branch is ever rewritten.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.head_ref, 'renovate/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+          # A user token, so the pushed commit triggers CI again (pushes made
+          # with GITHUB_TOKEN do not start workflows). Same secret as release-please.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+      - uses: pnpm/action-setup@v6.1.1
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install (no lifecycle scripts)
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Align pdfjs-dist with react-pdf
+        run: pnpm sync:pdfjs && pnpm install --lockfile-only --ignore-scripts
+      - name: Commit and push
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- package.json pnpm-lock.yaml; then
+            echo "pdfjs-dist already matches react-pdf."
+            exit 0
+          fi
+          VERSION=$(node -p "require('./package.json').dependencies['pdfjs-dist']")
+          # Renovate ignores commits by this author (gitIgnoredAuthors), so it
+          # keeps rebasing and updating the PR afterwards.
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "fix(deps): align pdfjs-dist with react-pdf (${VERSION})"
+          git push

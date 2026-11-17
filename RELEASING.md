@@ -85,7 +85,7 @@ The flow:
 
 To force a specific version, add a footer `Release-As: 3.0.0` to a commit message (an empty `chore: release 3.0.0` commit with that footer works).
 
-If `react-pdf` was upgraded, run `pnpm sync:pdfjs` on that branch; the build fails when `pdfjs-dist` diverges.
+`pdfjs-dist` must be the exact version `react-pdf` pins; the build fails when they diverge. On Renovate PRs the `Sync pdfjs-dist` workflow takes care of it (it runs `pnpm sync:pdfjs` and pushes the result to the PR, using the `RELEASE_PLEASE_TOKEN` secret). When you upgrade `react-pdf` by hand, run `pnpm sync:pdfjs && pnpm install` yourself.
 
 Pre-releases: edit the Release PR's version to e.g. `2.1.0-beta.0`; it is published under the `beta` dist-tag, not `latest`, and marked as a pre-release on GitHub. A version without a named identifier (`2.0.1-0`) goes to the `next` dist-tag.
 
