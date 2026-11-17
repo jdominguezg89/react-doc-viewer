@@ -5,9 +5,12 @@
   "timezone": "Europe/Stockholm",
   "minimumReleaseAge": "3 days",
   "prConcurrentLimit": 5,
+  "gitIgnoredAuthors": [
+    "41898282+github-actions[bot]@users.noreply.github.com"
+  ],
   "packageRules": [
     {
-      "description": "Must match react-pdf's pin; run `pnpm sync:pdfjs` instead.",
+      "description": "Must match react-pdf's exact pin: the Sync pdfjs-dist workflow updates it on react-pdf PRs.",
       "matchPackageNames": ["pdfjs-dist"],
       "enabled": false
     },
