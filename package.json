@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "papaparse": "^5.7.0",
-    "pdfjs-dist": "6.3.289",
+    "pdfjs-dist": "6.5.438",
     "react-pdf": "11.1.0"
   },
   "devDependencies": {
