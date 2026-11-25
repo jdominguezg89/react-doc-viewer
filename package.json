@@ -60,7 +60,7 @@
   "dependencies": {
     "papaparse": "^5.7.0",
     "pdfjs-dist": "6.3.289",
-    "react-pdf": "11.0.0"
+    "react-pdf": "11.1.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",
