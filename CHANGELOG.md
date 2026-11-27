@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.0.6](https://github.com/jdominguezg89/react-doc-viewer/compare/v2.0.5...v2.0.6) (2026-11-27)
+
+
+### Fixed
+
+* **deps:** update dependency react-pdf to v11.1.0 ([#46](https://github.com/jdominguezg89/react-doc-viewer/issues/46)) ([f9a949f](https://github.com/jdominguezg89/react-doc-viewer/commit/f9a949fe6e2287a4c89878838e34cb0961bedfc8))
+
 ## [2.0.5](https://github.com/jdominguezg89/react-doc-viewer/compare/v2.0.4...v2.0.5) (2026-11-17)
 
 
